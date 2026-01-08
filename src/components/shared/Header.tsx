@@ -1,4 +1,5 @@
 // Header.tsx
+"use client"
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, Bell, LogOut, User, Settings, Shield, FileText } from 'lucide-react';
 

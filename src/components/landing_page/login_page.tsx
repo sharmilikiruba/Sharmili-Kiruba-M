@@ -29,13 +29,13 @@ export default function LoginPage() {
         router.push('/admin/dashboard')
         break
       case 'Warden':
-        router.push('/warden/dashboard')
+        router.push('/Warden/WardenDashboard')
         break
       case 'Guard':
-        router.push('/guard/dashboard')
+        router.push('/Guard/guard_dashboard')
         break
       case 'Student':
-        router.push('/student/dashboard')
+        router.push('/student/student_dashboard')
         break
       default:
         router.push('/login')
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex flex-col">
-      
+
       {/* Header */}
       <div className="text-center pt-16 pb-8">
         <h1 className="text-5xl font-bold text-gray-900 mb-3">HVMS</h1>

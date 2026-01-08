@@ -1,4 +1,6 @@
 // Sidebar.tsx
+
+"use client"
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, User, History, Clock, CheckCircle, Users, 
