@@ -1,216 +1,160 @@
-'use client';
+'use client'
 
-import React, { useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation'
 import {
-  Plus,
   Clock,
   CheckCircle,
   XCircle,
-  ClipboardCheck,
-  User,
-  LogOut
-} from 'lucide-react';
+  ClipboardList,
+  Plus
+} from 'lucide-react'
 
-export default function StudentPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const view = useMemo(
-    () => searchParams.get('view') || 'dashboard',
-    [searchParams]
-  );
-
-  // ---------------- MOCK DATA ----------------
-  const studentInfo = {
-    name: 'Rahul Sharma',
-    roll: '21CS101',
-    email: 'rahul.sharma@university.edu',
-    phone: '+91 98765 43210',
-    department: 'Computer Science',
-    hostel: 'Krishna Hostel',
-    room: 'A-204'
-  };
-
-  const labelMap: Record<string, string> = {
-    name: 'Name',
-    roll: 'Roll Number',
-    email: 'Email',
-    phone: 'Phone',
-    department: 'Department',
-    hostel: 'Hostel',
-    room: 'Room'
-  };
-
-  const recentRequests = [
-    { name: 'Suresh Sharma', purpose: 'Family Visit', status: 'Pending', color: 'bg-yellow-500' },
-    { name: 'Kiran Sharma', purpose: 'Family Visit', status: 'Approved', color: 'bg-green-500' },
-    { name: 'Ramesh Sharma', purpose: 'Friend Visit', status: 'Rejected', color: 'bg-red-500' }
-  ];
+export default function StudentDashboardPage() {
+  const router = useRouter()
 
   const stats = [
     {
-      title: 'Pending',
-      count: recentRequests.filter(r => r.status === 'Pending').length,
+      title: 'Pending Requests',
+      value: 1,
       icon: Clock,
-      bg: 'bg-yellow-100',
+      bg: 'bg-yellow-50',
       iconBg: 'bg-yellow-500'
     },
     {
       title: 'Approved',
-      count: recentRequests.filter(r => r.status === 'Approved').length,
+      value: 1,
       icon: CheckCircle,
-      bg: 'bg-green-100',
+      bg: 'bg-green-50',
       iconBg: 'bg-green-500'
     },
     {
       title: 'Rejected',
-      count: recentRequests.filter(r => r.status === 'Rejected').length,
+      value: 1,
       icon: XCircle,
-      bg: 'bg-red-100',
+      bg: 'bg-red-50',
       iconBg: 'bg-red-500'
     },
     {
-      title: 'Total',
-      count: recentRequests.length,
-      icon: ClipboardCheck,
-      bg: 'bg-blue-100',
+      title: 'Total Requests',
+      value: 3,
+      icon: ClipboardList,
+      bg: 'bg-blue-50',
       iconBg: 'bg-blue-500'
     }
-  ];
+  ]
 
-  // ---------------- LOGOUT ----------------
-  const handleLogout = () => {
-    localStorage.clear();
-    router.push('/login/login_page');
-  };
+  const recentRequests = [
+    {
+      name: 'Suresh Sharma',
+      relation: 'Father · Family Visit',
+      date: 'Jan 06, 2026 at 10:00',
+      status: 'Pending',
+      color: 'bg-yellow-500'
+    },
+    {
+      name: 'Kiran Sharma',
+      relation: 'Mother · Family Visit',
+      date: 'Jan 04, 2026 at 14:00',
+      status: 'Approved',
+      color: 'bg-green-500'
+    },
+    {
+      name: 'Unknown Person',
+      relation: 'Friend · Other',
+      date: 'Jan 02, 2026 at 22:00',
+      status: 'Rejected',
+      color: 'bg-red-500'
+    }
+  ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-8 py-4 flex justify-between items-center">
-        <h1
-          className="text-xl font-bold text-blue-600 cursor-pointer"
-          onClick={() => router.push('/app/student/student_dashboard')}
+    <div className="p-8 bg-gray-50 min-h-screen">
+      {/* Top Section */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Welcome, Rahul Sharma!</h1>
+          <p className="text-gray-600 mt-1">
+            Krishna Hostel · Room A-204
+          </p>
+        </div>
+
+        <button
+          onClick={() => router.push('/student/studreq')}
+          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
         >
-          Student Dashboard
-        </h1>
+          <Plus size={18} />
+          New Request
+        </button>
+      </div>
 
-        <div className="flex gap-4">
-          <button
-            onClick={() => router.push('/student/student_dashboard?view=profile')}
-            className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        {stats.map((stat, index) => (
+          <div
+            key={index}
+            className={`p-6 rounded-xl border ${stat.bg}`}
           >
-            <User className="w-5 h-5" /> Profile
-          </button>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-600">{stat.title}</p>
+                <p className="text-3xl font-bold mt-1">{stat.value}</p>
+              </div>
+              <div className={`${stat.iconBg} p-3 rounded-lg`}>
+                <stat.icon className="text-white" size={22} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-red-600 hover:text-red-700"
-          >
-            <LogOut className="w-5 h-5" /> Logout
+      {/* Recent Requests */}
+      <div className="bg-white border rounded-xl">
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="font-bold text-lg">Recent Requests</h2>
+          <button className="text-sm text-blue-600 hover:underline">
+            View All
           </button>
         </div>
-      </header>
 
-      <main className="p-8">
-
-        {/* ================= DASHBOARD ================= */}
-        {view === 'dashboard' && (
-          <>
-            <div className="flex justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bold">Welcome, {studentInfo.name}</h2>
-                <p className="text-gray-600">
-                  {studentInfo.hostel} • Room {studentInfo.room}
-                </p>
-              </div>
-
-              <button
-                onClick={() => router.push('/app/student/student_dashboard?view=new')}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                <Plus className="w-5 h-5" />
-                New Request
-              </button>
+        {recentRequests.map((req, index) => (
+          <div
+            key={index}
+            className="flex justify-between items-center p-6 border-b last:border-none"
+          >
+            <div>
+              <p className="font-semibold">{req.name}</p>
+              <p className="text-sm text-gray-600">{req.relation}</p>
+              <p className="text-xs text-gray-400 mt-1">{req.date}</p>
             </div>
+            <span
+              className={`${req.color} text-white text-sm px-4 py-1 rounded-full`}
+            >
+              {req.status}
+            </span>
+          </div>
+        ))}
+      </div>
 
-            <div className="grid md:grid-cols-4 gap-6 mb-8">
-              {stats.map((s, i) => (
-                <div key={i} className={`${s.bg} p-6 rounded-xl hover:shadow-md transition`}>
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="text-sm">{s.title}</p>
-                      <p className="text-3xl font-bold">{s.count}</p>
-                    </div>
-                    <div className={`${s.iconBg} p-3 rounded-lg`}>
-                      <s.icon className="text-white" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Quick Info */}
+      <div className="mt-10 bg-white border rounded-xl p-6">
+        <h2 className="font-bold mb-4">Quick Info</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-500">Visiting Hours</p>
+            <p className="font-semibold mt-1">8:00 AM - 8:00 PM</p>
+          </div>
 
-            <div className="bg-white rounded-xl border">
-              <div className="p-6 border-b font-bold">Recent Requests</div>
-              {recentRequests.map((r, i) => (
-                <div key={i} className="p-6 flex justify-between border-b last:border-none">
-                  <div>
-                    <p className="font-semibold">{r.name}</p>
-                    <p className="text-sm text-gray-600">{r.purpose}</p>
-                  </div>
-                  <span className={`${r.color} text-white px-4 py-1 rounded-full text-xs font-semibold`}>
-                    {r.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-500">Max Visitors</p>
+            <p className="font-semibold mt-1">3 per day</p>
+          </div>
 
-        {/* ================= PROFILE ================= */}
-        {view === 'profile' && (
-          <>
-            <div className="flex justify-between mb-6">
-              <h2 className="text-3xl font-bold">My Profile</h2>
-              <button
-                onClick={() => router.push('/app/student/student_dashboard')}
-                className="px-4 py-2 border rounded-lg"
-              >
-                Back
-              </button>
-            </div>
-
-            <div className="bg-white rounded-xl p-8 border grid md:grid-cols-2 gap-6">
-              {Object.entries(studentInfo).map(([key, value]) => (
-                <div key={key}>
-                  <p className="text-sm text-gray-500">{labelMap[key]}</p>
-                  <p className="font-semibold">{value}</p>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* ================= NEW REQUEST ================= */}
-        {view === 'new' && (
-          <>
-            <div className="flex justify-between mb-6">
-              <h2 className="text-3xl font-bold">New Visitor Request</h2>
-              <button
-                onClick={() => router.push('/student/student_dashboard')}
-                className="px-4 py-2 border rounded-lg"
-              >
-                Back
-              </button>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl border">
-              <p className="text-gray-600">Visitor request form goes here.</p>
-            </div>
-          </>
-        )}
-
-      </main>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-500">Hostel Contact</p>
+            <p className="font-semibold mt-1">+91 98765 11111</p>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

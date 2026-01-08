@@ -12,7 +12,7 @@ interface LayoutProps {
   roomInfo?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({
+const DashboardLayout: React.FC<LayoutProps> = ({
   children,
   userRole,
   userName,
@@ -62,4 +62,4 @@ const Layout: React.FC<LayoutProps> = ({
   );
 };
 
-export default Layout;
+export default DashboardLayout;
