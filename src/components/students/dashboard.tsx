@@ -79,7 +79,7 @@ export default function StudentDashboardPage() {
         </div>
 
         <button
-          onClick={() => router.push('/student/studreq')}
+          onClick={() => router.push('/students/Newrequest')}
           className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
         >
           <Plus size={18} />

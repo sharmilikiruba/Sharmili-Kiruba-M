@@ -1,10 +1,10 @@
-import Dashboard from "@/components/guard/guard_dashboard";
+import ScanExit from "@/components/guard/scan_exit";
 import DashboardLayout from "@/components/shared/layout";
 
 export default function Reports() {
    return(
      <DashboardLayout>
-       <Dashboard />
+       <ScanExit />
      </DashboardLayout>
    )
 }
