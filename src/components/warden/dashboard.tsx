@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  ClipboardList, 
-  CheckCircle, 
-  Users, 
+import {
+  LayoutDashboard,
+  ClipboardList,
+  CheckCircle,
+  Users,
   BarChart3,
   Bell,
   FileText,
@@ -19,39 +19,39 @@ export default function WardenDashboard() {
   const router = useRouter();
 
   const stats = [
-    { 
-      title: 'Pending Requests', 
-      count: 1, 
-      icon: ClipboardList, 
-      color: 'bg-yellow-100', 
-      iconColor: 'bg-yellow-500' 
+    {
+      title: 'Pending Requests',
+      count: 1,
+      icon: ClipboardList,
+      color: 'bg-yellow-100',
+      iconColor: 'bg-yellow-500'
     },
-    { 
-      title: 'Approved Today', 
-      count: 0, 
-      icon: CheckCircle, 
-      color: 'bg-green-100', 
-      iconColor: 'bg-green-500' 
+    {
+      title: 'Approved Today',
+      count: 0,
+      icon: CheckCircle,
+      color: 'bg-green-100',
+      iconColor: 'bg-green-500'
     },
-    { 
-      title: 'Rejected Today', 
-      count: 0, 
-      icon: XCircle, 
-      color: 'bg-red-100', 
-      iconColor: 'bg-red-500' 
+    {
+      title: 'Rejected Today',
+      count: 0,
+      icon: XCircle,
+      color: 'bg-red-100',
+      iconColor: 'bg-red-500'
     },
-    { 
-      title: 'Active Visitors', 
-      count: 1, 
-      icon: Users, 
-      color: 'bg-blue-100', 
-      iconColor: 'bg-blue-500' 
+    {
+      title: 'Active Visitors',
+      count: 1,
+      icon: Users,
+      color: 'bg-blue-100',
+      iconColor: 'bg-blue-500'
     },
-    { 
-      title: 'Monthly Visitors', 
-      count: 42, 
-      icon: Calendar, 
-      color: 'bg-white', 
+    {
+      title: 'Monthly Visitors',
+      count: 42,
+      icon: Calendar,
+      color: 'bg-white',
       iconColor: 'bg-gray-200',
       subtext: 'This month'
     }
@@ -92,7 +92,7 @@ export default function WardenDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        
+
         {/* Dashboard Content */}
         <div className="p-8">
           {/* Welcome Section */}
@@ -122,15 +122,30 @@ export default function WardenDashboard() {
               </div>
             ))}
           </div>
+          {/* Weekly Overview */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Weekly Overview</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {weeklyOverview.map((item, index) => (
+                <div key={index} className="text-center">
+                  <p className={`text-5xl font-bold mb-2 ${item.color}`}>
+                    {item.value}
+                  </p>
+                  <p className="text-gray-700 font-medium">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Pending Requests */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
                 <h3 className="text-xl font-bold text-gray-900">Pending Requests</h3>
-                <button 
-                onClick={() => router.push('/Pending_Request')}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                <button
+                  onClick={() => router.push('/Pending_Request')}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm">
                   View All
                 </button>
               </div>
@@ -166,8 +181,8 @@ export default function WardenDashboard() {
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
                 <h3 className="text-xl font-bold text-gray-900">Active Visitors</h3>
                 <button
-                onClick={() => router.push('/Approved_visit')}
-                 className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                  onClick={() => router.push('student/Approved_visit')}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm">
                   View All
                 </button>
               </div>
@@ -189,22 +204,6 @@ export default function WardenDashboard() {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Weekly Overview */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Weekly Overview</h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {weeklyOverview.map((item, index) => (
-                <div key={index} className="text-center">
-                  <p className={`text-5xl font-bold mb-2 ${item.color}`}>
-                    {item.value}
-                  </p>
-                  <p className="text-gray-700 font-medium">{item.label}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>

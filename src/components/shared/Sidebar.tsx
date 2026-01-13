@@ -2,10 +2,11 @@
 
 "use client"
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, User, History, Clock, CheckCircle, Users, 
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  LayoutDashboard, User, History, Clock, CheckCircle, Users,
   FileText, Settings, Shield, ScrollText, Building2, UserCog,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, LogIn, LogOut
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -26,58 +27,74 @@ interface SubItem {
 interface SidebarProps {
   isOpen: boolean;
   userRole: 'student' | 'warden' | 'guard' | 'admin';
-  activeItem: string;
+  activeItem?: string;
   onItemClick: (label: string, href: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, activeItem, onItemClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const pathname = usePathname();
+  const router = useRouter();
 
   // Sidebar configurations for each role
   const sidebarConfig: Record<string, SidebarItem[]> = {
     student: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-      { 
-        id: 'profile', 
-        label: 'Profile', 
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/student/student_dashboard' },
+      {
+        id: 'profile',
+        label: 'Profile',
         icon: User,
-        href: '/profile',
-        collapsible: true,
-        subitems: [
-          { id: 'personal-info', label: 'Personal Information', href: '/profile/personal' },
-          { id: 'emergency-contacts', label: 'Emergency Contacts', href: '/profile/emergency' },
-          { id: 'settings', label: 'Settings', href: '/profile/settings' }
-        ]
+        href: '/student/student_profile',
       },
-      { id: 'visitor-history', label: 'Visitor History', icon: History, href: '/visitor-history' }
+      {
+        id: 'myrequest',
+        label: 'My Request',
+        icon: User,
+        href: '/student/myrequest',
+      },
+
+      { id: 'visitor-history', label: 'Visitor History', icon: History, href: '/student/visitor_history' }
     ],
     warden: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-      { id: 'pending-requests', label: 'Pending Requests', icon: Clock, href: '/pending-requests' },
-      { id: 'approved-visits', label: 'Approved Visits', icon: CheckCircle, href: '/approved-visits' },
-      { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/active-visitors' },
-      { id: 'reports', label: 'Reports', icon: FileText, href: '/reports' }
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Warden/WardenDashboard' },
+      { id: 'hostel-student', label: 'Hostel Student', icon: Users, href: '/Warden/Hostel_student' },
+      { id: 'pending-requests', label: 'Pending Requests', icon: Clock, href: '/Warden/Pending_Request' },
+      { id: 'approved-visits', label: 'Approved Visits', icon: CheckCircle, href: '/Warden/Approved_visit' },
+      { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Warden/Active_Visitors' }, // Mapping to dashboard as placeholder if no specific page found
+      { id: 'reports',label: 'Reports', icon: FileText,href: '/Warden/reports',
+      },
     ],
     guard: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-      { id: 'walkin-registration', label: 'Walk-in Registration', icon: UserCog, href: '/walkin-registration' }
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Guard/guard_dashboard' },
+      {
+        id: 'profile',
+        label: 'Profile',
+        icon: User,
+        href: '/Guard/guard_profile',
+      },
+      { id: 'scan-entry', label: 'Scan Entry', icon: LogIn, href: '/Guard/Scan-Entry' },
+      { id: 'scan-exit', label: 'Scan Exit', icon: LogOut, href: '/Guard/Scan-Exit' },
+      { id: 'walkin-registration', label: 'Walk-in Registration', icon: UserCog, href: '/Guard/WalkIn-Registration' },
+      { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Guard/Active_Visitors' },
+       { id: 'Emergency-visit', label: 'Emergency Visit', icon: Users, href: '/Guard/Emergency_visit' }
     ],
+
     admin: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-      { id: 'user-management', label: 'User Management', icon: Users, href: '/user-management' },
-      { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/hostel-management' },
-      { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/system-config' },
-      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/reports-analytics' },
-      { id: 'security-management', label: 'Security Management', icon: Shield, href: '/security-management' },
-      { id: 'audit-logs', label: 'Audit Logs', icon: ScrollText, href: '/audit-logs' }
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Admin/Admin_dashboard' },
+      { id: 'user-management', label: 'User Management', icon: Users, href: '/Admin/User_mgt' },
+      { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/Admin/Hostel_mgt' },
+      { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/Admin/system_config' },
+      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/admin_reports' },
+      { id: 'security-management', label: 'Security Management', icon: Shield, href: '/Admin/Security' },
+      { id: 'audit-logs', label: 'Audit Logs', icon: ScrollText, href: '/Admin/Audit_logs' }
     ]
   };
 
   const currentSidebar = sidebarConfig[userRole];
 
   const toggleExpanded = (itemId: string) => {
-    setExpandedItems(prev => 
-      prev.includes(itemId) 
+    setExpandedItems(prev =>
+      prev.includes(itemId)
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
     );
@@ -86,8 +103,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, activeItem, onItemC
   const handleItemClick = (item: SidebarItem) => {
     if (item.collapsible) {
       toggleExpanded(item.id);
+    } else {
+      router.push(item.href);
+      // We don't rely on activeItem prop anymore, so no change here for visual state
     }
-    onItemClick(item.label, item.href);
+    // onItemClick(item.label, item.href); // Optional if parent needs to know, but we rely on pathname now
+  };
+
+  const isActive = (href: string) => {
+    // Exact match or sub-path match can be implemented here
+    return pathname === href || pathname?.startsWith(href + '/');
   };
 
   return (
@@ -111,35 +136,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, activeItem, onItemC
           <div key={item.id}>
             <button
               onClick={() => handleItemClick(item)}
-              className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${
-                activeItem === item.label
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-800'
-              }`}
+              className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${isActive(item.href) && !item.collapsible
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:bg-gray-800'
+                }`}
             >
               <div className="flex items-center gap-3">
                 <item.icon className="w-5 h-5" />
                 <span className="text-sm font-medium">{item.label}</span>
               </div>
               {item.collapsible && (
-                expandedItems.includes(item.id) ? 
-                  <ChevronDown className="w-4 h-4" /> : 
+                expandedItems.includes(item.id) ?
+                  <ChevronDown className="w-4 h-4" /> :
                   <ChevronRight className="w-4 h-4" />
               )}
             </button>
-            
+
             {/* Collapsible Subitems */}
             {item.collapsible && expandedItems.includes(item.id) && item.subitems && (
               <div className="ml-4 mt-2 space-y-1">
                 {item.subitems.map((subitem) => (
                   <button
                     key={subitem.id}
-                    onClick={() => onItemClick(subitem.label, subitem.href)}
-                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${
-                      activeItem === subitem.label
-                        ? 'bg-gray-800 text-white'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                    }`}
+                    onClick={() => router.push(subitem.href)}
+                    className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${isActive(subitem.href)
+                      ? 'bg-gray-800 text-white'
+                      : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                      }`}
                   >
                     {subitem.label}
                   </button>

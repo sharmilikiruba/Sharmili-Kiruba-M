@@ -1,6 +1,7 @@
 // Layout.tsx
 "use client"
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
@@ -21,14 +22,13 @@ const DashboardLayout: React.FC<LayoutProps> = ({
   hostelInfo,
   roomInfo
 }) => {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeItem, setActiveItem] = useState('Dashboard');
 
   const handleItemClick = (label: string, href: string) => {
     setActiveItem(label);
-    // Add navigation logic here
-    // For example: navigate(href);
-    console.log('Navigating to:', href);
+    router.push(href);
   };
 
   return (

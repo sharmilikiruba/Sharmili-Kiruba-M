@@ -1,6 +1,7 @@
 // Header.tsx
 "use client"
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Menu, X, Bell, LogOut, User, Settings, Shield, FileText } from 'lucide-react';
 
 interface HeaderProps {
@@ -22,6 +23,7 @@ const Header: React.FC<HeaderProps> = ({
   hostelInfo,
   roomInfo
 }) => {
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -49,31 +51,40 @@ const Header: React.FC<HeaderProps> = ({
 
   // Role-based profile menu items
   const getProfileMenuItems = () => {
-    const commonItems = [
-      { icon: User, label: 'My Profile', href: '/profile' },
-      { icon: Settings, label: 'Settings', href: '/settings' }
-    ];
+  const roleSpecificItems = {
+    student: [
+      {
+        icon: User,
+        label: 'My Profile',
+        href: '/student/student_profile',
+      },
+    ],
+    warden: [
+      {
+        icon: User,
+        label: 'My Profile',
+        href: '/Warden/Warden_Profile',
+      },
+    ],
+    guard: [
+      {
+        icon: User,
+        label: 'My Profile',
+        href: '/Guard/guard_profile',
+      },
+    ],
+    admin: [
+      {
+        icon: User,
+        label: 'My Profile',
+        href: '/Admin/Admin_Profile',
+      },
+    ],
+  }
 
-    const roleSpecificItems = {
-      student: [
-        { icon: FileText, label: 'Visitor History', href: '/visitor-history' },
-        { icon: User, label: 'Emergency Contacts', href: '/emergency-contacts' }
-      ],
-      warden: [
-        { icon: FileText, label: 'Reports', href: '/reports' },
-        { icon: Shield, label: 'Security Dashboard', href: '/security' }
-      ],
-      guard: [
-        { icon: FileText, label: 'Shift Details', href: '/shift-details' }
-      ],
-      admin: [
-        { icon: Shield, label: 'System Admin', href: '/admin' },
-        { icon: FileText, label: 'Audit Logs', href: '/audit-logs' }
-      ]
-    };
+  return roleSpecificItems[userRole]
+}
 
-    return [...commonItems, ...roleSpecificItems[userRole]];
-  };
 
   const roleColors = {
     student: 'bg-blue-600',
@@ -169,8 +180,7 @@ const Header: React.FC<HeaderProps> = ({
                   <button
                     className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
                     onClick={() => {
-                      // Add logout logic here
-                      console.log('Logout clicked');
+                      router.push('/login/login_page');
                     }}
                   >
                     <LogOut className="w-4 h-4" />

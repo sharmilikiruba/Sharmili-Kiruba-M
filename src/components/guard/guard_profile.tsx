@@ -1,5 +1,6 @@
+"use client";
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { Camera, Lock, Edit, LogIn, LogOut, Clipboard, AlertTriangle, MapPin, Clock, Shield } from 'lucide-react';
 
 export default function GuardProfile() {
@@ -65,287 +66,190 @@ export default function GuardProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-xl">
-            H
+    <div className="p-8">
+      {/* Profile Header */}
+      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-t-xl px-8 py-12 relative">
+        <div className="flex items-end gap-6">
+          <div className="relative">
+            <div className="w-32 h-32 bg-white rounded-full overflow-hidden border-4 border-white shadow-lg">
+              <img src="/api/placeholder/128/128" alt="Profile" className="w-full h-full object-cover" />
+            </div>
+            <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
+              <Camera className="w-5 h-5 text-gray-700" />
+            </button>
+          </div>
+          <div className="flex-1 text-white pb-4">
+            <h1 className="text-3xl font-bold">{profileData.fullName}</h1>
+            <p className="text-green-100 text-lg mt-1">{profileData.designation}</p>
+            <p className="text-green-100 text-sm mt-2 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Last Login: 2024-01-15 06:15:00
+            </p>
+          </div>
+          <button 
+            onClick={() => setIsPasswordModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-colors mb-4"
+          >
+            <Lock className="w-5 h-5" />
+            Change Password
+          </button>
+        </div>
+      </div>
+
+      {/* Personal & Contact Information */}
+      <div className="bg-white rounded-b-xl shadow-sm border border-gray-200 border-t-0 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Personal & Contact Information
+          </h2>
+          <button 
+            onClick={() => setIsEditModalOpen(true)}
+            className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            Edit
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Full Name</p>
+            <p className="font-semibold text-gray-900">{profileData.fullName}</p>
           </div>
           <div>
-            <h1 className="font-semibold text-lg">HVMS</h1>
-            <p className="text-xs text-gray-400">Visitor Management</p>
+            <p className="text-sm text-gray-600 mb-1">Employee ID</p>
+            <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Gender</p>
+            <p className="font-semibold text-gray-900">{profileData.gender}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Date of Birth</p>
+            <p className="font-semibold text-gray-900">{profileData.dateOfBirth}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Mobile Number</p>
+            <p className="font-semibold text-gray-900">
+              {profileData.mobileNumber} 
+              <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">Verified</span>
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Alternate Mobile</p>
+            <p className="font-semibold text-gray-900">{profileData.alternateMobile}</p>
+          </div>
+          <div className="col-span-2">
+            <p className="text-sm text-gray-600 mb-1">Email Address</p>
+            <p className="font-semibold text-gray-900">{profileData.email}</p>
+          </div>
+          <div className="col-span-2">
+            <p className="text-sm text-gray-600 mb-1">Address</p>
+            <p className="font-semibold text-gray-900">{profileData.address}</p>
           </div>
         </div>
+      </div>
 
-        <nav className="flex-1 px-3 py-4">
-          <button 
-            onClick={() => router.push('/guard')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg mb-2 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect x="3" y="3" width="7" height="7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="14" y="3" width="7" height="7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="14" y="14" width="7" height="7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="3" y="14" width="7" height="7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="font-medium">Dashboard</span>
-          </button>
+      {/* Guard Assignment & Activity */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <Shield className="w-6 h-6 text-blue-600" />
+          Guard Assignment & Activity
+        </h2>
 
-          <button 
-            onClick={() => router.push('/scan-entry')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg mb-2 transition-colors"
-          >
-            <LogIn className="w-5 h-5" />
-            <span className="font-medium">Scan Entry</span>
-          </button>
-
-          <button 
-            onClick={() => router.push('/scan-exit')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg mb-2 transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Scan Exit</span>
-          </button>
-
-          <button 
-            onClick={() => router.push('/walk-in-registration')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg mb-2 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            <span className="font-medium">Walk-in Registration</span>
-          </button>
-
-          <button 
-            onClick={() => router.push('/active-visitors')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <span className="font-medium">Active Visitors</span>
-          </button>
-        </nav>
-
-        <div className="p-4 text-xs text-gray-500 border-t border-gray-800">
-          © 2026 University HVMS
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>/guard/profile</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gray-300 rounded-full overflow-hidden">
-                <img src="/api/placeholder/36/36" alt="Profile" className="w-full h-full object-cover" />
-              </div>
-              <div className="text-sm">
-                <div className="font-medium">{profileData.fullName}</div>
-                <div className="px-2 py-0.5 bg-green-500 text-white text-xs rounded-full inline-block">GUARD</div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Content */}
-        <div className="p-8">
-          {/* Profile Header */}
-          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-t-xl px-8 py-12 relative">
-            <div className="flex items-end gap-6">
-              <div className="relative">
-                <div className="w-32 h-32 bg-white rounded-full overflow-hidden border-4 border-white shadow-lg">
-                  <img src="/api/placeholder/128/128" alt="Profile" className="w-full h-full object-cover" />
-                </div>
-                <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
-                  <Camera className="w-5 h-5 text-gray-700" />
-                </button>
-              </div>
-              <div className="flex-1 text-white pb-4">
-                <h1 className="text-3xl font-bold">{profileData.fullName}</h1>
-                <p className="text-green-100 text-lg mt-1">{profileData.designation}</p>
-                <p className="text-green-100 text-sm mt-2 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Last Login: 2024-01-15 06:15:00
-                </p>
-              </div>
-              <button 
-                onClick={() => setIsPasswordModalOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-colors mb-4"
-              >
-                <Lock className="w-5 h-5" />
-                Change Password
-              </button>
-            </div>
-          </div>
-
-          {/* Personal & Contact Information */}
-          <div className="bg-white rounded-b-xl shadow-sm border border-gray-200 border-t-0 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Personal & Contact Information
-              </h2>
-              <button 
-                onClick={() => setIsEditModalOpen(true)}
-                className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Full Name</p>
-                <p className="font-semibold text-gray-900">{profileData.fullName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Employee ID</p>
-                <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Gender</p>
-                <p className="font-semibold text-gray-900">{profileData.gender}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Date of Birth</p>
-                <p className="font-semibold text-gray-900">{profileData.dateOfBirth}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Mobile Number</p>
-                <p className="font-semibold text-gray-900">
-                  {profileData.mobileNumber} 
-                  <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">Verified</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Alternate Mobile</p>
-                <p className="font-semibold text-gray-900">{profileData.alternateMobile}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm text-gray-600 mb-1">Email Address</p>
-                <p className="font-semibold text-gray-900">{profileData.email}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm text-gray-600 mb-1">Address</p>
-                <p className="font-semibold text-gray-900">{profileData.address}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Guard Assignment & Activity */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Shield className="w-6 h-6 text-blue-600" />
-              Guard Assignment & Activity
-            </h2>
-
-            {/* Employment Information */}
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Employment Information</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Employee ID</p>
-                  <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Designation</p>
-                  <p className="font-semibold text-gray-900">{profileData.designation}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Security Agency</p>
-                  <p className="font-semibold text-gray-900">{profileData.securityAgency}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Date of Joining</p>
-                  <p className="font-semibold text-gray-900">{profileData.dateOfJoining}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Gate & Shift Assignment */}
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Gate & Shift Assignment</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Assigned Hostel</p>
-                    <p className="font-semibold text-gray-900">{profileData.assignedHostel}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <MapPin className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Assigned Gate(s)</p>
-                    <p className="font-semibold text-gray-900">{profileData.assignedGate}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-6 mt-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Shift Type</p>
-                  <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
-                    {profileData.shiftType}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Shift Start Time</p>
-                    <p className="font-semibold text-gray-900">{profileData.shiftStart}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Shift End Time</p>
-                    <p className="font-semibold text-gray-900">{profileData.shiftEnd}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Activity Metrics */}
+        {/* Employment Information */}
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Employment Information</h3>
+          <div className="grid grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Activity Metrics (Today)</h3>
-              <div className="grid grid-cols-4 gap-4">
-                {activityMetrics.map((metric, index) => (
-                  <div key={index} className={`${metric.color} rounded-xl p-6`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-medium text-gray-700">{metric.label}</p>
-                      <div className={`p-2 ${metric.color} rounded-lg`}>
-                        <metric.icon className={`w-6 h-6 ${metric.iconColor}`} />
-                      </div>
-                    </div>
-                    <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
-                  </div>
-                ))}
+              <p className="text-sm text-gray-600 mb-1">Employee ID</p>
+              <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Designation</p>
+              <p className="font-semibold text-gray-900">{profileData.designation}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Security Agency</p>
+              <p className="font-semibold text-gray-900">{profileData.securityAgency}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Date of Joining</p>
+              <p className="font-semibold text-gray-900">{profileData.dateOfJoining}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Gate & Shift Assignment */}
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Gate & Shift Assignment</h3>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Assigned Hostel</p>
+                <p className="font-semibold text-gray-900">{profileData.assignedHostel}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <MapPin className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Assigned Gate(s)</p>
+                <p className="font-semibold text-gray-900">{profileData.assignedGate}</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-6 mt-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Shift Type</p>
+              <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+                {profileData.shiftType}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-gray-500" />
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Shift Start Time</p>
+                <p className="font-semibold text-gray-900">{profileData.shiftStart}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-gray-500" />
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Shift End Time</p>
+                <p className="font-semibold text-gray-900">{profileData.shiftEnd}</p>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        {/* Activity Metrics */}
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-4">Activity Metrics (Today)</h3>
+          <div className="grid grid-cols-4 gap-4">
+            {activityMetrics.map((metric, index) => (
+              <div key={index} className={`${metric.color} rounded-xl p-6`}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-gray-700">{metric.label}</p>
+                  <div className={`p-2 ${metric.color} rounded-lg`}>
+                    <metric.icon className={`w-6 h-6 ${metric.iconColor}`} />
+                  </div>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Edit Profile Modal */}
       {isEditModalOpen && (

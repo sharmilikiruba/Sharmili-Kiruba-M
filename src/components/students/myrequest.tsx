@@ -1,151 +1,268 @@
-'use client'
+'use client';
 
-import { Search, Filter, Eye, LayoutDashboard, User, FileText, Clock, Bell } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-// Sample data
-const requests = [
+import { useState } from 'react';
+import {
+  Search,
+  Eye,
+  X,
+  Calendar,
+  Clock,
+  User,
+  Home,
+  Tag,
+  Phone,
+  Mail,
+  MapPin,
+  ChevronDown,
+  Plus,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+/* ---------------- TYPES ---------------- */
+
+interface Request {
+  id: string;
+  requestId: string;
+  visitorName: string;
+  relation: string;
+  visitDate: string;
+  purpose: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  visitorDetails: {
+    phone: string;
+    email: string;
+    address: string;
+    idProof: string;
+  };
+  visitDetails: {
+    entryTime: string;
+    exitTime: string;
+    reason?: string;
+  };
+  qrCode?: string;
+}
+
+/* ---------------- SAMPLE DATA ---------------- */
+
+const sampleRequests: Request[] = [
   {
-    id: 'VR001',
+    id: '1',
+    requestId: 'VR001',
     visitorName: 'Suresh Sharma',
     relation: 'Father',
     visitDate: 'Jan 06, 2026',
     purpose: 'Family Visit',
     status: 'Pending',
+    visitorDetails: {
+      phone: '+91 98765 43210',
+      email: 'suresh.sharma@email.com',
+      address: '123 Main Street, Mumbai',
+      idProof: 'Aadhar - XXXX 1234',
+    },
+    visitDetails: {
+      entryTime: '02:00 PM',
+      exitTime: '06:00 PM',
+    },
   },
   {
-    id: 'VR002',
+    id: '2',
+    requestId: 'VR002',
     visitorName: 'Kiran Sharma',
     relation: 'Mother',
     visitDate: 'Jan 04, 2026',
     purpose: 'Family Visit',
     status: 'Approved',
+    visitorDetails: {
+      phone: '+91 98765 43211',
+      email: 'kiran.sharma@email.com',
+      address: 'Mumbai',
+      idProof: 'Aadhar - XXXX 5678',
+    },
+    visitDetails: {
+      entryTime: '07:45 PM',
+      exitTime: '10:00 PM',
+    },
+    qrCode: 'QR_VR002_APPROVED',
   },
-  {
-    id: 'VR005',
-    visitorName: 'Unknown Person',
-    relation: 'Friend',
-    visitDate: 'Jan 02, 2026',
-    purpose: 'Other',
-    status: 'Rejected',
-  },
-]
+];
+
+const allStatuses = ['All Status', 'Pending', 'Approved', 'Rejected'];
+
+/* ---------------- PAGE ---------------- */
 
 export default function MyRequestsPage() {
-  const router = useRouter()
+  const router = useRouter();
+
+  const [requests] = useState<Request[]>(sampleRequests);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+
+  const filteredRequests = requests.filter((r) => {
+    const matchName = r.visitorName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchStatus =
+      selectedStatus === 'All Status' || r.status === selectedStatus;
+    return matchName && matchStatus;
+  });
+
   return (
-    <div className="flex h-screen bg-gray-50">
-    
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-[1400px] mx-auto space-y-6">
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white p-6 rounded-lg border flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Welcome, Rahul Sharma</h1>
+            <p className="text-gray-600">Krishna Hostel • Room A-204</p>
+          </div>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-auto p-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">My Requests</h1>
-              <p className="text-gray-600">View all your visitor requests</p>
-            </div>
+          <button
+            onClick={() => router.push('/student/studReq')}
+            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
+          >
+            <Plus size={18} />
+            New Request
+          </button>
+        </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              {/* Table Header */}
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">Request History</h2>
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search requests..."
-                        className="pl-10 w-64 h-10 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
-                      <Filter className="w-4 h-4" />
-                      All Status
-                    </button>
-                  </div>
-                </div>
-              </div>
+        {/* Filters */}
+        <div className="bg-white p-4 rounded-lg border flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by visitor name"
+              className="w-full pl-10 pr-4 py-2 border rounded-lg"
+            />
+          </div>
 
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Request ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Visitor Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Relation
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Visit Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Purpose
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {requests.map((request) => (
-                      <tr key={request.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {request.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {request.visitorName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {request.relation}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {request.visitDate}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {request.purpose}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              request.status === 'Pending'
-                                ? 'bg-yellow-500 text-white'
-                                : request.status === 'Approved'
-                                ? 'bg-green-500 text-white'
-                                : 'bg-red-500 text-white'
-                            }`}
-                          >
-                            {request.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <button 
-                            onClick={() => router.push('/requestdetail')}
-                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-                          >
-                            <Eye className="w-4 h-4" />
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          <div className="relative">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="pl-4 pr-10 py-2 border rounded-lg"
+            >
+              {allStatuses.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
         </div>
-      </main>
+
+        {/* Table */}
+        <div className="bg-white border rounded-lg overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                {[
+                  'Request ID',
+                  'Visitor',
+                  'Relation',
+                  'Date',
+                  'Purpose',
+                  'Status',
+                  'Action',
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-6 py-3 text-xs text-gray-600 uppercase"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRequests.map((r) => (
+                <tr key={r.id} className="border-b hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium">{r.requestId}</td>
+                  <td className="px-6 py-4">{r.visitorName}</td>
+                  <td className="px-6 py-4">{r.relation}</td>
+                  <td className="px-6 py-4">{r.visitDate}</td>
+                  <td className="px-6 py-4">{r.purpose}</td>
+                  <td className="px-6 py-4">
+                    <StatusBadge status={r.status} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => setSelectedRequest(r)}
+                      className="flex items-center gap-2 text-blue-600"
+                    >
+                      <Eye size={16} /> View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {selectedRequest && (
+        <RequestDetailModal
+          request={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+        />
+      )}
     </div>
-  )
+  );
+}
+
+/* ---------------- COMPONENTS ---------------- */
+
+function StatusBadge({ status }: { status: Request['status'] }) {
+  const colors = {
+    Pending: 'bg-yellow-500',
+    Approved: 'bg-green-600',
+    Rejected: 'bg-red-600',
+  };
+
+  return (
+    <span className={`${colors[status]} text-white px-3 py-1 rounded-full text-xs`}>
+      {status}
+    </span>
+  );
+}
+
+function RequestDetailModal({
+  request,
+  onClose,
+}: {
+  request: Request;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg max-w-2xl w-full p-6 space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">
+            Request {request.requestId}
+          </h2>
+          <button onClick={onClose}>
+            <X />
+          </button>
+        </div>
+
+        <p><strong>Visitor:</strong> {request.visitorName}</p>
+        <p><strong>Purpose:</strong> {request.purpose}</p>
+
+        {request.status === 'Approved' && request.qrCode && (
+          <div className="bg-blue-50 p-4 rounded text-center">
+            <p className="font-mono">{request.qrCode}</p>
+          </div>
+        )}
+
+        <button
+          onClick={onClose}
+          className="w-full bg-gray-900 text-white py-2 rounded"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
 }

@@ -68,7 +68,7 @@ export default function StudentDashboardPage() {
   ]
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-50">
       {/* Top Section */}
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -79,7 +79,7 @@ export default function StudentDashboardPage() {
         </div>
 
         <button
-          onClick={() => router.push('/students/Newrequest')}
+          onClick={() => router.push('/student/studReq')}
           className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
         >
           <Plus size={18} />
@@ -111,7 +111,10 @@ export default function StudentDashboardPage() {
       <div className="bg-white border rounded-xl">
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="font-bold text-lg">Recent Requests</h2>
-          <button className="text-sm text-blue-600 hover:underline">
+          <button
+            onClick={() => router.push('/student/myrequest')}
+            className="text-sm text-blue-600 hover:underline"
+          >
             View All
           </button>
         </div>
