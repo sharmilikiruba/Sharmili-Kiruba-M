@@ -102,10 +102,7 @@ export default function ActiveVisitorsPage() {
                 </div>
 
                 {/* Action Button */}
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                  <Phone className="w-4 h-4" />
-                  Call Student
-                </button>
+  
               </div>
             ))
           ) : (

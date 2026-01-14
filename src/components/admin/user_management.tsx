@@ -1,7 +1,9 @@
 "use client"
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Search, Plus, Upload, Edit, ExternalLink } from 'lucide-react';
+import { Users, Search, Plus, FileText, Edit, Eye, Trash2, CheckCircle, XCircle,UploadCloud } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 type UserType = 'Student' | 'Warden' | 'Guard';
 type TabType = 'Students' | 'Wardens' | 'Guards';
@@ -11,6 +13,7 @@ interface BaseUser {
     name: string;
     email: string;
     contact?: string; // Unified contact field
+    status: 'Active' | 'Inactive';
 }
 
 interface Student extends BaseUser {
@@ -22,7 +25,7 @@ interface Student extends BaseUser {
 
 interface Warden extends BaseUser {
     hostel: string;
-    assignedSince: string;
+
 }
 
 interface Guard extends BaseUser {
@@ -38,24 +41,26 @@ export default function UserManagement() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>('Students');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
     // Sample data
     const [students, setStudents] = useState<Student[]>([
-        { id: '1', name: 'Rahul Sharma', email: 'rahul.sharma@university.edu', contact: '+91 98765 00000', rollNo: '21CS101', department: 'Computer Science', hostel: 'Krishna Hostel', room: 'A-204' },
-        { id: '2', name: 'Priya Patel', email: 'priya.patel@university.edu', contact: '+91 98765 00001', rollNo: '21EC102', department: 'Electronics', hostel: 'Saraswati Hostel', room: 'B-105' },
-        { id: '3', name: 'Amit Kumar', email: 'amit.kumar@university.edu', contact: '+91 98765 00002', rollNo: '22ME103', department: 'Mechanical', hostel: 'Krishna Hostel', room: 'C-310' },
+        { id: '1', name: 'Rahul Sharma', email: 'rahul.sharma@university.edu', contact: '+91 98765 00000', rollNo: '21CS101', department: 'Computer Science', hostel: 'Krishna Hostel', room: 'A-204', status: 'Active' },
+        { id: '2', name: 'Priya Patel', email: 'priya.patel@university.edu', contact: '+91 98765 00001', rollNo: '21EC102', department: 'Electronics', hostel: 'Saraswati Hostel', room: 'B-105', status: 'Active' },
+        { id: '3', name: 'Amit Kumar', email: 'amit.kumar@university.edu', contact: '+91 98765 00002', rollNo: '22ME103', department: 'Mechanical', hostel: 'Krishna Hostel', room: 'C-310', status: 'Inactive' },
     ]);
 
     const [wardens, setWardens] = useState<Warden[]>([
-        { id: '1', name: 'Dr. Suresh Kumar', email: 'suresh.kumar@university.edu', contact: '+91 98765 11111', hostel: 'Krishna Hostel', assignedSince: '01/08/2022' },
-        { id: '2', name: 'Dr. Meera Singh', email: 'meera.singh@university.edu', contact: '+91 98765 22222', hostel: 'Saraswati Hostel', assignedSince: '15/07/2021' },
+        { id: '1', name: 'Dr. Suresh Kumar', email: 'suresh.kumar@university.edu', contact: '+91 98765 11111', hostel: 'Krishna Hostel', status: 'Active' },
+        { id: '2', name: 'Dr. Meera Singh', email: 'meera.singh@university.edu', contact: '+91 98765 22222', hostel: 'Saraswati Hostel', status: 'Active' },
     ]);
 
     const [guards, setGuards] = useState<Guard[]>([
-        { id: '1', name: 'Ramesh Yadav', email: 'ramesh.guard@university.edu', contact: '+91 98765 33333', gate: 'Main Gate', shift: 'Morning' },
-        { id: '2', name: 'Sunil Verma', email: 'sunil.guard@university.edu', contact: '+91 98765 44444', gate: 'East Gate', shift: 'Evening' },
+        { id: '1', name: 'Ramesh Yadav', email: 'ramesh.guard@university.edu', contact: '+91 98765 33333', gate: 'Main Gate', shift: 'Morning', status: 'Active' },
+        { id: '2', name: 'Sunil Verma', email: 'sunil.guard@university.edu', contact: '+91 98765 44444', gate: 'East Gate', shift: 'Evening', status: 'Active' },
     ]);
 
     // Form states
@@ -63,19 +68,26 @@ export default function UserManagement() {
     const [wardenForm, setWardenForm] = useState(initialWardenForm);
     const [guardForm, setGuardForm] = useState(initialGuardForm);
 
+    const handleViewStudent = (student: Student) => {
+        setViewingStudent(student);
+        setIsViewModalOpen(true);
+    };
+
     const handleOpenModal = (user?: any, type?: TabType) => {
+        const targetType = type || activeTab;
+
+        // Prevent adding/editing students (admin can only view)
+        if (targetType === 'Students') {
+            alert('Students can only be viewed. Contact the respective warden to manage student records.');
+            return;
+        }
+
         setEditingId(user?.id || null);
         setIsModalOpen(true);
-        const targetType = type || activeTab;
 
         if (user) {
             // Populate form for editing
-            if (targetType === 'Students') {
-                setStudentForm({
-                    fullName: user.name, email: user.email, mobile: user.contact || '',
-                    rollNumber: user.rollNo, department: user.department, hostel: user.hostel, room: user.room
-                });
-            } else if (targetType === 'Wardens') {
+            if (targetType === 'Wardens') {
                 setWardenForm({
                     fullName: user.name, email: user.email, mobile: user.contact || '', hostel: user.hostel
                 });
@@ -86,7 +98,6 @@ export default function UserManagement() {
             }
         } else {
             // Reset forms for new entry
-            setStudentForm(initialStudentForm);
             setWardenForm(initialWardenForm);
             setGuardForm(initialGuardForm);
         }
@@ -95,26 +106,14 @@ export default function UserManagement() {
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (activeTab === 'Students') {
-            const data: Student = {
-                id: editingId || Date.now().toString(),
-                name: studentForm.fullName,
-                email: studentForm.email,
-                contact: studentForm.mobile,
-                rollNo: studentForm.rollNumber,
-                department: studentForm.department,
-                hostel: studentForm.hostel,
-                room: studentForm.room,
-            };
-            setStudents(prev => editingId ? prev.map(u => u.id === editingId ? data : u) : [...prev, data]);
-        } else if (activeTab === 'Wardens') {
+        if (activeTab === 'Wardens') {
             const data: Warden = {
                 id: editingId || Date.now().toString(),
                 name: wardenForm.fullName,
                 email: wardenForm.email,
                 contact: wardenForm.mobile,
                 hostel: wardenForm.hostel,
-                assignedSince: editingId ? (wardens.find(w => w.id === editingId)?.assignedSince || new Date().toLocaleDateString('en-GB')) : new Date().toLocaleDateString('en-GB'),
+                status: 'Active',
             };
             setWardens(prev => editingId ? prev.map(u => u.id === editingId ? data : u) : [...prev, data]);
         } else if (activeTab === 'Guards') {
@@ -125,6 +124,7 @@ export default function UserManagement() {
                 contact: guardForm.mobile,
                 gate: guardForm.gate,
                 shift: guardForm.shift,
+                status: 'Active',
             };
             setGuards(prev => editingId ? prev.map(u => u.id === editingId ? data : u) : [...prev, data]);
         }
@@ -137,7 +137,49 @@ export default function UserManagement() {
         return data.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
     };
 
-    const renderTable = (columns: { header: string, accessor: (item: any) => React.ReactNode }[], data: any[]) => (
+    const handleExportPDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.text(`${activeTab} Report`, 14, 20);
+
+        doc.setFontSize(10);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
+
+        let headers: string[] = [];
+        let data: string[][] = [];
+
+        if (activeTab === 'Students') {
+            headers = ['Name', 'Roll No', 'Department', 'Hostel', 'Room', 'Status'];
+            data = students.map(s => [s.name, s.rollNo, s.department, s.hostel, s.room, s.status]);
+        } else if (activeTab === 'Wardens') {
+            headers = ['Name', 'Hostel', 'Email', 'Contact', 'Status'];
+            data = wardens.map(w => [w.name, w.hostel, w.email, w.contact || '-', w.status]);
+        } else if (activeTab === 'Guards') {
+            headers = ['Name', 'Gate', 'Shift', 'Email', 'Contact', 'Status'];
+            data = guards.map(g => [g.name, g.gate, g.shift, g.email, g.contact || '-', g.status]);
+        }
+
+        autoTable(doc, {
+            head: [headers],
+            body: data,
+            startY: 35,
+        });
+
+        doc.save(`${activeTab.toLowerCase()}_report.pdf`);
+    };
+
+    const toggleStatus = (id: string, type: TabType) => {
+        if (type === 'Students') {
+            setStudents(prev => prev.map(user => user.id === id ? { ...user, status: user.status === 'Active' ? 'Inactive' : 'Active' } : user));
+        } else if (type === 'Wardens') {
+            setWardens(prev => prev.map(user => user.id === id ? { ...user, status: user.status === 'Active' ? 'Inactive' : 'Active' } : user));
+        } else if (type === 'Guards') {
+            setGuards(prev => prev.map(user => user.id === id ? { ...user, status: user.status === 'Active' ? 'Inactive' : 'Active' } : user));
+        }
+    };
+
+    const renderTable = (columns: { header: string, accessor: (item: any) => React.ReactNode }[], data: any[], isStudentTab: boolean = false) => (
         <div className="overflow-x-auto">
             <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -145,6 +187,7 @@ export default function UserManagement() {
                         {columns.map((col, idx) => (
                             <th key={idx} className="px-6 py-4 text-left text-sm font-semibold text-gray-700">{col.header}</th>
                         ))}
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                 </thead>
@@ -155,12 +198,44 @@ export default function UserManagement() {
                                 <td key={idx} className="px-6 py-4 text-sm text-gray-900">{col.accessor(item)}</td>
                             ))}
                             <td className="px-6 py-4">
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${item.status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                    {item.status === 'Active' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                    {item.status}
+                                </span>
+                            </td>
+                            <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
-                                    <button onClick={() => handleOpenModal(item)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Edit">
-                                        <Edit className="w-4 h-4 text-gray-600" />
+                                    <button
+                                        onClick={() => activeTab === 'Students' ? handleViewStudent(item) : handleOpenModal(item)}
+                                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-600"
+                                        title="View/Edit Details"
+                                    >
+                                        {/* Unified View/Edit logic - for simplicity, Wardens/Guards open Edit modal which has view + edit, Students open View modal */}
+                                        {activeTab === 'Students' ? <Eye className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
                                     </button>
-                                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="View Details">
-                                        <ExternalLink className="w-4 h-4 text-gray-600" />
+
+                                    {/* Additional View Detail Button for Wardens/Guards to consistent with request 'add view symbol' */}
+                                    {activeTab !== 'Students' && (
+                                        <button
+                                            onClick={() => {
+                                                // Reuse view modal logic if needed, or just show alert for now as "View Details"
+                                                // For a cleaner approach, let's reuse handleViewStudent logic but adapting it for generic users if we had a generic view modal.
+                                                // Since handleViewStudent is typed for Student, we'll just open the Edit modal which serves as detail view for admins.
+                                                handleOpenModal(item);
+                                            }}
+                                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                            title="View Details"
+                                        >
+                                            <Eye className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => toggleStatus(item.id, activeTab)}
+                                        className={`p-2 rounded-lg transition-colors ${item.status === 'Active' ? 'hover:bg-red-50 text-red-600' : 'hover:bg-green-50 text-green-600'}`}
+                                        title={item.status === 'Active' ? 'Deactivate' : 'Activate'}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
                             </td>
@@ -205,20 +280,40 @@ export default function UserManagement() {
                                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-80"
                                 />
                             </div>
-                            <button
-                                onClick={() => handleOpenModal()}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                            >
-                                <Plus className="w-5 h-5" />
-                                Add User
-                            </button>
-                            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                                <Upload className="w-5 h-5" />
-                                Bulk Import
-                            </button>
+                            {/* Only show Add User button for Wardens and Guards */}
+                            {activeTab !== 'Students' && (
+                                <button
+                                    onClick={() => handleOpenModal()}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    Add {activeTab === 'Wardens' ? 'Warden' : 'Guard'}
+                                </button>
+                            )}
+                            {activeTab !== 'Students' && (
+                                <button
+                                    onClick={handleExportPDF}
+                                    className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                                >
+                                    <FileText className="w-5 h-5" />
+                                    Export PDF
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
+
+                {/* Info banner for Students tab */}
+                {activeTab === 'Students' && (
+                    <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
+                        <div className="flex items-center gap-2 text-sm text-blue-800">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                            <span><strong>Read-Only Access:</strong> Students are managed by their respective wardens. You can only view student records.</span>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex border-b border-gray-200 px-6">
                     {(['Students', 'Wardens', 'Guards'] as TabType[]).map((tab) => (
@@ -238,12 +333,11 @@ export default function UserManagement() {
                     { header: 'Department', accessor: (s) => s.department },
                     { header: 'Hostel', accessor: (s) => s.hostel },
                     { header: 'Room', accessor: (s) => <span className="font-medium">{s.room}</span> },
-                ], filterData(students))}
+                ], filterData(students), true)}
 
                 {activeTab === 'Wardens' && renderTable([
                     { header: 'Warden', accessor: userColumn },
                     { header: 'Hostel', accessor: (w) => w.hostel },
-                    { header: 'Assigned Since', accessor: (w) => w.assignedSince },
                     { header: 'Contact', accessor: (w) => w.contact },
                 ], filterData(wardens))}
 
@@ -255,6 +349,51 @@ export default function UserManagement() {
                 ], filterData(guards))}
             </div>
 
+            {/* View Student Modal (Read-Only) */}
+            {isViewModalOpen && viewingStudent && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+                            <h2 className="text-xl font-bold text-gray-900">Student Details</h2>
+                            <button onClick={() => setIsViewModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                <div className="flex items-center gap-2 text-sm text-blue-800">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>This is a read-only view. Contact the warden of <strong>{viewingStudent.hostel}</strong> to make changes.</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <ViewField label="Full Name" value={viewingStudent.name} />
+                                <ViewField label="Roll Number" value={viewingStudent.rollNo} />
+                                <ViewField label="Email" value={viewingStudent.email} />
+                                <ViewField label="Contact" value={viewingStudent.contact || 'N/A'} />
+                                <ViewField label="Department" value={viewingStudent.department} />
+                                <ViewField label="Hostel" value={viewingStudent.hostel} />
+                                <ViewField label="Room" value={viewingStudent.room} />
+                            </div>
+                        </div>
+
+                        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl">
+                            <button
+                                onClick={() => setIsViewModalOpen(false)}
+                                className="w-full bg-gray-600 text-white py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add/Edit Modal (Only for Wardens and Guards) */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -274,18 +413,6 @@ export default function UserManagement() {
                             </div>
 
                             {/* Dynamic Form Fields based on Active Tab */}
-                            {activeTab === 'Students' && (
-                                <>
-                                    <InputField label="Full Name" value={studentForm.fullName} onChange={(v) => setStudentForm({ ...studentForm, fullName: v })} />
-                                    <InputField label="Email" type="email" value={studentForm.email} onChange={(v) => setStudentForm({ ...studentForm, email: v })} />
-                                    <InputField label="Mobile" value={studentForm.mobile} onChange={(v) => setStudentForm({ ...studentForm, mobile: v })} />
-                                    <InputField label="Roll Number" value={studentForm.rollNumber} onChange={(v) => setStudentForm({ ...studentForm, rollNumber: v })} />
-                                    <InputField label="Department" value={studentForm.department} onChange={(v) => setStudentForm({ ...studentForm, department: v })} />
-                                    <SelectField label="Hostel" value={studentForm.hostel} onChange={(v) => setStudentForm({ ...studentForm, hostel: v })} options={["Krishna Hostel", "Saraswati Hostel", "Ganga Hostel"]} />
-                                    <InputField label="Room" value={studentForm.room} onChange={(v) => setStudentForm({ ...studentForm, room: v })} />
-                                </>
-                            )}
-
                             {activeTab === 'Wardens' && (
                                 <>
                                     <InputField label="Full Name" value={wardenForm.fullName} onChange={(v) => setWardenForm({ ...wardenForm, fullName: v })} />
@@ -343,5 +470,14 @@ const SelectField = ({ label, value, onChange, options }: { label: string, value
             <option value="">Select {label.toLowerCase()}</option>
             {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
         </select>
+    </div>
+);
+
+const ViewField = ({ label, value }: { label: string, value: string }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
+        <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+            {value}
+        </div>
     </div>
 );

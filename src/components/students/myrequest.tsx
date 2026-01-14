@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Eye,
@@ -30,13 +30,13 @@ interface Request {
   status: 'Pending' | 'Approved' | 'Rejected';
   visitorDetails: {
     phone: string;
-    email: string;
-    address: string;
+    email?: string;
+    address?: string;
     idProof: string;
   };
   visitDetails: {
-    entryTime: string;
-    exitTime: string;
+    entryTime?: string;
+    exitTime?: string;
     reason?: string;
   };
   qrCode?: string;
@@ -93,10 +93,27 @@ const allStatuses = ['All Status', 'Pending', 'Approved', 'Rejected'];
 export default function MyRequestsPage() {
   const router = useRouter();
 
-  const [requests] = useState<Request[]>(sampleRequests);
+  const [requests, setRequests] = useState<Request[]>(sampleRequests);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+
+  useEffect(() => {
+    // Load requests from window object (temporary storage)
+    if (typeof window !== 'undefined' && (window as any).visitorRequests) {
+      const storedRequests = (window as any).visitorRequests as Request[];
+      // Filter out requests that are already in sampleRequests (by ID or some other check if needed)
+      // For now, simpler to just prepend new ones, assuming IDs won't collide with sample data easily
+      // or we can just replace/merge. Let's merge unique ones.
+
+      const combinedRequests = [...storedRequests, ...sampleRequests];
+
+      // simplistic deduplication by ID if sample IDs conflict with timestamp IDs (unlikely)
+      const uniqueRequests = Array.from(new Map(combinedRequests.map(item => [item.id, item])).values());
+
+      setRequests(uniqueRequests);
+    }
+  }, []);
 
   const filteredRequests = requests.filter((r) => {
     const matchName = r.visitorName
@@ -108,7 +125,7 @@ export default function MyRequestsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="p-8">
       <div className="max-w-[1400px] mx-auto space-y-6">
 
         {/* Header */}

@@ -41,26 +41,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
     student: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/student/student_dashboard' },
       {
-        id: 'profile',
-        label: 'Profile',
-        icon: User,
-        href: '/student/student_profile',
-      },
-      {
         id: 'myrequest',
         label: 'My Request',
         icon: User,
         href: '/student/myrequest',
       },
 
-      { id: 'visitor-history', label: 'Visitor History', icon: History, href: '/student/visitor_history' }
+      { id: 'visitor-history', label: 'Visitor History', icon: History, href: '/student/visitor_history' } ,
+      {
+        id: 'profile',
+        label: 'Profile',
+        icon: User,
+        href: '/student/student_profile',
+      }
     ],
     warden: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Warden/WardenDashboard' },
       { id: 'hostel-student', label: 'Hostel Student', icon: Users, href: '/Warden/Hostel_student' },
       { id: 'pending-requests', label: 'Pending Requests', icon: Clock, href: '/Warden/Pending_Request' },
       { id: 'approved-visits', label: 'Approved Visits', icon: CheckCircle, href: '/Warden/Approved_visit' },
-      { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Warden/Active_Visitors' }, // Mapping to dashboard as placeholder if no specific page found
+      { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Warden/Active_Visitors' },
+      { id: 'blacklist', label: 'Blacklist', icon: CheckCircle, href: '/Warden/Blacklist' }, // Mapping to dashboard as placeholder if no specific page found
       { id: 'reports',label: 'Reports', icon: FileText,href: '/Warden/reports',
       },
     ],
@@ -81,10 +82,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
 
     admin: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Admin/Admin_dashboard' },
+       { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
       { id: 'user-management', label: 'User Management', icon: Users, href: '/Admin/User_mgt' },
       { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/Admin/Hostel_mgt' },
       { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/Admin/system_config' },
-      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/admin_reports' },
       { id: 'security-management', label: 'Security Management', icon: Shield, href: '/Admin/Security' },
       { id: 'audit-logs', label: 'Audit Logs', icon: ScrollText, href: '/Admin/Audit_logs' }
     ]

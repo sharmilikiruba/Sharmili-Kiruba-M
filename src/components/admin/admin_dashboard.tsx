@@ -7,8 +7,7 @@ export default function AdminDashboard() {
 
   const stats = [
     { label: 'Total Users', value: '7', icon: Users },
-    { label: 'Active Visitors', value: '1', icon: UserCheck },
-    { label: "Today's Requests", value: '3', icon: FileText },
+    
   ];
 
   const userStatistics = [

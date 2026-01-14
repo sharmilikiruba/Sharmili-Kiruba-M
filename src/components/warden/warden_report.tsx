@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { 
+import {
   Calendar,
   TrendingUp,
   BarChart3,
@@ -16,8 +16,11 @@ import {
   CheckCircle,
   User
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
-type ReportType = 
+type ReportType =
   | 'daily-visitor'
   | 'weekly-summary'
   | 'monthly-statistics'
@@ -35,6 +38,39 @@ interface FilterState {
 
 const students = ['All Students', 'Rahul Sharma', 'Priya Patel', 'Amit Kumar', 'Sneha Singh'];
 const purposes = ['All Purposes', 'Family Visit', 'Birthday Celebration', 'Medical Emergency', 'Other'];
+
+// --- Centralized MOCK DATA ---
+const MOCK_DATA = {
+  'daily-visitor': [
+    { visitorName: 'Suresh Sharma', student: 'Rahul Sharma', purpose: 'Family Visit', time: '10:00', duration: '2 hours', status: 'Pending', date: '2026-01-06' },
+    { visitorName: 'Rekha Patel', student: 'Priya Patel', purpose: 'Birthday Celebration', time: '16:00', duration: '4 hours', status: 'Pending', date: '2026-01-06' },
+    { visitorName: 'Mohan Lal', student: 'Amit Kumar', purpose: 'Medical Emergency', time: '11:00', duration: '1 hour', status: 'Approved', date: '2026-01-06' }
+  ],
+  'weekly-summary': [
+    { day: 'Monday', total: 8, approved: 7, rejected: 0, pending: 0, date: '2026-01-05' },
+    { day: 'Tuesday', total: 7, approved: 6, rejected: 1, pending: 1, date: '2026-01-06' },
+    { day: 'Wednesday', total: 6, approved: 5, rejected: 0, pending: 2, date: '2026-01-07' },
+    { day: 'Thursday', total: 5, approved: 4, rejected: 1, pending: 0, date: '2026-01-08' },
+    { day: 'Friday', total: 9, approved: 8, rejected: 1, pending: 0, date: '2026-01-09' },
+    { day: 'Saturday', total: 12, approved: 10, rejected: 1, pending: 1, date: '2026-01-10' },
+    { day: 'Sunday', total: 14, approved: 12, rejected: 2, pending: 0, date: '2026-01-11' }
+  ],
+  'monthly-statistics': [
+    { week: 'Week 1 (1-7)', total: 45, approved: 40, rejected: 3, emergency: 2, month: '2026-01' },
+    { week: 'Week 2 (8-14)', total: 50, approved: 44, rejected: 4, emergency: 3, month: '2026-01' }
+  ],
+  'student-wise': [
+    { studentName: 'Rahul Sharma', total: 12, unique: 4, frequency: '3/month', lastVisit: '2026-01-04' },
+    { studentName: 'Priya Patel', total: 8, unique: 3, frequency: '2/month', lastVisit: '2026-01-03' }
+  ],
+  'emergency-visit': [
+    { date: '2026-01-05', visitor: 'Dr. Mohan Kumar', student: 'Amit Kumar', purpose: 'Medical Emergency', responseTime: '15 min', status: 'Approved' }
+  ],
+  'rejected-requests': [
+    { date: '2026-01-02', student: 'Rahul Sharma', visitor: 'Unknown Person', purpose: 'Other', reason: 'Request denied. Late hours and too many visitors.', status: 'Rejected' },
+    { date: '2026-01-06', student: 'Sneha Singh', visitor: 'Salesperson', purpose: 'Other', reason: 'Not allowed.', status: 'Rejected' }
+  ]
+};
 
 export default function WardenReports() {
   const [selectedReport, setSelectedReport] = useState<ReportType>('daily-visitor');
@@ -60,6 +96,31 @@ export default function WardenReports() {
     });
   };
 
+  const getFilteredData = (reportType: ReportType) => {
+    const data = MOCK_DATA[reportType];
+
+    // For simplicity, typed as any[] to handle versatile structures
+    // In a real app, define proper union types or generic interfaces
+    return (data as any[]).filter(item => {
+      // Date Filter
+      const itemDate = item.date || item.lastVisit; // Fallback for student-wise
+      if (itemDate) {
+        if (itemDate < filters.startDate || itemDate > filters.endDate) return false;
+      }
+
+      // Student Filter
+      const itemStudent = item.student || item.studentName;
+      if (filters.student !== 'All Students' && itemStudent && itemStudent !== filters.student) return false;
+
+      // Purpose Filter
+      if (filters.purpose !== 'All Purposes' && item.purpose && item.purpose !== filters.purpose) return false;
+
+      return true;
+    });
+  };
+
+  const currentData = getFilteredData(selectedReport);
+
   const handleExport = () => {
     // Get report type name
     const reportNames = {
@@ -72,110 +133,62 @@ export default function WardenReports() {
     };
 
     const reportName = reportNames[selectedReport];
-    
-    // Create export data object
-    const exportData = {
-      reportType: reportName,
-      filters: {
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        student: filters.student,
-        purpose: filters.purpose
-      },
-      exportFormat: filters.exportFormat,
-      generatedAt: new Date().toISOString()
-    };
+    const exportData = currentData; // Use the currently filtered data
 
-    // Log export request (in production, this would call your API)
-    console.log('Export Request:', exportData);
+    if (exportData.length === 0) {
+      alert('No data matches the current filters to export.');
+      return;
+    }
 
-    // Simulate export based on format
+    // --- PDF EXPORT ---
     if (filters.exportFormat === 'PDF') {
-      // For PDF export - you would integrate a library like jsPDF
-      alert(`Generating PDF Report:\n\nReport: ${reportName}\nDate Range: ${filters.startDate} to ${filters.endDate}\nStudent: ${filters.student}\nPurpose: ${filters.purpose}\n\nIn production, this would download a PDF file.`);
-      
-      // Example: Call your backend API
-      // fetch('/api/reports/export', {
-      //   method: 'POST',
-      //   body: JSON.stringify(exportData)
-      // }).then(response => response.blob())
-      //   .then(blob => {
-      //     const url = window.URL.createObjectURL(blob);
-      //     const a = document.createElement('a');
-      //     a.href = url;
-      //     a.download = `${reportName}_${filters.startDate}_to_${filters.endDate}.pdf`;
-      //     a.click();
-      //   });
-      
+      const doc = new jsPDF();
+
+      // Title
+      doc.setFontSize(18);
+      doc.text(reportName, 14, 22);
+
+      // Metadata
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+      doc.text(`Filters: ${filters.startDate} to ${filters.endDate} | Student: ${filters.student} | Purpose: ${filters.purpose}`, 14, 36);
+
+      // Table
+      const headers = Object.keys(exportData[0]).map(key => key.charAt(0).toUpperCase() + key.slice(1));
+      const rows = exportData.map(item => Object.values(item));
+
+      autoTable(doc, {
+        head: [headers],
+        body: rows as any,
+        startY: 42,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [41, 128, 185] }
+      });
+
+      doc.save(`${reportName.replace(/\s/g, '_')}_${filters.startDate}.pdf`);
+
+      // --- EXCEL EXPORT ---
     } else if (filters.exportFormat === 'Excel') {
-      // For Excel export - you would integrate a library like xlsx
-      alert(`Generating Excel Report:\n\nReport: ${reportName}\nDate Range: ${filters.startDate} to ${filters.endDate}\nStudent: ${filters.student}\nPurpose: ${filters.purpose}\n\nIn production, this would download an Excel file.`);
-      
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Report");
+      XLSX.writeFile(wb, `${reportName.replace(/\s/g, '_')}_${filters.startDate}.xlsx`);
+
+      // --- CSV EXPORT ---
     } else if (filters.exportFormat === 'CSV') {
-      // For CSV export - generate and download CSV file
-      const csvContent = generateCSVContent(selectedReport, filters);
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const csv = XLSX.utils.sheet_to_csv(ws);
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${reportName.replace(/\s/g, '_')}_${filters.startDate}_to_${filters.endDate}.csv`;
+      a.download = `${reportName.replace(/\s/g, '_')}_${filters.startDate}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     }
-  };
-
-  // Helper function to generate CSV content based on report type
-  const generateCSVContent = (reportType: ReportType, filterData: FilterState): string => {
-    let csvContent = '';
-    
-    // Add header with filter information
-    csvContent += `Report Type,${reportType}\n`;
-    csvContent += `Date Range,${filterData.startDate} to ${filterData.endDate}\n`;
-    csvContent += `Student Filter,${filterData.student}\n`;
-    csvContent += `Purpose Filter,${filterData.purpose}\n`;
-    csvContent += `Generated On,${new Date().toLocaleString()}\n\n`;
-    
-    // Add data based on report type
-    switch(reportType) {
-      case 'daily-visitor':
-        csvContent += 'Visitor Name,Student,Purpose,Time,Duration,Status\n';
-        csvContent += 'Suresh Sharma,Rahul Sharma,Family Visit,10:00,2 hours,Pending\n';
-        csvContent += 'Rekha Patel,Priya Patel,Birthday Celebration,16:00,4 hours,Pending\n';
-        break;
-        
-      case 'weekly-summary':
-        csvContent += 'Day,Total Visitors,Approved,Rejected,Pending\n';
-        csvContent += 'Monday,8,7,0,0\n';
-        csvContent += 'Tuesday,7,6,1,1\n';
-        csvContent += 'Wednesday,6,5,0,2\n';
-        break;
-        
-      case 'monthly-statistics':
-        csvContent += 'Week,Total Visitors,Approved,Rejected,Emergency\n';
-        csvContent += 'Week 1 (1-7),45,40,3,2\n';
-        csvContent += 'Week 2 (8-14),50,44,4,3\n';
-        break;
-        
-      case 'student-wise':
-        csvContent += 'Student Name,Total Visitors,Unique Visitors,Frequency,Last Visit\n';
-        csvContent += 'Rahul Sharma,12,4,3/month,2026-01-04\n';
-        csvContent += 'Priya Patel,8,3,2/month,2026-01-03\n';
-        break;
-        
-      case 'emergency-visit':
-        csvContent += 'Date,Visitor,Student,Purpose,Response Time,Status\n';
-        csvContent += '2026-01-05,Dr. Mohan Kumar,Amit Kumar,Medical Emergency,15 min,Approved\n';
-        break;
-        
-      case 'rejected-requests':
-        csvContent += 'Date,Student,Visitor,Purpose,Reason,Status\n';
-        csvContent += '2026-01-02,Rahul Sharma,Unknown Person,Other,Request denied. Late hours and too many visitors.,Rejected\n';
-        break;
-    }
-    
-    return csvContent;
   };
 
   return (
@@ -243,7 +256,6 @@ export default function WardenReports() {
           </div>
           <div className="flex gap-3 mt-4">
             <button
-              onClick={() => {}}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
             >
               <FilterIcon className="w-4 h-4" />
@@ -286,18 +298,17 @@ export default function WardenReports() {
                 Export {filters.exportFormat}
               </button>
             </div>
-            {selectedReport === 'daily-visitor' && <DailyReport />}
-            {selectedReport === 'weekly-summary' && <WeeklyReport />}
-            {selectedReport === 'monthly-statistics' && <MonthlyReport />}
-            {selectedReport === 'student-wise' && <StudentReport />}
-            {selectedReport === 'emergency-visit' && <EmergencyReport />}
-            {selectedReport === 'rejected-requests' && <RejectedReport />}
+
+            <ReportContent reportType={selectedReport} data={currentData} />
+
           </main>
         </div>
       </div>
     </div>
   );
 }
+
+// --- SUB COMPONENTS ---
 
 function ReportBtn({ icon, title, subtitle, active, onClick }: any) {
   return (
@@ -327,135 +338,148 @@ function StatCard({ icon, label, value, bgColor }: any) {
   );
 }
 
-function DailyReport() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard icon={<Users className="w-6 h-6" />} label="Total Visitors" value="2" bgColor="bg-blue-500" />
-        <StatCard icon={<CheckCircle className="w-6 h-6" />} label="Approved" value="0" bgColor="bg-green-600" />
-        <StatCard icon={<Clock className="w-6 h-6" />} label="Pending" value="2" bgColor="bg-yellow-500" />
-        <StatCard icon={<AlertTriangle className="w-6 h-6" />} label="Emergency" value="0" bgColor="bg-red-500" />
+function ReportContent({ reportType, data }: { reportType: ReportType, data: any[] }) {
+  if (data.length === 0) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center text-gray-500">
+        <FilterIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+        <h3 className="text-lg font-medium mb-2">No Records Found</h3>
+        <p>Try adjusting your filters to see more results.</p>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Daily Visitor Details - January 6, 2026</h3></div>
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b"><tr><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Visitor Name</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Student</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Purpose</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Time</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Duration</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Status</th></tr></thead>
-          <tbody>
-            <tr className="border-b"><td className="py-4 px-6 text-sm">Suresh Sharma</td><td className="py-4 px-6 text-sm">Rahul Sharma</td><td className="py-4 px-6 text-sm">Family Visit</td><td className="py-4 px-6 text-sm">10:00</td><td className="py-4 px-6 text-sm">2 hours</td><td className="py-4 px-6"><span className="px-3 py-1 bg-yellow-500 text-white text-xs font-semibold rounded-full">Pending</span></td></tr>
-            <tr className="border-b"><td className="py-4 px-6 text-sm">Rekha Patel</td><td className="py-4 px-6 text-sm">Priya Patel</td><td className="py-4 px-6 text-sm">Birthday Celebration</td><td className="py-4 px-6 text-sm">16:00</td><td className="py-4 px-6 text-sm">4 hours</td><td className="py-4 px-6"><span className="px-3 py-1 bg-yellow-500 text-white text-xs font-semibold rounded-full">Pending</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+    );
+  }
 
-function WeeklyReport() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard icon={<Users className="w-6 h-6" />} label="Total Visits" value="45" bgColor="bg-blue-500" />
-        <StatCard icon={<TrendingUp className="w-6 h-6" />} label="Avg Daily" value="6.4" bgColor="bg-gray-600" />
-        <StatCard icon={<Calendar className="w-6 h-6" />} label="Peak Day" value="Monday" bgColor="bg-green-600" />
-        <StatCard icon={<Clock className="w-6 h-6" />} label="Approval Rate" value="89%" bgColor="bg-blue-500" />
+  // --- Daily Report View ---
+  if (reportType === 'daily-visitor') {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-4 gap-4">
+          <StatCard icon={<Users className="w-6 h-6" />} label="Total Records" value={data.length} bgColor="bg-blue-500" />
+          <StatCard icon={<CheckCircle className="w-6 h-6" />} label="Approved" value={data.filter(i => i.status === 'Approved').length} bgColor="bg-green-600" />
+          <StatCard icon={<Clock className="w-6 h-6" />} label="Pending" value={data.filter(i => i.status === 'Pending').length} bgColor="bg-yellow-500" />
+          <StatCard icon={<AlertTriangle className="w-6 h-6" />} label="Emergency" value={data.filter(i => i.purpose === 'Medical Emergency').length} bgColor="bg-red-500" />
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Filtered Visitor Details</h3></div>
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b"><tr><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Visitor Name</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Student</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Purpose</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Time</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Duration</th><th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">Status</th></tr></thead>
+            <tbody>
+              {data.map((item, i) => (
+                <tr key={i} className="border-b">
+                  <td className="py-4 px-6 text-sm">{item.visitorName}</td>
+                  <td className="py-4 px-6 text-sm">{item.student}</td>
+                  <td className="py-4 px-6 text-sm">{item.purpose}</td>
+                  <td className="py-4 px-6 text-sm">{item.time}</td>
+                  <td className="py-4 px-6 text-sm">{item.duration}</td>
+                  <td className="py-4 px-6"><span className={`px-3 py-1 text-white text-xs font-semibold rounded-full ${item.status === 'Approved' ? 'bg-green-600' : 'bg-yellow-500'}`}>{item.status}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Weekly Summary - Jan 1-7, 2026</h3></div>
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b"><tr><th className="text-left py-3 px-6 text-xs uppercase">Day</th><th className="text-left py-3 px-6 text-xs uppercase">Total Visitors</th><th className="text-left py-3 px-6 text-xs uppercase">Approved</th><th className="text-left py-3 px-6 text-xs uppercase">Rejected</th><th className="text-left py-3 px-6 text-xs uppercase">Pending</th></tr></thead>
-          <tbody>
-            {[{d:'Monday',t:8,a:7,r:0,p:0},{d:'Tuesday',t:7,a:6,r:1,p:1},{d:'Wednesday',t:6,a:5,r:0,p:2},{d:'Thursday',t:5,a:4,r:1,p:0}].map((x,i)=><tr key={i} className="border-b"><td className="py-4 px-6 text-sm font-medium">{x.d}</td><td className="py-4 px-6 text-sm">{x.t}</td><td className="py-4 px-6 text-sm text-green-600 font-medium">{x.a}</td><td className="py-4 px-6 text-sm text-red-600 font-medium">{x.r}</td><td className="py-4 px-6 text-sm text-yellow-600 font-medium">{x.p}</td></tr>)}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+    );
+  }
 
-function MonthlyReport() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard icon={<Users className="w-6 h-6" />} label="Total Visits" value="187" bgColor="bg-blue-500" />
-        <StatCard icon={<Calendar className="w-6 h-6" />} label="Peak Day" value="15th Jan" bgColor="bg-green-600" />
-        <StatCard icon={<Clock className="w-6 h-6" />} label="Peak Hours" value="2-4 PM" bgColor="bg-yellow-500" />
-        <StatCard icon={<Users className="w-6 h-6" />} label="Unique Visitors" value="142" bgColor="bg-gray-600" />
+  // --- Weekly Report View ---
+  if (reportType === 'weekly-summary') {
+    return (
+      <div className="space-y-6">
+        {/* Summary Stats Omitted for Brevity in this View Mode, using Table Primarily */}
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Weekly Summary</h3></div>
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="text-left py-3 px-6 text-xs uppercase">Day</th>
+                <th className="text-left py-3 px-6 text-xs uppercase">Date</th>
+                <th className="text-left py-3 px-6 text-xs uppercase">Total Visitors</th>
+                <th className="text-left py-3 px-6 text-xs uppercase">Approved</th>
+                <th className="text-left py-3 px-6 text-xs uppercase">Rejected</th>
+                <th className="text-left py-3 px-6 text-xs uppercase">Pending</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((x, i) => (
+                <tr key={i} className="border-b">
+                  <td className="py-4 px-6 text-sm font-medium">{x.day}</td>
+                  <td className="py-4 px-6 text-sm text-gray-500">{x.date}</td>
+                  <td className="py-4 px-6 text-sm">{x.total}</td>
+                  <td className="py-4 px-6 text-sm text-green-600 font-medium">{x.approved}</td>
+                  <td className="py-4 px-6 text-sm text-red-600 font-medium">{x.rejected}</td>
+                  <td className="py-4 px-6 text-sm text-yellow-600 font-medium">{x.pending}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+    );
+  }
+
+  // --- Monthly Report View ---
+  if (reportType === 'monthly-statistics') {
+    return (
       <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Monthly Statistics - January 2026</h3></div>
+        <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Monthly Statistics</h3></div>
         <table className="w-full">
           <thead className="bg-gray-50 border-b"><tr><th className="text-left py-3 px-6 text-xs uppercase">Week</th><th className="text-left py-3 px-6 text-xs uppercase">Total</th><th className="text-left py-3 px-6 text-xs uppercase">Approved</th><th className="text-left py-3 px-6 text-xs uppercase">Rejected</th><th className="text-left py-3 px-6 text-xs uppercase">Emergency</th></tr></thead>
           <tbody>
-            {[{w:'Week 1 (1-7)',t:45,a:40,r:3,e:2},{w:'Week 2 (8-14)',t:50,a:44,r:4,e:3}].map((x,i)=><tr key={i} className="border-b"><td className="py-4 px-6 text-sm font-medium">{x.w}</td><td className="py-4 px-6 text-sm">{x.t}</td><td className="py-4 px-6 text-sm text-green-600 font-medium">{x.a}</td><td className="py-4 px-6 text-sm text-red-600 font-medium">{x.r}</td><td className="py-4 px-6 text-sm text-orange-600 font-medium">{x.e}</td></tr>)}
+            {data.map((x, i) => <tr key={i} className="border-b"><td className="py-4 px-6 text-sm font-medium">{x.week}</td><td className="py-4 px-6 text-sm">{x.total}</td><td className="py-4 px-6 text-sm text-green-600 font-medium">{x.approved}</td><td className="py-4 px-6 text-sm text-red-600 font-medium">{x.rejected}</td><td className="py-4 px-6 text-sm text-orange-600 font-medium">{x.emergency}</td></tr>)}
           </tbody>
         </table>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function StudentReport() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard icon={<Users className="w-6 h-6" />} label="Students with Visitors" value="25" bgColor="bg-blue-500" />
-        <StatCard icon={<TrendingUp className="w-6 h-6" />} label="Avg per Student" value="3.2" bgColor="bg-gray-600" />
-        <StatCard icon={<User className="w-6 h-6" />} label="Most Frequent" value="Rahul S." bgColor="bg-green-600" />
-        <StatCard icon={<Users className="w-6 h-6" />} label="Unique Visitors" value="67" bgColor="bg-yellow-500" />
-      </div>
+  // --- Student Wise ---
+  if (reportType === 'student-wise') {
+    return (
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Student-wise Visitor History</h3></div>
         <table className="w-full">
           <thead className="bg-gray-50 border-b"><tr><th className="text-left py-3 px-6 text-xs uppercase">Student Name</th><th className="text-left py-3 px-6 text-xs uppercase">Total</th><th className="text-left py-3 px-6 text-xs uppercase">Unique</th><th className="text-left py-3 px-6 text-xs uppercase">Frequency</th><th className="text-left py-3 px-6 text-xs uppercase">Last Visit</th></tr></thead>
           <tbody>
-            {[{n:'Rahul Sharma',t:12,u:4,f:'3/month',l:'2026-01-04'}].map((x,i)=><tr key={i} className="border-b"><td className="py-4 px-6 text-sm font-medium">{x.n}</td><td className="py-4 px-6 text-sm">{x.t}</td><td className="py-4 px-6 text-sm">{x.u}</td><td className="py-4 px-6 text-sm">{x.f}</td><td className="py-4 px-6 text-sm">{x.l}</td></tr>)}
+            {data.map((x, i) => <tr key={i} className="border-b"><td className="py-4 px-6 text-sm font-medium">{x.studentName}</td><td className="py-4 px-6 text-sm">{x.total}</td><td className="py-4 px-6 text-sm">{x.unique}</td><td className="py-4 px-6 text-sm">{x.frequency}</td><td className="py-4 px-6 text-sm">{x.lastVisit}</td></tr>)}
           </tbody>
         </table>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function EmergencyReport() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard icon={<AlertTriangle className="w-6 h-6" />} label="Total Emergency" value="1" bgColor="bg-red-500" />
-        <StatCard icon={<Calendar className="w-6 h-6" />} label="This Week" value="1" bgColor="bg-yellow-500" />
-        <StatCard icon={<Clock className="w-6 h-6" />} label="Avg Response" value="15 min" bgColor="bg-green-600" />
-        <StatCard icon={<TrendingUp className="w-6 h-6" />} label="Resolved" value="100%" bgColor="bg-blue-500" />
-      </div>
+  // --- Emergency Report ---
+  if (reportType === 'emergency-visit') {
+    return (
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Emergency Visit Log</h3></div>
         <table className="w-full">
           <thead className="bg-gray-50 border-b"><tr><th className="text-left py-3 px-6 text-xs uppercase">Date</th><th className="text-left py-3 px-6 text-xs uppercase">Visitor</th><th className="text-left py-3 px-6 text-xs uppercase">Student</th><th className="text-left py-3 px-6 text-xs uppercase">Purpose</th><th className="text-left py-3 px-6 text-xs uppercase">Response</th><th className="text-left py-3 px-6 text-xs uppercase">Status</th></tr></thead>
           <tbody>
-            <tr className="border-b"><td className="py-4 px-6 text-sm">2026-01-05</td><td className="py-4 px-6 text-sm">Dr. Mohan Kumar</td><td className="py-4 px-6 text-sm">Amit Kumar</td><td className="py-4 px-6"><div className="flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500"/><span className="text-sm">Medical Emergency</span></div></td><td className="py-4 px-6 text-sm">15 min</td><td className="py-4 px-6"><span className="px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">Approved</span></td></tr>
+            {data.map((item, i) => (
+              <tr key={i} className="border-b"><td className="py-4 px-6 text-sm">{item.date}</td><td className="py-4 px-6 text-sm">{item.visitor}</td><td className="py-4 px-6 text-sm">{item.student}</td><td className="py-4 px-6"><div className="flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500" /><span className="text-sm">{item.purpose}</span></div></td><td className="py-4 px-6 text-sm">{item.responseTime}</td><td className="py-4 px-6"><span className="px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">{item.status}</span></td></tr>
+            ))}
           </tbody>
         </table>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function RejectedReport() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard icon={<XCircle className="w-6 h-6" />} label="Total Rejected" value="1" bgColor="bg-red-500" />
-        <StatCard icon={<Calendar className="w-6 h-6" />} label="This Month" value="5" bgColor="bg-yellow-500" />
-        <StatCard icon={<Clock className="w-6 h-6" />} label="Common Reason" value="Late Hours" bgColor="bg-gray-600" />
-        <StatCard icon={<TrendingUp className="w-6 h-6" />} label="Rejection Rate" value="11%" bgColor="bg-blue-500" />
-      </div>
+  // --- Rejected Report ---
+  if (reportType === 'rejected-requests') {
+    return (
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b"><h3 className="text-lg font-semibold">Rejected Requests Report</h3></div>
         <table className="w-full">
           <thead className="bg-gray-50 border-b"><tr><th className="text-left py-3 px-6 text-xs uppercase">Date</th><th className="text-left py-3 px-6 text-xs uppercase">Student</th><th className="text-left py-3 px-6 text-xs uppercase">Visitor</th><th className="text-left py-3 px-6 text-xs uppercase">Purpose</th><th className="text-left py-3 px-6 text-xs uppercase">Reason</th><th className="text-left py-3 px-6 text-xs uppercase">Status</th></tr></thead>
           <tbody>
-            <tr className="border-b bg-red-50"><td className="py-4 px-6 text-sm">2026-01-02</td><td className="py-4 px-6 text-sm">Rahul Sharma</td><td className="py-4 px-6 text-sm">Unknown Person</td><td className="py-4 px-6 text-sm">Other</td><td className="py-4 px-6 text-sm text-red-700">Request denied. Late hours and too many visitors.</td><td className="py-4 px-6"><span className="px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-full">Rejected</span></td></tr>
+            {data.map((item, i) => (
+              <tr key={i} className="border-b bg-red-50"><td className="py-4 px-6 text-sm">{item.date}</td><td className="py-4 px-6 text-sm">{item.student}</td><td className="py-4 px-6 text-sm">{item.visitor}</td><td className="py-4 px-6 text-sm">{item.purpose}</td><td className="py-4 px-6 text-sm text-red-700">{item.reason}</td><td className="py-4 px-6"><span className="px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-full">{item.status}</span></td></tr>
+            ))}
           </tbody>
         </table>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 }

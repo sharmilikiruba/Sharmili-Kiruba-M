@@ -1,10 +1,10 @@
 import DashboardLayout from "@/components/shared/layout";
-import SecurityManagement from "@/components/admin/security";
+import ReportsPage from "@/components/admin/admin_reports";
 
-export default function SecurityManagementPage() {
+export default function ReportAnalysis() {
   return (
     <DashboardLayout userRole="admin" userName="Ram Kumar" userEmail="ram.admin@example.com" hostelInfo="Main Gate">
-      <SecurityManagement/>
+      <ReportsPage/>
     </DashboardLayout>
   )
 }   

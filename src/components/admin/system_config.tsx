@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Home, Users, Layout, Settings, BarChart3, Lock, FileText,
@@ -82,7 +82,21 @@ export default function SystemConfiguration() {
         emergencyRequest: true,
     });
 
+    // Load settings from localStorage on mount
+    useEffect(() => {
+        const savedTriggers = localStorage.getItem('notificationTriggers');
+        if (savedTriggers) {
+            setNotificationTriggers(JSON.parse(savedTriggers));
+        }
+    }, []);
+
     const handleSaveConfiguration = () => {
+        // Save relevant settings to localStorage
+        localStorage.setItem('notificationTriggers', JSON.stringify(notificationTriggers));
+
+        // Dispatch event to notify other components (like Header)
+        window.dispatchEvent(new Event('storage'));
+
         alert('Configuration saved successfully!');
     };
 
@@ -515,106 +529,49 @@ export default function SystemConfiguration() {
 
                 {/* SMS Settings Tab */}
                 {activeTab === 'SMS' && (
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <div className="flex items-center gap-2 mb-4">
-                                <MessageSquare className="w-6 h-6 text-gray-700" />
-                                <h2 className="text-xl font-bold text-gray-900">SMS Gateway Configuration</h2>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-6 mb-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Provider</label>
-                                    <select
-                                        value={smsSettings.provider}
-                                        onChange={(e) => setSmsSettings({ ...smsSettings, provider: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    >
-                                        <option>Twilio</option>
-                                        <option>AWS SNS</option>
-                                        <option>Msg91</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">API Key</label>
-                                    <div className="relative">
-                                        <input
-                                            type={showApiKey ? "text" : "password"}
-                                            value={smsSettings.apiKey}
-                                            onChange={(e) => setSmsSettings({ ...smsSettings, apiKey: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                        />
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">SMS Templates & Triggers</h3>
+                        <div className="space-y-6">
+                            {Object.entries(smsTemplates).map(([key, value]) => (
+                                <div key={key} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div>
+                                            <p className="font-medium text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                            <p className="text-sm text-gray-500">Enable/disable this SMS notification</p>
+                                        </div>
                                         <button
                                             type="button"
-                                            onClick={() => setShowApiKey(!showApiKey)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            onClick={() => setSmsTemplates({
+                                                ...smsTemplates,
+                                                [key]: { ...value, enabled: !value.enabled }
+                                            })}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${value.enabled ? 'bg-blue-600' : 'bg-gray-300'
+                                                }`}
                                         >
-                                            {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            <span
+                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value.enabled ? 'translate-x-6' : 'translate-x-1'
+                                                    }`}
+                                            />
                                         </button>
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Sender ID</label>
-                                    <input
-                                        type="text"
-                                        value={smsSettings.senderId}
-                                        onChange={(e) => setSmsSettings({ ...smsSettings, senderId: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Credits Balance</label>
-                                    <div className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 font-medium">
-                                        {smsSettings.creditsBalance}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">SMS Templates & Triggers</h3>
-                            <div className="space-y-6">
-                                {Object.entries(smsTemplates).map(([key, value]) => (
-                                    <div key={key} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div>
-                                                <p className="font-medium text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                                                <p className="text-sm text-gray-500">Enable/disable this SMS notification</p>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setSmsTemplates({
+                                    {value.enabled && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Message Template</label>
+                                            <textarea
+                                                value={value.template}
+                                                onChange={(e) => setSmsTemplates({
                                                     ...smsTemplates,
-                                                    [key]: { ...value, enabled: !value.enabled }
+                                                    [key]: { ...value, template: e.target.value }
                                                 })}
-                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${value.enabled ? 'bg-blue-600' : 'bg-gray-300'
-                                                    }`}
-                                            >
-                                                <span
-                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value.enabled ? 'translate-x-6' : 'translate-x-1'
-                                                        }`}
-                                                />
-                                            </button>
+                                                rows={3}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+                                                placeholder="Enter SMS template..."
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Available variables: {'{visitor_name}'}, {'{host_name}'}, {'{time}'}, {'{date}'}</p>
                                         </div>
-                                        {value.enabled && (
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Message Template</label>
-                                                <textarea
-                                                    value={value.template}
-                                                    onChange={(e) => setSmsTemplates({
-                                                        ...smsTemplates,
-                                                        [key]: { ...value, template: e.target.value }
-                                                    })}
-                                                    rows={3}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
-                                                    placeholder="Enter SMS template..."
-                                                />
-                                                <p className="text-xs text-gray-500 mt-1">Available variables: {'{visitor_name}'}, {'{host_name}'}, {'{time}'}, {'{date}'}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
