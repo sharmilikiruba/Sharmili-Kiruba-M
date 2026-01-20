@@ -180,7 +180,7 @@ export default function BlacklistManagement() {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                Blacklist Management
+                                Blocklist Management
                             </h1>
                             <p className="text-sm text-gray-600 mt-1">
                                 Manage blocked visitors for Krishna Hostel
@@ -213,7 +213,7 @@ export default function BlacklistManagement() {
                                 Warden Permissions
                             </h3>
                             <p className="text-sm text-blue-700 mt-0.5">
-                                You can add and update blacklist entries for your hostel. Admin
+                                You can add and update blocklist entries for your hostel. Admin
                                 entries are read-only. Only Admin can remove entries.
                             </p>
                         </div>
@@ -243,7 +243,7 @@ export default function BlacklistManagement() {
                                 className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                             >
                                 <Plus className="w-4 h-4" />
-                                Add to Blacklist
+                                Add to Blocklist
                             </button>
                         </div>
                     </div>
@@ -352,12 +352,12 @@ export default function BlacklistManagement() {
                                         >
                                             <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                                             <p className="text-sm font-medium">
-                                                No blacklisted visitors found
+                                                No blocklisted visitors found
                                             </p>
                                             <p className="text-xs text-gray-400 mt-1">
                                                 {searchQuery
                                                     ? 'Try adjusting your search'
-                                                    : 'Add visitors to the blacklist to restrict their entry'}
+                                                    : 'Add visitors to the blocklist to restrict their entry'}
                                             </p>
                                         </td>
                                     </tr>
@@ -448,7 +448,7 @@ export default function BlacklistManagement() {
                     <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
                         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
                             <h2 className="text-xl font-bold text-gray-900">
-                                {isEditMode ? 'Edit Blacklist Entry' : 'Add to Blacklist'}
+                                {isEditMode ? 'Edit Blocklist Entry' : 'Add to Blocklist'}
                             </h2>
                             <button
                                 onClick={() => setIsModalOpen(false)}
@@ -514,7 +514,7 @@ export default function BlacklistManagement() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Reason for Blacklisting{' '}
+                                    Reason for Blocklisting{' '}
                                     <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
@@ -548,7 +548,7 @@ export default function BlacklistManagement() {
                                     type="submit"
                                     className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
                                 >
-                                    {isEditMode ? 'Save Changes' : 'Add to Blacklist'}
+                                    {isEditMode ? 'Save Changes' : 'Add to Blocklist'}
                                 </button>
                             </div>
                         </form>

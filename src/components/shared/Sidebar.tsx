@@ -61,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
       { id: 'pending-requests', label: 'Pending Requests', icon: Clock, href: '/Warden/Pending_Request' },
       { id: 'approved-visits', label: 'Approved Visits', icon: CheckCircle, href: '/Warden/Approved_visit' },
       { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Warden/Active_Visitors' },
-      { id: 'blacklist', label: 'Blacklist', icon: CheckCircle, href: '/Warden/Blacklist' }, // Mapping to dashboard as placeholder if no specific page found
+      { id: 'blocklist', label: 'Blocklist', icon: CheckCircle, href: '/Warden/Blacklist' }, // Mapping to dashboard as placeholder if no specific page found
       { id: 'reports',label: 'Reports', icon: FileText,href: '/Warden/reports',
       },
     ],
@@ -73,8 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
         icon: User,
         href: '/Guard/guard_profile',
       },
-      { id: 'scan-entry', label: 'Scan Entry', icon: LogIn, href: '/Guard/Scan-Entry' },
-      { id: 'scan-exit', label: 'Scan Exit', icon: LogOut, href: '/Guard/Scan-Exit' },
+      { id: 'Scan-Visitors', label: 'Scan Visitors', icon: LogIn, href: '/Guard/Scan-Entry' },
       { id: 'walkin-registration', label: 'Walk-in Registration', icon: UserCog, href: '/Guard/WalkIn-Registration' },
       { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Guard/Active_Visitors' },
        { id: 'Emergency-visit', label: 'Emergency Visit', icon: Users, href: '/Guard/Emergency_visit' }
@@ -139,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
               onClick={() => handleItemClick(item)}
               className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${isActive(item.href) && !item.collapsible
                 ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:bg-gray-800'
+                : 'text-white hover:bg-gray-800'
                 }`}
             >
               <div className="flex items-center gap-3">
@@ -162,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
                     onClick={() => router.push(subitem.href)}
                     className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${isActive(subitem.href)
                       ? 'bg-gray-800 text-white'
-                      : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                      : 'text-white hover:bg-gray-800 hover:text-white'
                       }`}
                   >
                     {subitem.label}
@@ -175,9 +174,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-800">
-        <p className="text-xs text-gray-500">© 2026 University HVMS</p>
-      </div>
+      
     </aside>
   );
 };

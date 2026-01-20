@@ -127,8 +127,24 @@ export default function HostelManagement() {
         },
     ]);
 
-    // Form states
-    const initialHostelForm = { name: '', type: '', totalRooms: '', capacity: '', warden: '', address: '' };
+    const [availableWardens, setAvailableWardens] = useState<{ id: string, name: string }[]>([
+        { id: '1', name: 'Dr. Suresh Kumar' },
+        { id: '2', name: 'Dr. Meera Singh' },
+        { id: '3', name: 'Dr. Anil Sharma' },
+    ]);
+
+    const initialHostelForm = { 
+        name: '', 
+        type: '', 
+        totalRooms: '', 
+        capacity: '', 
+        warden: '', 
+        address: '', 
+        isNewWarden: false, 
+        newWardenName: '', 
+        newWardenEmail: '', 
+        newWardenContact: '' 
+    };
     const initialGateForm = { gateName: '', hostel: '', gateType: '', guard: '' };
     const initialAssignmentForm = { guard: '', hostel: '', gate: '', shiftStart: '06:00', shiftEnd: '14:00', status: true };
 
@@ -136,7 +152,6 @@ export default function HostelManagement() {
     const [gateForm, setGateForm] = useState(initialGateForm);
     const [assignmentForm, setAssignmentForm] = useState(initialAssignmentForm);
 
-    // Derived states for search
     const filteredHostels = hostels.filter(h =>
         h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         h.warden.toLowerCase().includes(searchQuery.toLowerCase())
@@ -152,9 +167,20 @@ export default function HostelManagement() {
         a.hostel.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Create/Edit Handlers
     const handleCreateHostel = (e: React.FormEvent) => {
         e.preventDefault();
+
+        let assignedWarden = hostelForm.warden;
+
+        if (hostelForm.isNewWarden) {
+            const newWarden = {
+                id: Date.now().toString(),
+                name: hostelForm.newWardenName,
+            };
+            setAvailableWardens([...availableWardens, newWarden]);
+            assignedWarden = newWarden.name;
+        }
+
         const newHostel: Hostel = {
             id: editingId || Date.now().toString(),
             name: hostelForm.name,
@@ -162,7 +188,7 @@ export default function HostelManagement() {
             type: hostelForm.type,
             rooms: parseInt(hostelForm.totalRooms),
             capacity: parseInt(hostelForm.capacity),
-            warden: hostelForm.warden,
+            warden: assignedWarden,
             status: 'Active',
         };
 
@@ -173,7 +199,7 @@ export default function HostelManagement() {
         }
 
         closeHostelModal();
-        alert(editingId ? 'Hostel updated successfully!' : 'Hostel created successfully!');
+        alert(editingId ? 'Hostel updated successfully!' : 'Hostel created successfully with warden assignment!');
     };
 
     const handleCreateGate = (e: React.FormEvent) => {
@@ -220,7 +246,6 @@ export default function HostelManagement() {
         alert(editingId ? 'Assignment updated successfully!' : 'Assignment saved successfully!');
     };
 
-    // Edit Handlers
     const handleEditHostel = (hostel: Hostel) => {
         setHostelForm({
             name: hostel.name,
@@ -229,6 +254,10 @@ export default function HostelManagement() {
             capacity: hostel.capacity.toString(),
             warden: hostel.warden,
             address: hostel.address,
+            isNewWarden: false,
+            newWardenName: '',
+            newWardenEmail: '',
+            newWardenContact: ''
         });
         setEditingId(hostel.id);
         setIsHostelModalOpen(true);
@@ -258,7 +287,6 @@ export default function HostelManagement() {
         setIsAssignmentModalOpen(true);
     };
 
-    // Delete Handlers
     const handleDeleteHostel = (id: string) => {
         if (confirm('Are you sure you want to delete this hostel?')) {
             setHostels(hostels.filter(h => h.id !== id));
@@ -277,7 +305,6 @@ export default function HostelManagement() {
         }
     };
 
-    // Close Modal Helpers
     const closeHostelModal = () => {
         setIsHostelModalOpen(false);
         setEditingId(null);
@@ -297,13 +324,12 @@ export default function HostelManagement() {
     };
 
     return (
-        <div className="p-8">
+        <div className="p-8 bg-gray-50 min-h-screen">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Hostel Management</h1>
                 <p className="text-gray-600 mt-1">Manage hostels, gates, and security assignments</p>
             </div>
 
-            {/* Hostels & Gates Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center justify-between">
@@ -321,7 +347,6 @@ export default function HostelManagement() {
                     </div>
                 </div>
 
-                {/* Tabs */}
                 <div className="flex items-center justify-between border-b border-gray-200 px-6">
                     <div className="flex">
                         <button
@@ -388,7 +413,6 @@ export default function HostelManagement() {
                     </div>
                 </div>
 
-                {/* Hostels Table */}
                 {activeTab === 'Hostels' && (
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -436,7 +460,6 @@ export default function HostelManagement() {
                     </div>
                 )}
 
-                {/* Gates Table */}
                 {activeTab === 'Gates' && (
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -481,7 +504,6 @@ export default function HostelManagement() {
                     </div>
                 )}
 
-                {/* Guards Table */}
                 {activeTab === 'Guards' && (
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -536,10 +558,7 @@ export default function HostelManagement() {
                     <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
                             <h2 className="text-xl font-bold text-gray-900">{editingId ? 'Edit Hostel' : 'Add New Hostel'}</h2>
-                            <button
-                                onClick={closeHostelModal}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
+                            <button onClick={closeHostelModal} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -555,6 +574,17 @@ export default function HostelManagement() {
                                         placeholder="Enter hostel name"
                                         value={hostelForm.name}
                                         onChange={(e) => setHostelForm({ ...hostelForm, name: e.target.value })}
+                                        required
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter address"
+                                        value={hostelForm.address}
+                                        onChange={(e) => setHostelForm({ ...hostelForm, address: e.target.value })}
                                         required
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                     />
@@ -597,38 +627,88 @@ export default function HostelManagement() {
                                         />
                                     </div>
                                 </div>
+                                
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Assign Warden</label>
-                                    <select
-                                        value={hostelForm.warden}
-                                        onChange={(e) => setHostelForm({ ...hostelForm, warden: e.target.value })}
-                                        required
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    >
-                                        <option value="">Select warden</option>
-                                        <option value="Dr. Suresh Kumar">Dr. Suresh Kumar</option>
-                                        <option value="Dr. Meera Singh">Dr. Meera Singh</option>
-                                        <option value="Dr. Anil Sharma">Dr. Anil Sharma</option>
-                                    </select>
+                                    <label className="flex items-center gap-2 mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={hostelForm.isNewWarden}
+                                            onChange={(e) => setHostelForm({ ...hostelForm, isNewWarden: e.target.checked, warden: '' })}
+                                            className="w-4 h-4 text-blue-600"
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Create New Warden</span>
+                                    </label>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                                    <textarea
-                                        placeholder="Block A, University Campus"
-                                        value={hostelForm.address}
-                                        onChange={(e) => setHostelForm({ ...hostelForm, address: e.target.value })}
-                                        required
-                                        rows={3}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    />
-                                </div>
+
+                                {hostelForm.isNewWarden ? (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Warden Name</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Enter warden name"
+                                                value={hostelForm.newWardenName}
+                                                onChange={(e) => setHostelForm({ ...hostelForm, newWardenName: e.target.value })}
+                                                required
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                            <input
+                                                type="email"
+                                                placeholder="warden@university.edu"
+                                                value={hostelForm.newWardenEmail}
+                                                onChange={(e) => setHostelForm({ ...hostelForm, newWardenEmail: e.target.value })}
+                                                required
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Contact</label>
+                                            <input
+                                                type="tel"
+                                                placeholder="+91 98765 43210"
+                                                value={hostelForm.newWardenContact}
+                                                onChange={(e) => setHostelForm({ ...hostelForm, newWardenContact: e.target.value })}
+                                                required
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Assign Warden</label>
+                                        <select
+                                            value={hostelForm.warden}
+                                            onChange={(e) => setHostelForm({ ...hostelForm, warden: e.target.value })}
+                                            required
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        >
+                                            <option value="">Select warden</option>
+                                            {availableWardens.map((warden) => (
+                                                <option key={warden.id} value={warden.name}>{warden.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                             </div>
-                            <button
-                                type="submit"
-                                className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                            >
-                                {editingId ? 'Save Changes' : 'Create Hostel'}
-                            </button>
+
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={closeHostelModal}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                                >
+                                    {editingId ? 'Update' : 'Create'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -638,12 +718,9 @@ export default function HostelManagement() {
             {isGateModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl max-w-md w-full">
-                        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+                        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
                             <h2 className="text-xl font-bold text-gray-900">{editingId ? 'Edit Gate' : 'Add New Gate'}</h2>
-                            <button
-                                onClick={closeGateModal}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
+                            <button onClick={closeGateModal} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -656,7 +733,7 @@ export default function HostelManagement() {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Gate Name</label>
                                     <input
                                         type="text"
-                                        placeholder="Main Gate"
+                                        placeholder="e.g., Main Gate"
                                         value={gateForm.gateName}
                                         onChange={(e) => setGateForm({ ...gateForm, gateName: e.target.value })}
                                         required
@@ -672,8 +749,8 @@ export default function HostelManagement() {
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                     >
                                         <option value="">Select hostel</option>
-                                        {hostels.map(h => (
-                                            <option key={h.id} value={h.name}>{h.name}</option>
+                                        {hostels.map((hostel) => (
+                                            <option key={hostel.id} value={hostel.name}>{hostel.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -692,24 +769,32 @@ export default function HostelManagement() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Assign Guard</label>
-                                    <select
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Assign Guard (Optional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Guard name"
                                         value={gateForm.guard}
                                         onChange={(e) => setGateForm({ ...gateForm, guard: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    >
-                                        <option value="">Select guard</option>
-                                        <option value="Ramesh Yadav">Ramesh Yadav</option>
-                                        <option value="Sunil Verma">Sunil Verma</option>
-                                    </select>
+                                    />
                                 </div>
                             </div>
-                            <button
-                                type="submit"
-                                className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                            >
-                                {editingId ? 'Save Changes' : 'Create Gate'}
-                            </button>
+
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={closeGateModal}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                                >
+                                    {editingId ? 'Update' : 'Create'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -718,46 +803,40 @@ export default function HostelManagement() {
             {/* Add Guard Assignment Modal */}
             {isAssignmentModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full ml-auto mr-0 h-full flex flex-col">
-                        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900">{editingId ? 'Edit Assignment' : 'Add Guard Assignment'}</h2>
-                            <button
-                                onClick={closeAssignmentModal}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
+                    <div className="bg-white rounded-xl max-w-md w-full">
+                        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+                            <h2 className="text-xl font-bold text-gray-900">{editingId ? 'Edit Assignment' : 'New Guard Assignment'}</h2>
+                            <button onClick={closeAssignmentModal} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
 
-                        <form onSubmit={handleSaveAssignment} className="flex-1 p-6 overflow-y-auto">
+                        <form onSubmit={handleSaveAssignment} className="p-6">
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Guard</label>
-                                    <select
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Guard Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter guard name"
                                         value={assignmentForm.guard}
                                         onChange={(e) => setAssignmentForm({ ...assignmentForm, guard: e.target.value })}
                                         required
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    >
-                                        <option value="">Select guard</option>
-                                        <option value="Ramesh Yadav">Ramesh Yadav</option>
-                                        <option value="Sunil Verma">Sunil Verma</option>
-                                        <option value="Arun Kumar">Arun Kumar</option>
-                                    </select>
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Hostel</label>
                                     <select
                                         value={assignmentForm.hostel}
-                                        onChange={(e) => setAssignmentForm({ ...assignmentForm, hostel: e.target.value })}
+                                        onChange={(e) => setAssignmentForm({ ...assignmentForm, hostel: e.target.value, gate: '' })}
                                         required
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                     >
                                         <option value="">Select hostel</option>
-                                        {hostels.map(h => (
-                                            <option key={h.id} value={h.name}>{h.name}</option>
+                                        {hostels.map((hostel) => (
+                                            <option key={hostel.id} value={hostel.name}>{hostel.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -767,71 +846,63 @@ export default function HostelManagement() {
                                         value={assignmentForm.gate}
                                         onChange={(e) => setAssignmentForm({ ...assignmentForm, gate: e.target.value })}
                                         required
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        disabled={!assignmentForm.hostel}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none disabled:bg-gray-100"
                                     >
                                         <option value="">Select gate</option>
-                                        {gates.filter(g => g.hostel === assignmentForm.hostel).map(g => (
-                                            <option key={g.id} value={g.name}>{g.name}</option>
+                                        {gates.filter(g => g.hostel === assignmentForm.hostel).map((gate) => (
+                                            <option key={gate.id} value={gate.name}>{gate.name}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Shift Start</label>
-                                        <div className="relative">
-                                            <input
-                                                type="time"
-                                                value={assignmentForm.shiftStart}
-                                                onChange={(e) => setAssignmentForm({ ...assignmentForm, shiftStart: e.target.value })}
-                                                required
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                            />
-                                            <Clock className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-                                        </div>
+                                        <input
+                                            type="time"
+                                            value={assignmentForm.shiftStart}
+                                            onChange={(e) => setAssignmentForm({ ...assignmentForm, shiftStart: e.target.value })}
+                                            required
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Shift End</label>
-                                        <div className="relative">
-                                            <input
-                                                type="time"
-                                                value={assignmentForm.shiftEnd}
-                                                onChange={(e) => setAssignmentForm({ ...assignmentForm, shiftEnd: e.target.value })}
-                                                required
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                            />
-                                            <Clock className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-                                        </div>
+                                        <input
+                                            type="time"
+                                            value={assignmentForm.shiftEnd}
+                                            onChange={(e) => setAssignmentForm({ ...assignmentForm, shiftEnd: e.target.value })}
+                                            required
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        />
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between py-2">
-                                    <label className="text-sm font-medium text-gray-700">Status</label>
-                                    <button
-                                        type="button"
-                                        onClick={() => setAssignmentForm({ ...assignmentForm, status: !assignmentForm.status })}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${assignmentForm.status ? 'bg-blue-600' : 'bg-gray-300'
-                                            }`}
-                                    >
-                                        <span
-                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${assignmentForm.status ? 'translate-x-6' : 'translate-x-1'
-                                                }`}
+                                <div>
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={assignmentForm.status}
+                                            onChange={(e) => setAssignmentForm({ ...assignmentForm, status: e.target.checked })}
+                                            className="w-4 h-4 text-blue-600"
                                         />
-                                    </button>
+                                        <span className="text-sm font-medium text-gray-700">Active Status</span>
+                                    </label>
                                 </div>
                             </div>
 
-                            <div className="border-t border-gray-200 p-6 flex gap-4 mt-auto">
+                            <div className="flex gap-3 mt-6">
                                 <button
                                     type="button"
                                     onClick={closeAssignmentModal}
-                                    className="flex-1 bg-gray-200 text-gray-900 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                                 >
-                                    {editingId ? 'Save Changes' : 'Save Changes'}
+                                    {editingId ? 'Update' : 'Save'}
                                 </button>
                             </div>
                         </form>

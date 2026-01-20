@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export default function SecurityManagement() {
-    const [blacklist, setBlacklist] = useState([
+    const [blocklist, setBlocklist] = useState([
         {
             name: 'John Doe',
             id: 'XXXX-1234',
@@ -54,7 +54,7 @@ export default function SecurityManagement() {
         reason: '',
     });
 
-    const handleAddBlacklist = (e: React.FormEvent) => {
+    const handleAddBlocklist = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newEntry.name || !newEntry.reason) return;
 
@@ -64,16 +64,16 @@ export default function SecurityManagement() {
             date: new Date().toISOString().split('T')[0],
         };
 
-        setBlacklist([newItem, ...blacklist]);
+        setBlocklist([newItem, ...blocklist]);
         setNewEntry({ name: '', id: '', reason: '' });
         setIsModalOpen(false);
     };
 
     const handleDelete = (index: number) => {
-        if (confirm('Are you sure you want to remove this person from the blacklist?')) {
-            const newList = [...blacklist];
+        if (confirm('Are you sure you want to remove this person from the blocklist?')) {
+            const newList = [...blocklist];
             newList.splice(index, 1);
-            setBlacklist(newList);
+            setBlocklist(newList);
         }
     };
 
@@ -85,17 +85,17 @@ export default function SecurityManagement() {
                     Security Management
                 </h1>
                 <p className="text-sm text-gray-500">
-                    Manage blacklist, emergency passes, and security alerts
+                    Manage blocklist, emergency passes, and security alerts
                 </p>
             </div>
 
-            {/* Blacklist Section */}
+            {/* Blocklist Section */}
             <div className="bg-white border rounded-lg p-5">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <Shield className="w-5 h-5 text-gray-700" />
                         <h2 className="text-lg font-semibold">
-                            Blacklist Management
+                            Blocklist Management
                         </h2>
                     </div>
 
@@ -104,7 +104,7 @@ export default function SecurityManagement() {
                         className="btn-primary flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                     >
                         <Plus className="w-4 h-4" />
-                        Add to Blacklist
+                        Add to Blocklist
                     </button>
                 </div>
 
@@ -125,14 +125,14 @@ export default function SecurityManagement() {
                             </tr>
                         </thead>
                         <tbody>
-                            {blacklist.length === 0 ? (
+                            {blocklist.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="text-center py-8 text-gray-500">
-                                        No records found in blacklist.
+                                        No records found in blocklist.
                                     </td>
                                 </tr>
                             ) : (
-                                blacklist.map((item, index) => (
+                                blocklist.map((item, index) => (
                                     <tr
                                         key={index}
                                         className="border-b last:border-none hover:bg-gray-50"
@@ -148,7 +148,7 @@ export default function SecurityManagement() {
                                             <button
                                                 onClick={() => handleDelete(index)}
                                                 className="text-gray-500 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors"
-                                                title="Remove from blacklist"
+                                                title="Remove from blocklist"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -228,7 +228,7 @@ export default function SecurityManagement() {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg w-full max-w-md p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold">Add to Blacklist</h3>
+                            <h3 className="text-lg font-bold">Add to Blocklist</h3>
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="text-gray-500 hover:text-gray-700"
@@ -237,7 +237,7 @@ export default function SecurityManagement() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddBlacklist} className="space-y-4">
+                        <form onSubmit={handleAddBlocklist} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Full Name *
@@ -267,7 +267,7 @@ export default function SecurityManagement() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Reason for Blacklisting *
+                                    Reason for Blocklisting *
                                 </label>
                                 <textarea
                                     required
@@ -291,7 +291,7 @@ export default function SecurityManagement() {
                                     type="submit"
                                     className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                                 >
-                                    Add to Blacklist
+                                    Add to Blocklist
                                 </button>
                             </div>
                         </form>
