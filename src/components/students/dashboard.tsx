@@ -77,7 +77,6 @@ export default function StudentDashboardPage() {
             Krishna Hostel · Room A-204
           </p>
         </div>
-
         <button
           onClick={() => router.push('/student/studReq')}
           className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"

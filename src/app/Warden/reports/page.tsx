@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/shared/layout";
-import WardenReports from "@/components/warden/warden_report";
+import WardenReports from "@/components/warden/reports/warden_report";
 
 export default function WardenReportsPage() {
   return (

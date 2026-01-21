@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Eye, EyeOff, ArrowLeft, LogIn } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import ForgotPasswordModal from './forgot-password-modal'
+
 
 export default function LoginPage() {
   const router = useRouter()
@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
-  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
+
 
   const roles = ['Student', 'Warden', 'Admin', 'Guard']
 
@@ -92,7 +92,7 @@ export default function LoginPage() {
                   Email or Mobile
                 </label>
                 <input
-                  type="email" 
+                  type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -109,7 +109,7 @@ export default function LoginPage() {
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'} 
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -147,7 +147,7 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => setShowForgotPasswordModal(true)}
+                  onClick={() => router.push('/login/forgot-password')}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Forgot password?
@@ -177,12 +177,6 @@ export default function LoginPage() {
           </button>
         </div>
       </div>
-
-      {/* Forgot Password Modal */}
-      <ForgotPasswordModal 
-        isOpen={showForgotPasswordModal}
-        onClose={() => setShowForgotPasswordModal(false)}
-      />
     </>
   )
 }

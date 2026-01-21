@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/shared/layout";
-import PendingRequestsPage from "@/components/warden/pending_req";
+import PendingRequestsPage from "@/components/warden/pending_req/pending_req";
 
 export default function PendingRequestPage() {
   return (

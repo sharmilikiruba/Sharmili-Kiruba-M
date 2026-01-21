@@ -1,468 +1,310 @@
+// app/student/profile/page.tsx
 'use client';
+
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, X, Save, Send, Trash2 } from 'lucide-react';
 
-const NewVisitorRequestPage = () => {
-  const studentInfo = {
-    name: 'Rahul Sharma',
-    rollNumber: '21CS101',
-    hostelName: 'Krishna Hostel',
-    roomNumber: 'A-204',
-    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
-  };
+interface Student {
+  id: string;
+  name: string;
+  rollNumber: string;
+  email: string;
+  phone: string;
+  department: string;
+  year: string;
+  semester: string;
+  hostelName: string;
+  roomNumber: string;
+  hostelId: string;
+  profileImage?: string;
+}
 
-  const [formData, setFormData] = useState({
-    visitorName: '',
-    mobileNumber: '',
-    relation: '',
-    visitorPhoto: null,
-    idProofType: '',
-    idProofNumber: '',
-    purpose: '',
-    visitDate: '',
-    visitTime: '',
-    duration: '',
-    location: '',
-    accompanyingPersons: '0'
+interface VisitorStats {
+  total: number;
+  approved: number;
+  rejected: number;
+  pending: number;
+}
+
+const StudentProfile: React.FC = () => {
+  const [student, setStudent] = useState<Student | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedStudent, setEditedStudent] = useState<Partial<Student>>({});
+  const [visitorStats] = useState<VisitorStats>({
+    total: 5,
+    approved: 3,
+    rejected: 1,
+    pending: 1
   });
 
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [showDraftMessage, setShowDraftMessage] = useState(false);
-
-  // Helper functions for storage
-  const saveRequests = (requestsData: any) => {
-    if (typeof window !== 'undefined') {
-      (window as any).visitorRequests = requestsData;
-    }
-  };
-
-  const getRequests = () => {
-    if (typeof window !== 'undefined' && (window as any).visitorRequests) {
-      return (window as any).visitorRequests;
-    }
-    return [];
-  };
-
-  const saveDraft = (data: any) => {
-    if (typeof window !== 'undefined') {
-      (window as any).visitorRequestDraft = {
-        formData: data,
-        photoPreview: photoPreview,
-        savedAt: new Date().toISOString()
-      };
-    }
-  };
-
-  const getDraft = () => {
-    if (typeof window !== 'undefined' && (window as any).visitorRequestDraft) {
-      return (window as any).visitorRequestDraft;
-    }
-    return null;
-  };
-
-  const clearDraft = () => {
-    if (typeof window !== 'undefined') {
-      delete (window as any).visitorRequestDraft;
-    }
-  };
-
-  // Load draft on mount
   useEffect(() => {
-    const savedDraft = getDraft();
-    if (savedDraft) {
-      setFormData(savedDraft.formData);
-      if (savedDraft.photoPreview) {
-        setPhotoPreview(savedDraft.photoPreview);
-      }
-    }
+    // Mock data - replace with actual API call
+    const mockStudent: Student = {
+      id: "21CS101",
+      name: "Rahul Sharma",
+      rollNumber: "21CS101",
+      email: "rahul.sharma@university.edu",
+      phone: "+91 98765 43210",
+      department: "Computer Science",
+      year: "3rd Year",
+      semester: "5th Semester",
+      hostelName: "Krishna Hostel",
+      roomNumber: "A-204",
+      hostelId: "H001"
+    };
+    
+    setStudent(mockStudent);
+    setEditedStudent(mockStudent);
   }, []);
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData({ ...formData, [field]: value });
-  };
-
-  const handlePhotoUpload = (e: any) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-        setFormData({ ...formData, visitorPhoto: file.name });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemovePhoto = () => {
-    setPhotoPreview(null);
-    setFormData({ ...formData, visitorPhoto: null });
-  };
-
-  const handleSaveDraft = () => {
-    saveDraft(formData);
-    setShowDraftMessage(true);
-    setTimeout(() => setShowDraftMessage(false), 3000);
+  const handleEdit = () => {
+    setIsEditing(true);
   };
 
   const handleCancel = () => {
-    if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      clearDraft();
-      setFormData({
-        visitorName: '',
-        mobileNumber: '',
-        relation: '',
-        visitorPhoto: null,
-        idProofType: '',
-        idProofNumber: '',
-        purpose: '',
-        visitDate: '',
-        visitTime: '',
-        duration: '',
-        location: '',
-        accompanyingPersons: '0'
-      });
-      setPhotoPreview(null);
+    setIsEditing(false);
+    setEditedStudent(student || {});
+  };
+
+  const handleSave = async () => {
+    if (student) {
+      // Replace with actual API call
+      const updated = { ...student, ...editedStudent };
+      setStudent(updated);
+      setIsEditing(false);
     }
   };
 
-  const handleSubmit = () => {
-    if (!formData.visitorName || !formData.mobileNumber || !formData.relation ||
-      !formData.purpose || !formData.visitDate) {
-      alert('Please fill in all required fields marked with *');
-      return;
-    }
-
-    const newRequest = {
-      id: Date.now(),
-      studentName: studentInfo.name,
-      studentRollNumber: studentInfo.rollNumber,
-      hostelName: studentInfo.hostelName,
-      roomNumber: studentInfo.roomNumber,
-      visitorName: formData.visitorName,
-      mobileNumber: formData.mobileNumber,
-      relation: formData.relation,
-      visitorPhoto: photoPreview,
-      idProofType: formData.idProofType,
-      idProofNumber: formData.idProofNumber,
-      purpose: formData.purpose,
-      visitDate: formData.visitDate,
-      visitTime: formData.visitTime,
-      duration: formData.duration,
-      location: formData.location,
-      accompanyingPersons: formData.accompanyingPersons,
-      status: 'Pending',
-      submittedAt: new Date().toISOString(),
-      requestNumber: `REQ${Date.now().toString().slice(-6)}`
-    };
-
-    const existingRequests = getRequests();
-    const updatedRequests = [newRequest, ...existingRequests];
-    saveRequests(updatedRequests);
-
-    alert('Visitor request submitted successfully! Request Number: ' + newRequest.requestNumber);
-
-    clearDraft();
-
-    setFormData({
-      visitorName: '',
-      mobileNumber: '',
-      relation: '',
-      visitorPhoto: null,
-      idProofType: '',
-      idProofNumber: '',
-      purpose: '',
-      visitDate: '',
-      visitTime: '',
-      duration: '',
-      location: '',
-      accompanyingPersons: '0'
-    });
-    setPhotoPreview(null);
+  const handleInputChange = (field: keyof Student, value: string) => {
+    setEditedStudent(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleBackClick = () => {
-    if (confirm('Do you want to save your progress as a draft before going back?')) {
-      handleSaveDraft();
-    }
-  };
+  if (!student) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg text-gray-600">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      {showDraftMessage && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-          Draft saved successfully!
-        </div>
-      )}
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex">
 
-      <div>
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">New Visitor Request</h2>
-            <p className="text-gray-600">Submit a request for visitor entry</p>
-          </div>
-          <button
-            onClick={handleBackClick}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft size={20} />
-            <span className="font-medium">Back</span>
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          {/* Student Information */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Student Information</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Student Name</label>
-                <p className="text-base font-semibold text-gray-900">{studentInfo.name}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Roll Number</label>
-                <p className="text-base font-semibold text-gray-900">{studentInfo.rollNumber}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Hostel</label>
-                <p className="text-base font-semibold text-gray-900">{studentInfo.hostelName}</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Room Number</label>
-                <p className="text-base font-semibold text-gray-900">{studentInfo.roomNumber}</p>
-              </div>
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+              <p className="text-gray-600 mt-1">View and manage your profile information</p>
             </div>
-          </div>
 
-          {/* Visitor Information */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Visitor Information</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Visitor Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.visitorName}
-                  onChange={(e) => handleInputChange('visitorName', e.target.value)}
-                  placeholder="Enter visitor's full name"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mobile Number <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  value={formData.mobileNumber}
-                  onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
-                  placeholder="+91 XXXXX XXXXX"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Relation <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.relation}
-                  onChange={(e) => handleInputChange('relation', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select relation</option>
-                  <option value="Mother">Mother</option>
-                  <option value="Father">Father</option>
-                  <option value="Guardian">Guardian</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Visitor Photo</label>
-                {photoPreview ? (
-                  <div className="relative">
-                    <img
-                      src={photoPreview}
-                      alt="Visitor"
-                      className="w-full h-32 object-cover rounded-lg border border-gray-300"
-                    />
-                    <button
-                      onClick={handleRemovePhoto}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Profile Card */}
+              <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                  <span className="text-white text-4xl font-bold">
+                    {student.name.split(' ').map(n => n[0]).join('')}
+                  </span>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">{student.name}</h2>
+                <p className="text-gray-600 mb-3">{student.rollNumber}</p>
+                <span className="inline-block bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-sm font-medium">
+                  Student
+                </span>
+                <div className="mt-6 space-y-3 text-left">
+                  <div className="flex items-start text-gray-600">
+                    <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm break-all">{student.email}</span>
                   </div>
-                ) : (
-                  <label className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-                    <Upload size={18} />
-                    <span>Upload Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                  </label>
-                )}
+                  <div className="flex items-center text-gray-600">
+                    <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span className="text-sm">{student.phone}</span>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">ID Proof Type</label>
-                <select
-                  value={formData.idProofType}
-                  onChange={(e) => handleInputChange('idProofType', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select ID type</option>
-                  <option value="Aadhaar">Aadhaar Card</option>
-                  <option value="PAN">PAN Card</option>
-                  <option value="DL">Driving License</option>
-                  <option value="Voter">Voter ID</option>
-                  <option value="Passport">Passport</option>
-                </select>
-              </div>
+              {/* Student Information */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-900">Student Information</h3>
+                    {!isEditing ? (
+                      <button
+                        onClick={handleEdit}
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span>Edit</span>
+                      </button>
+                    ) : (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={handleCancel}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-200"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">ID Proof Number</label>
-                <input
-                  type="text"
-                  value={formData.idProofNumber}
-                  onChange={(e) => handleInputChange('idProofNumber', e.target.value)}
-                  placeholder="Enter ID number"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Academic Details */}
+                    <div>
+                      <div className="flex items-center space-x-2 mb-4">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        <h4 className="font-semibold text-gray-900">Academic Details</h4>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">
+                            Roll Number
+                          </label>
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={editedStudent.rollNumber || ''}
+                              onChange={(e) => handleInputChange('rollNumber', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">{student.rollNumber}</p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">
+                            Department
+                          </label>
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={editedStudent.department || ''}
+                              onChange={(e) => handleInputChange('department', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium">{student.department}</p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">
+                            Year / Semester
+                          </label>
+                          {isEditing ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                value={editedStudent.year || ''}
+                                onChange={(e) => handleInputChange('year', e.target.value)}
+                                placeholder="Year"
+                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                              />
+                              <input
+                                type="text"
+                                value={editedStudent.semester || ''}
+                                onChange={(e) => handleInputChange('semester', e.target.value)}
+                                placeholder="Semester"
+                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-gray-900 font-medium">
+                              {student.year} / {student.semester}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Hostel Details - Read Only */}
+                    <div>
+                      <div className="flex items-center space-x-2 mb-4">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <h4 className="font-semibold text-gray-900">Hostel Details</h4>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">
+                            Hostel Name
+                          </label>
+                          <p className="text-gray-900 font-medium">{student.hostelName}</p>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">
+                            Room Number
+                          </label>
+                          <p className="text-gray-900 font-medium">{student.roomNumber}</p>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-600 mb-1">
+                            Hostel ID
+                          </label>
+                          <p className="text-gray-900 font-medium">{student.hostelId}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Visitor Statistics */}
+            <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-6">Visitor Statistics</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                    {visitorStats.total}
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">Total Requests</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-4xl font-bold text-green-600 mb-2">
+                    {visitorStats.approved}
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">Approved</div>
+                </div>
+                <div className="text-center p-4 bg-red-50 rounded-lg">
+                  <div className="text-4xl font-bold text-red-600 mb-2">
+                    {visitorStats.rejected}
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">Rejected</div>
+                </div>
+                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <div className="text-4xl font-bold text-yellow-600 mb-2">
+                    {visitorStats.pending}
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">Pending</div>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Visit Details */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Visit Details</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Purpose of Visit <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.purpose}
-                  onChange={(e) => handleInputChange('purpose', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select purpose</option>
-                  <option value="Family Visit">Family Visit</option>
-                  <option value="Academic">Academic Discussion</option>
-                  <option value="Emergency">Emergency</option>
-                  <option value="Document">Document Delivery</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Visit Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={formData.visitDate}
-                  onChange={(e) => handleInputChange('visitDate', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Visit Time</label>
-                <input
-                  type="time"
-                  value={formData.visitTime}
-                  onChange={(e) => handleInputChange('visitTime', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Expected Duration</label>
-                <select
-                  value={formData.duration}
-                  onChange={(e) => handleInputChange('duration', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select duration</option>
-                  <option value="1-2 hours">1-2 hours</option>
-                  <option value="2-4 hours">2-4 hours</option>
-                  <option value="Half day">Half day</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Meeting Location</label>
-                <select
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select location</option>
-                  <option value="Hostel Room">Hostel Room</option>
-                  <option value="Visitor's Lounge">Visitor's Lounge</option>
-                  <option value="Campus Garden">Campus Garden</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Accompanying Persons</label>
-                <input
-                  type="number"
-                  value={formData.accompanyingPersons}
-                  onChange={(e) => handleInputChange('accompanyingPersons', e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-4 pt-4">
-            <button
-              onClick={handleCancel}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
-            >
-              <X size={18} />
-              Cancel
-            </button>
-
-            <button
-              onClick={handleSaveDraft}
-              className="px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center gap-2"
-            >
-              <Save size={18} />
-              Save Draft
-            </button>
-
-            <button
-              onClick={handleSubmit}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
-            >
-              <Send size={18} />
-              Submit Request
-            </button>
-          </div>
-        </div>
+        </main>
       </div>
     </div>
   );
 };
 
-export default NewVisitorRequestPage;
+export default StudentProfile;

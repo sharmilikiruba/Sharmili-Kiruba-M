@@ -14,7 +14,6 @@ export default function Dashboard() {
 
   const quickActions = [
     { label: 'Scan Entry', icon: LogIn, route: '/Guard/Scan-Entry', primary: false },
-    { label: 'Scan Exit', icon: LogOut, route: '/Guard/Scan-Exit', primary: false },
     { label: 'Walk-in Registration', icon: UserPlus, route: '/Guard/WalkIn-Registration', primary: false },
   ];
 

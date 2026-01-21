@@ -86,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
       { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/Admin/Hostel_mgt' },
       { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/Admin/system_config' },
       { id: 'security-management', label: 'Security Management', icon: Shield, href: '/Admin/Security' },
-      { id: 'audit-logs', label: 'Audit Logs', icon: ScrollText, href: '/Admin/Audit_logs' }
+     
     ]
   };
 
