@@ -23,10 +23,13 @@ export const WardenViewModal: React.FC<WardenViewModalProps> = ({ isOpen, onClos
                 </div>
 
                 <div className="p-6 space-y-4">
+                    <ViewField label="Employee ID" value={warden.empId || 'N/A'} />
                     <ViewField label="Full Name" value={warden.name} />
                     <ViewField label="Email" value={warden.email} />
                     <ViewField label="Contact" value={warden.contact || 'N/A'} />
+                    <ViewField label="Address" value={warden.address || 'N/A'} />
                     <ViewField label="Hostel" value={warden.hostel} />
+                    <ViewField label="Date of Joining" value={warden.dateOfJoining || 'N/A'} />
                     <ViewField label="Status" value={warden.status} />
                 </div>
 

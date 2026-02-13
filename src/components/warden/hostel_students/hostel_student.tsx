@@ -12,46 +12,7 @@ const years: string[] = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 const semesters: string[] = ['1st Semester', '2nd Semester', '3rd Semester', '4th Semester', '5th Semester', '6th Semester', '7th Semester', '8th Semester'];
 
 const HostelStudents: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: 1,
-      name: 'Rahul Sharma',
-      rollNumber: '21CS101',
-      email: 'rahul.sharma@university.edu',
-      mobile: '+91 98765 43210',
-      roomNumber: 'A-204',
-      department: 'Computer Science',
-      year: '3rd Year',
-      semester: '5th Semester',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
-      parentName: 'Mr. Sharma',
-      parentMobile: '+91 98765 43211',
-      guardianName: 'Mr. Sharma',
-      guardianMobile: '+91 98765 43211',
-      fatherPhoto: null,
-      motherPhoto: null,
-      guardianPhoto: null
-    },
-    {
-      id: 2,
-      name: 'Amit Kumar',
-      rollNumber: '22ME103',
-      email: 'amit.kumar@university.edu',
-      mobile: '+91 98765 43212',
-      roomNumber: 'C-310',
-      department: 'Mechanical',
-      year: '2nd Year',
-      semester: '3rd Semester',
-      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop',
-      parentName: 'Mrs. Kumar',
-      parentMobile: '+91 98765 43213',
-      guardianName: 'Mrs. Kumar',
-      guardianMobile: '+91 98765 43213',
-      fatherPhoto: null,
-      motherPhoto: null,
-      guardianPhoto: null
-    }
-  ]);
+  const [students, setStudents] = useState<Student[]>([]);
 
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
@@ -77,17 +38,17 @@ const HostelStudents: React.FC = () => {
     parentMobile: '',
     parentRelation: '',
     address: '',
+    gender: '',
+    dob: '',
     bloodGroup: '',
     emergencyContact: '',
     guardianName: '',
-    guardianMobile: ''
+    guardianMobile: '',
+    password: ''
   });
 
   const [photos, setPhotos] = useState<StudentPhotos>({
     student: null,
-    father: null,
-    mother: null,
-    guardian: null
   });
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -175,10 +136,10 @@ const HostelStudents: React.FC = () => {
   const resetForm = (): void => {
     setFormData({
       fullName: '', rollNumber: '', email: '', mobile: '', department: '', year: '', semester: '', roomNumber: '',
-      parentName: '', parentMobile: '', parentRelation: '', address: '', bloodGroup: '', emergencyContact: '',
-      guardianName: '', guardianMobile: ''
+      parentName: '', parentMobile: '', parentRelation: '', address: '', gender: '', dob: '', bloodGroup: '', emergencyContact: '',
+      guardianName: '', guardianMobile: '', password: ''
     });
-    setPhotos({ student: null, father: null, mother: null, guardian: null });
+    setPhotos({ student: null });
     setIsEditing(false);
     setCurrentStudentId(null);
   };
@@ -200,13 +161,13 @@ const HostelStudents: React.FC = () => {
       year: formData.year,
       semester: formData.semester,
       photo: photos.student,
+      gender: formData.gender,
+      dob: formData.dob,
+      address: formData.address,
       parentName: formData.parentName,
       parentMobile: formData.parentMobile,
       guardianName: formData.guardianName,
       guardianMobile: formData.guardianMobile,
-      fatherPhoto: photos.father,
-      motherPhoto: photos.mother,
-      guardianPhoto: photos.guardian
     };
 
     setStudents(prev => [...prev, newStudent]);
@@ -231,13 +192,13 @@ const HostelStudents: React.FC = () => {
           year: formData.year,
           semester: formData.semester,
           photo: photos.student || student.photo,
+          gender: formData.gender,
+          dob: formData.dob,
+          address: formData.address,
           parentName: formData.parentName,
           parentMobile: formData.parentMobile,
           guardianName: formData.guardianName,
           guardianMobile: formData.guardianMobile,
-          fatherPhoto: photos.father || student.fatherPhoto,
-          motherPhoto: photos.mother || student.motherPhoto,
-          guardianPhoto: photos.guardian || student.guardianPhoto
         };
       }
       return student;
@@ -268,17 +229,17 @@ const HostelStudents: React.FC = () => {
       parentName: student.parentName || '',
       parentMobile: student.parentMobile || '',
       parentRelation: '',
-      address: '',
+      address: student.address || '',
+      gender: student.gender || '',
+      dob: student.dob || '',
       bloodGroup: '',
       emergencyContact: '',
       guardianName: student.guardianName || '',
-      guardianMobile: student.guardianMobile || ''
+      guardianMobile: student.guardianMobile || '',
+      password: ''
     });
     setPhotos({
       student: student.photo,
-      father: student.fatherPhoto || null,
-      mother: student.motherPhoto || null,
-      guardian: student.guardianPhoto || null
     });
     setShowEditModal(true);
   };

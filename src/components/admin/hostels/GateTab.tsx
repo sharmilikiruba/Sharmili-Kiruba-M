@@ -19,19 +19,17 @@ export const GateTab: React.FC<GateTabProps> = ({ gates, onEdit, onDelete }) => 
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Code</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Hostel</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Guard</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                     {gates.map((gate) => (
-                        <tr key={gate.id} className="hover:bg-gray-50 transition-colors">
+                        <tr key={gate.gate_id || gate.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-6 py-4 font-semibold text-gray-900">{gate.name}</td>
                             <td className="px-6 py-4 text-gray-900">{gate.code}</td>
                             <td className="px-6 py-4 text-gray-900">{gate.hostel}</td>
                             <td className="px-6 py-4 text-gray-900">{gate.type}</td>
-                            <td className="px-6 py-4 text-gray-900">{gate.guard}</td>
                             <td className="px-6 py-4">
                                 <StatusBadge status={gate.status} />
                             </td>
@@ -56,8 +54,8 @@ export const GateTab: React.FC<GateTabProps> = ({ gates, onEdit, onDelete }) => 
                         </tr>
                     ))}
                     {gates.length === 0 && (
-                        <tr>
-                            <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                        <tr key="no-gates">
+                            <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                                 No gates found matching your search.
                             </td>
                         </tr>

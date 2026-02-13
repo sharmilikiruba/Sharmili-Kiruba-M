@@ -121,18 +121,15 @@ export default function WalkInRegistration() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Student <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="student"
                     value={formData.student}
                     onChange={handleInputChange}
+                    placeholder="Enter student name & room"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     required
-                  >
-                    <option value="">Select student</option>
-                    <option value="student1">Rahul Sharma - A-204</option>
-                    <option value="student2">Amit Kumar - C-310</option>
-                    <option value="student3">Priya Singh - B-105</option>
-                  </select>
+                  />
                 </div>
 
                 <div>

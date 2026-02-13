@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, ArrowRight, Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface EmailStepProps {
     email: string;
@@ -11,6 +12,8 @@ export const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, onNext })
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) {
@@ -21,11 +24,14 @@ export const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, onNext })
         setIsLoading(true);
         setError('');
 
-        // Simulate API call to send OTP
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await apiClient.post('/auth/forgot-password', { email });
             onNext();
-        }, 1500);
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

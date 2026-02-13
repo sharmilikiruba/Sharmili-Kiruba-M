@@ -1,16 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ShieldCheck, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface OtpStepProps {
     email: string;
+    setOtp: (otp: string) => void;
     onNext: () => void;
     onBack: () => void;
 }
 
-export const OtpStep: React.FC<OtpStepProps> = ({ email, onNext, onBack }) => {
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+export const OtpStep: React.FC<OtpStepProps> = ({ email, setOtp, onNext, onBack }) => {
+    const [otp, setLocalOtp] = useState(['', '', '', '', '', '']);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [timer, setTimer] = useState(30);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     useEffect(() => {
@@ -19,12 +22,36 @@ export const OtpStep: React.FC<OtpStepProps> = ({ email, onNext, onBack }) => {
         }
     }, []);
 
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [timer]);
+
+
+    const handleResend = async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            await apiClient.post('/auth/resend-otp', { email });
+            setTimer(30);
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to resend OTP.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleChange = (index: number, value: string) => {
         if (!/^\d*$/.test(value)) return;
 
         const newOtp = [...otp];
         newOtp[index] = value.slice(-1);
-        setOtp(newOtp);
+        setLocalOtp(newOtp);
 
         if (value && index < 5 && inputRefs.current[index + 1]) {
             inputRefs.current[index + 1]?.focus();
@@ -37,7 +64,7 @@ export const OtpStep: React.FC<OtpStepProps> = ({ email, onNext, onBack }) => {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const otpString = otp.join('');
         if (otpString.length < 6) {
@@ -48,11 +75,16 @@ export const OtpStep: React.FC<OtpStepProps> = ({ email, onNext, onBack }) => {
         setIsLoading(true);
         setError('');
 
-        // Simulate OTP verification
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await apiClient.post('/auth/verify-otp', { email, otp: otpString });
+
+            setOtp(otpString);
             onNext();
-        }, 1500);
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Invalid OTP. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -118,8 +150,13 @@ export const OtpStep: React.FC<OtpStepProps> = ({ email, onNext, onBack }) => {
             </div>
 
             <div className="text-center">
-                <button type="button" className="text-sm font-bold text-blue-600 hover:text-blue-700">
-                    Resend Code (30s)
+                <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={timer > 0 || isLoading}
+                    className="text-sm font-bold text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {timer > 0 ? `Resend Code (${timer}s)` : 'Resend Code'}
                 </button>
             </div>
         </form>

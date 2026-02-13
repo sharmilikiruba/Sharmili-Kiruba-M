@@ -2,6 +2,8 @@
 
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import apiClient from '@/lib/api-client';
+import { useRouter } from 'next/navigation';
 
 // Define user types
 export type UserRole = 'student' | 'warden' | 'guard' | 'admin';
@@ -22,9 +24,11 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  error: string | null;
+  login: (email: string, password: string, role: string) => Promise<User>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
+  clearError: () => void;
 }
 
 // Create context with undefined default value
@@ -39,6 +43,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   // Check if user is already logged in (e.g., from localStorage)
   useEffect(() => {
@@ -46,18 +52,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // Check localStorage for saved user data
         const savedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
 
-        if (savedUser && token) {
-          // Validate token with backend (in real app)
-          // For now, just parse saved user
-          setUser(JSON.parse(savedUser));
+        if (savedUser && savedUser !== 'undefined' && token) {
+          // Parse and validate saved user
+          const parsedUser = JSON.parse(savedUser);
+
+          // Normalize role to lowercase
+          if (parsedUser.role) {
+            parsedUser.role = parsedUser.role.toLowerCase();
+          }
+
+          setUser(parsedUser);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
         // Clear invalid data
         localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        localStorage.removeItem('auth_token');
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -67,71 +80,78 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, role: string) => {
     try {
       setIsLoading(true);
+      setError(null);
 
-      // In real app, make API call to backend
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
-      // const data = await response.json();
+      // Backend often expects capitalized roles but lowercase emails
+      const normalizedEmail = email.trim().toLowerCase();
+      const payloadRole = role.trim(); // Keep original casing (Admin, Guard, etc.)
 
-      // Mock login - Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      const response = await apiClient.post('auth/login', {
+        email: normalizedEmail,
+        password,
+        role: payloadRole
+      });
 
-      // Mock user data based on email
-      let mockUser: User;
-      
-      if (email.includes('student')) {
-        mockUser = {
-          id: '1',
-          name: 'Rahul Sharma',
-          email: 'rahul.sharma@university.edu',
-          role: 'student',
-          hostelInfo: 'Krishna Hostel',
-          roomInfo: 'Room A-204',
-          phone: '+91 98765 43210'
-        };
-      } else if (email.includes('warden')) {
-        mockUser = {
-          id: '2',
-          name: 'Dr. Priya Mehta',
-          email: 'priya.mehta@university.edu',
-          role: 'warden',
-          hostelInfo: 'Krishna Hostel',
-          phone: '+91 98765 43211'
-        };
-      } else if (email.includes('guard')) {
-        mockUser = {
-          id: '3',
-          name: 'Rajesh Kumar',
-          email: 'rajesh.kumar@university.edu',
-          role: 'guard',
-          phone: '+91 98765 43212'
-        };
-      } else if (email.includes('admin')) {
-        mockUser = {
-          id: '4',
-          name: 'Admin User',
-          email: 'admin@university.edu',
-          role: 'admin',
-          phone: '+91 98765 43213'
-        };
-      } else {
-        throw new Error('Invalid credentials');
+      // Handle both nested { token, user } and flat { token, ...userData } responses
+      const { token, user: nestedUser, ...flatUser } = response.data;
+      const userData = nestedUser || flatUser;
+      const authToken = token || response.data.accessToken;
+
+      if (!userData || !authToken) {
+        throw new Error('Invalid response from server');
       }
 
-      // Save to localStorage
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', 'mock-jwt-token'); // In real app, save actual JWT
+      // Normalize internal role to lowercase to match UserRole type
+      const internalRole = (userData.role || payloadRole).toLowerCase() as UserRole;
 
-      setUser(mockUser);
-    } catch (error) {
+      // Ensure user object has required fields
+      const normalizedUser: User = {
+        id: userData.id || userData.user_id || userData._id || 'unknown',
+        name: userData.name || userData.username || 'User',
+        email: userData.email || normalizedEmail,
+        role: internalRole,
+        hostelInfo: userData.hostelInfo || userData.hostel_info,
+        roomInfo: userData.roomInfo || userData.room_info,
+        phone: userData.phone,
+        avatar: userData.avatar
+      };
+
+      // Save to localStorage
+      localStorage.setItem('auth_token', authToken);
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+
+      setUser(normalizedUser);
+      return normalizedUser;
+    } catch (error: any) {
       console.error('Login failed:', error);
-      throw error;
+
+      let errorMessage = 'Login failed. Please try again.';
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      // Handle specific error cases
+      if (errorMessage.toLowerCase().includes('account locked')) {
+        errorMessage = 'Account is locked due to multiple failed attempts. Please try again later.';
+      } else if (errorMessage.toLowerCase().includes('invalid credentials') ||
+        errorMessage.toLowerCase().includes('role mismatch')) {
+        errorMessage = 'Invalid email, password, or role selected.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'User not found. Please check your email.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -139,32 +159,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    // In real app, make API call to invalidate token
-    // await fetch('/api/auth/logout', { method: 'POST' });
-
     // Clear localStorage
     localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    
+    localStorage.removeItem('auth_token');
+
     setUser(null);
+    setError(null);
+    router.push('/login');
   };
 
   // Update user information
   const updateUser = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
+
+      // Normalize role if updated
+      if (updatedUser.role) {
+        updatedUser.role = updatedUser.role.toLowerCase() as UserRole;
+      }
+
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
     }
+  };
+
+  // Clear error
+  const clearError = () => {
+    setError(null);
   };
 
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
     isLoading,
+    error,
     login,
     logout,
-    updateUser
+    updateUser,
+    clearError
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

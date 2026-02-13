@@ -1,10 +1,7 @@
 export type ReportType =
     | 'visitor-statistics'
-    | 'warden-performance'
-    | 'security-report'
     | 'student-wise'
-    | 'hostel-wise'
-    | 'custom-report';
+    | 'hostel-wise';
 
 export interface VisitorStat {
     date: string;
@@ -15,25 +12,6 @@ export interface VisitorStat {
     exitTime: string;
     duration: string;
     status?: string;
-}
-
-export interface WardenPerf {
-    name: string;
-    hostel: string;
-    totalRequests: number;
-    approved: number;
-    rejected: number;
-    approvalRate: string;
-    avgResponseTime: string;
-}
-
-export interface SecurityEvent {
-    timestamp: string;
-    visitor: string;
-    student: string;
-    eventType: string;
-    status: 'Normal' | 'Warning' | 'Alert';
-    remarks: string;
 }
 
 export interface StudentStat {

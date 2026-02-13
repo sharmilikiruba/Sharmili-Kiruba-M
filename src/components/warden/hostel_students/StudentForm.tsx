@@ -74,9 +74,6 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <PhotoUploadBox type="student" label="Student Photo *" photo={photos.student} />
-                    <PhotoUploadBox type="father" label="Father Photo" photo={photos.father} />
-                    <PhotoUploadBox type="mother" label="Mother Photo" photo={photos.mother} />
-                    <PhotoUploadBox type="guardian" label="Guardian Photo" photo={photos.guardian} />
                 </div>
             </section>
 
@@ -131,6 +128,56 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                             onChange={(e) => handleInputChange('mobile', e.target.value)}
                             placeholder="+91 XXXXX XXXXX"
                             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Account Password <span className="text-red-500">*</span></label>
+                        <input
+                            type="password"
+                            required
+                            value={formData.password}
+                            onChange={(e) => handleInputChange('password', e.target.value)}
+                            placeholder="Set student password"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Gender <span className="text-red-500">*</span></label>
+                        <select
+                            required
+                            value={formData.gender}
+                            onChange={(e) => handleInputChange('gender', e.target.value)}
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
+                        >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Date of Birth <span className="text-red-500">*</span></label>
+                        <input
+                            type="date"
+                            required
+                            value={formData.dob}
+                            onChange={(e) => handleInputChange('dob', e.target.value)}
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
+                        />
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-semibold text-gray-700">Permanent Address <span className="text-red-500">*</span></label>
+                        <textarea
+                            required
+                            value={formData.address}
+                            onChange={(e) => handleInputChange('address', e.target.value)}
+                            placeholder="Full address here..."
+                            rows={2}
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium resize-none"
                         />
                     </div>
                 </div>

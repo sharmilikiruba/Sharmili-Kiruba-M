@@ -15,66 +15,44 @@ export default function StudentDashboardPage() {
   const stats = [
     {
       title: 'Pending Requests',
-      value: 1,
+      value: 0,
       icon: Clock,
       bg: 'bg-yellow-50',
       iconBg: 'bg-yellow-500'
     },
     {
       title: 'Approved',
-      value: 1,
+      value: 0,
       icon: CheckCircle,
       bg: 'bg-green-50',
       iconBg: 'bg-green-500'
     },
     {
       title: 'Rejected',
-      value: 1,
+      value: 0,
       icon: XCircle,
       bg: 'bg-red-50',
       iconBg: 'bg-red-500'
     },
     {
       title: 'Total Requests',
-      value: 3,
+      value: 0,
       icon: ClipboardList,
       bg: 'bg-blue-50',
       iconBg: 'bg-blue-500'
     }
   ]
 
-  const recentRequests = [
-    {
-      name: 'Suresh Sharma',
-      relation: 'Father · Family Visit',
-      date: 'Jan 06, 2026 at 10:00',
-      status: 'Pending',
-      color: 'bg-yellow-500'
-    },
-    {
-      name: 'Kiran Sharma',
-      relation: 'Mother · Family Visit',
-      date: 'Jan 04, 2026 at 14:00',
-      status: 'Approved',
-      color: 'bg-green-500'
-    },
-    {
-      name: 'Unknown Person',
-      relation: 'Friend · Other',
-      date: 'Jan 02, 2026 at 22:00',
-      status: 'Rejected',
-      color: 'bg-red-500'
-    }
-  ]
+  const recentRequests: any[] = []
 
   return (
     <div className="p-8 bg-gray-50">
       {/* Top Section */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Welcome, Rahul Sharma!</h1>
+          <h1 className="text-3xl font-bold">Welcome!</h1>
           <p className="text-gray-600 mt-1">
-            Krishna Hostel · Room A-204
+            Student Dashboard
           </p>
         </div>
         <button
@@ -118,23 +96,29 @@ export default function StudentDashboardPage() {
           </button>
         </div>
 
-        {recentRequests.map((req, index) => (
-          <div
-            key={index}
-            className="flex justify-between items-center p-6 border-b last:border-none"
-          >
-            <div>
-              <p className="font-semibold">{req.name}</p>
-              <p className="text-sm text-gray-600">{req.relation}</p>
-              <p className="text-xs text-gray-400 mt-1">{req.date}</p>
-            </div>
-            <span
-              className={`${req.color} text-white text-sm px-4 py-1 rounded-full`}
+        {recentRequests.length > 0 ? (
+          recentRequests.map((req, index) => (
+            <div
+              key={index}
+              className="flex justify-between items-center p-6 border-b last:border-none"
             >
-              {req.status}
-            </span>
+              <div>
+                <p className="font-semibold">{req.name}</p>
+                <p className="text-sm text-gray-600">{req.relation}</p>
+                <p className="text-xs text-gray-400 mt-1">{req.date}</p>
+              </div>
+              <span
+                className={`${req.color} text-white text-sm px-4 py-1 rounded-full`}
+              >
+                {req.status}
+              </span>
+            </div>
+          ))
+        ) : (
+          <div className="p-8 text-center text-gray-500 italic">
+            No recent requests found.
           </div>
-        ))}
+        )}
       </div>
 
       {/* Quick Info */}
@@ -153,7 +137,7 @@ export default function StudentDashboardPage() {
 
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-500">Hostel Contact</p>
-            <p className="font-semibold mt-1">+91 98765 11111</p>
+            <p className="font-semibold mt-1">-</p>
           </div>
         </div>
       </div>

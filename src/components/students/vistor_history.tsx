@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { 
+import {
   Search,
   Calendar,
   Clock,
@@ -20,64 +20,10 @@ interface Visit {
   entryTime: string;
   exitTime: string | null;
   status: 'Checked In' | 'Checked Out';
+  remarks?: string;
 }
 
-const sampleVisits: Visit[] = [
-  {
-    id: '1',
-    visitorName: 'Dr. Mohan Kumar',
-    visitDate: '05 Jan 2026',
-    purpose: 'Medical Emergency',
-    entryTime: '01:40 PM',
-    exitTime: null,
-    status: 'Checked In'
-  },
-  {
-    id: '2',
-    visitorName: 'Kiran Sharma',
-    visitDate: '04 Jan 2026',
-    purpose: 'Family Visit',
-    entryTime: '07:45 PM',
-    exitTime: '10:15 PM',
-    status: 'Checked Out'
-  },
-  {
-    id: '3',
-    visitorName: 'Priya Sharma',
-    visitDate: '02 Jan 2026',
-    purpose: 'Birthday Celebration',
-    entryTime: '02:00 PM',
-    exitTime: '06:30 PM',
-    status: 'Checked Out'
-  },
-  {
-    id: '4',
-    visitorName: 'Amit Kumar',
-    visitDate: '28 Dec 2025',
-    purpose: 'Family Visit',
-    entryTime: '10:00 AM',
-    exitTime: '04:00 PM',
-    status: 'Checked Out'
-  },
-  {
-    id: '5',
-    visitorName: 'Rajesh Patel',
-    visitDate: '25 Dec 2025',
-    purpose: 'Festival Visit',
-    entryTime: '09:00 AM',
-    exitTime: '08:00 PM',
-    status: 'Checked Out'
-  },
-  {
-    id: '6',
-    visitorName: 'Sunita Devi',
-    visitDate: '20 Dec 2025',
-    purpose: 'Delivery',
-    entryTime: '11:30 AM',
-    exitTime: '11:45 AM',
-    status: 'Checked Out'
-  }
-];
+const sampleVisits: Visit[] = [];
 
 const allPurposes = [
   'All Purposes',
@@ -96,10 +42,10 @@ export default function VisitorHistory() {
 
   // Filter visits
   const filteredVisits = visits.filter(visit => {
-    const matchesSearch = 
+    const matchesSearch =
       visit.visitorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       visit.purpose.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesPurpose = selectedPurpose === 'All Purposes' || visit.purpose === selectedPurpose;
 
     return matchesSearch && matchesPurpose;
@@ -188,11 +134,14 @@ export default function VisitorHistory() {
                     <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 uppercase tracking-wider">
                       Status
                     </th>
+                    <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                      Warden Remarks
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredVisits.map((visit) => (
-                    <tr 
+                    <tr
                       key={visit.id}
                       className="hover:bg-blue-50/50 transition-colors duration-150"
                     >
@@ -248,6 +197,13 @@ export default function VisitorHistory() {
                       {/* Status */}
                       <td className="py-5 px-6">
                         <StatusBadge status={visit.status} />
+                      </td>
+
+                      {/* Remarks */}
+                      <td className="py-5 px-6">
+                        <span className="text-slate-600 text-sm italic">
+                          {visit.remarks || 'No remarks'}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -317,14 +273,14 @@ function StatusBadge({ status }: { status: 'Checked In' | 'Checked Out' }) {
 }
 
 // Stat Card Component
-function StatCard({ 
-  icon, 
-  label, 
-  value, 
-  color 
-}: { 
-  icon: React.ReactNode; 
-  label: string; 
+function StatCard({
+  icon,
+  label,
+  value,
+  color
+}: {
+  icon: React.ReactNode;
+  label: string;
   value: number;
   color: 'blue' | 'green' | 'purple';
 }) {

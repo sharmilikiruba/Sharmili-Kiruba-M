@@ -6,53 +6,27 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   const stats = [
-    { label: 'Total Users', value: '7', icon: Users },
+    { label: 'Total Users', value: '0', icon: Users },
     
   ];
 
   const userStatistics = [
-    { label: 'Total Students', value: '3', icon: Users },
-    { label: 'Total Wardens', value: '2', icon: Shield },
-    { label: 'Total Guards', value: '2', icon: Shield },
-    { label: 'Active Hostels', value: '3', icon: Home },
+    { label: 'Total Students', value: '0', icon: Users },
+    { label: 'Total Wardens', value: '0', icon: Shield },
+    { label: 'Total Guards', value: '0', icon: Shield },
+    { label: 'Active Hostels', value: '0', icon: Home },
   ];
 
   const recentActivities = [
     {
-      title: 'Created new hostel',
-      user: 'Prof. Rajesh Gupta',
-      category: 'Hostel Management',
-      time: '02:30 PM',
-      icon: Activity,
+      title:'',
+      user: '',
+      category: '',
+      time: '',
+      icon: Activity
     },
-    {
-      title: 'Approved visitor request',
-      user: 'Dr. Suresh Kumar',
-      category: 'Visitor Management',
-      time: '02:00 PM',
-      icon: Activity,
-    },
-    {
-      title: 'Rejected visitor request',
-      user: 'Dr. Suresh Kumar',
-      category: 'Visitor Management',
-      time: '01:30 AM',
-      icon: Activity,
-    },
-    {
-      title: 'Verified visitor entry',
-      user: 'Ramesh Singh',
-      category: 'Entry/Exit',
-      time: '07:52 PM',
-      icon: Activity,
-    },
-    {
-      title: 'Updated system config...',
-      user: 'Prof. Rajesh Gupta',
-      category: 'Settings',
-      time: '03:45 PM',
-      icon: Activity,
-    },
+  
+  
   ];
 
   return (

@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Lock, CheckCircle2, Loader2, Eye, EyeOff } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface ResetPasswordStepProps {
+    email: string;
+    otp: string;
     onComplete: () => void;
 }
 
-export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ onComplete }) => {
+export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ email, otp, onComplete }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -13,7 +16,7 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ onComplete
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (password.length < 8) {
             setError('Password must be at least 8 characters');
@@ -27,14 +30,28 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ onComplete
         setIsLoading(true);
         setError('');
 
-        // Simulate password reset
-        setTimeout(() => {
-            setIsLoading(true); // Keep loading state until success screen
+        try {
+            // Using standard auth endpoint consistent with login flow
+            // If backend requires /post/auth/reset-password specifically, this path needs adjustment
+            await apiClient.post('/auth/reset-password', {
+                email,
+                otp,
+                password
+            });
+
             setIsSuccess(true);
             setTimeout(() => {
                 onComplete();
             }, 2000);
-        }, 1500);
+        } catch (err: any) {
+            console.error('Reset password error:', err);
+            const errorMessage = err.response?.data?.message
+                || err.response?.data?.error
+                || 'Failed to reset password. Please try again.';
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     if (isSuccess) {

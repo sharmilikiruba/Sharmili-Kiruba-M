@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Hostel, HostelForm } from './types';
@@ -19,10 +21,7 @@ export const EditHostelModal: React.FC<EditHostelModalProps> = ({ isOpen, onClos
         capacity: '',
         warden: '',
         address: '',
-        isNewWarden: false,
-        newWardenName: '',
-        newWardenEmail: '',
-        newWardenContact: ''
+        password: '',
     });
 
     useEffect(() => {
@@ -30,14 +29,11 @@ export const EditHostelModal: React.FC<EditHostelModalProps> = ({ isOpen, onClos
             setForm({
                 name: hostel.name,
                 type: hostel.type,
-                totalRooms: hostel.rooms.toString(),
-                capacity: hostel.capacity.toString(),
+                totalRooms: (hostel.rooms || 0).toString(),
+                capacity: (hostel.capacity || 0).toString(),
                 warden: hostel.warden,
                 address: hostel.address,
-                isNewWarden: false,
-                newWardenName: '',
-                newWardenEmail: '',
-                newWardenContact: ''
+                password: '',
             });
         }
     }, [hostel]);

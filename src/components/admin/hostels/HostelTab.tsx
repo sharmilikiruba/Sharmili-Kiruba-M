@@ -1,15 +1,16 @@
 import React from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Eye, Trash2 } from 'lucide-react';
 import { Hostel } from './types';
 import { StatusBadge } from './HostelComponents';
 
 interface HostelTabProps {
     hostels: Hostel[];
     onEdit: (hostel: Hostel) => void;
+    onView: (hostel: Hostel) => void;
     onDelete: (id: string) => void;
 }
 
-export const HostelTab: React.FC<HostelTabProps> = ({ hostels, onEdit, onDelete }) => {
+export const HostelTab: React.FC<HostelTabProps> = ({ hostels, onEdit, onView, onDelete }) => {
     return (
         <div className="overflow-x-auto">
             <table className="w-full">
@@ -25,7 +26,7 @@ export const HostelTab: React.FC<HostelTabProps> = ({ hostels, onEdit, onDelete 
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                     {hostels.map((hostel) => (
-                        <tr key={hostel.id} className="hover:bg-gray-50 transition-colors">
+                        <tr key={hostel.hostel_id || hostel.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-6 py-4">
                                 <div>
                                     <div className="font-semibold text-gray-900">{hostel.name}</div>
@@ -40,6 +41,13 @@ export const HostelTab: React.FC<HostelTabProps> = ({ hostels, onEdit, onDelete 
                             </td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => onView(hostel)}
+                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                        title="View Hostel"
+                                    >
+                                        <Eye className="w-4 h-4 text-gray-600" />
+                                    </button>
                                     <button
                                         onClick={() => onEdit(hostel)}
                                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -59,7 +67,7 @@ export const HostelTab: React.FC<HostelTabProps> = ({ hostels, onEdit, onDelete 
                         </tr>
                     ))}
                     {hostels.length === 0 && (
-                        <tr>
+                        <tr key="no-hostels">
                             <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                                 No hostels found matching your search.
                             </td>

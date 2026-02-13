@@ -8,10 +8,20 @@ interface EditWardenModalProps {
     onClose: () => void;
     onSave: (id: string, form: WardenForm) => void;
     warden: Warden | null;
+    hostels: any[];
 }
 
-export const EditWardenModal: React.FC<EditWardenModalProps> = ({ isOpen, onClose, onSave, warden }) => {
-    const [form, setForm] = useState<WardenForm>({ fullName: '', email: '', mobile: '', hostel: '' });
+export const EditWardenModal: React.FC<EditWardenModalProps> = ({ isOpen, onClose, onSave, warden, hostels }) => {
+    const [form, setForm] = useState<WardenForm>({
+        fullName: '',
+        email: '',
+        mobile: '',
+        hostel: '',
+        address: '',
+        empId: '',
+        dateOfJoining: '',
+        password: ''
+    });
 
     useEffect(() => {
         if (warden) {
@@ -19,7 +29,11 @@ export const EditWardenModal: React.FC<EditWardenModalProps> = ({ isOpen, onClos
                 fullName: warden.name,
                 email: warden.email,
                 mobile: warden.contact || '',
-                hostel: warden.hostel
+                hostel: warden.hostel,
+                address: warden.address || '',
+                empId: warden.empId || '',
+                dateOfJoining: warden.dateOfJoining || '',
+                password: ''
             });
         }
     }, [warden]);
@@ -42,10 +56,15 @@ export const EditWardenModal: React.FC<EditWardenModalProps> = ({ isOpen, onClos
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <InputField label="Employee ID" value={form.empId} onChange={() => { }} disabled={true} />
+                        <InputField label="Joining Date" value={form.dateOfJoining} onChange={() => { }} type="date" disabled={true} />
+                    </div>
                     <InputField label="Full Name" value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })} />
                     <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
                     <InputField label="Mobile" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
-                    <SelectField label="Hostel" value={form.hostel} onChange={(v) => setForm({ ...form, hostel: v })} options={["Krishna Hostel", "Saraswati Hostel", "Ganga Hostel"]} />
+                    <InputField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+                    <SelectField label="Hostel" value={form.hostel} onChange={(v) => setForm({ ...form, hostel: v })} options={hostels.map(h => ({ value: h.hostel_name, label: h.hostel_name }))} />
 
                     <button type="submit" className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30">
                         Save Changes

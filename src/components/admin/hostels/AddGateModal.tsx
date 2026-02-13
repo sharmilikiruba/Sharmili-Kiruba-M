@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { GateForm, Hostel } from './types';
@@ -12,13 +14,36 @@ interface AddGateModalProps {
 
 const initialForm: GateForm = {
     gateName: '',
+    gateNo: '',
     hostel: '',
+    hostel_id: 0,
+    location: '',
     gateType: '',
-    guard: ''
+    guard: '',
+    guard_id: undefined
 };
 
 export const AddGateModal: React.FC<AddGateModalProps> = ({ isOpen, onClose, onSave, hostels }) => {
     const [form, setForm] = useState<GateForm>(initialForm);
+    const [guards, setGuards] = useState<any[]>([]);
+
+    React.useEffect(() => {
+        if (isOpen) {
+            fetchGuards();
+        }
+    }, [isOpen]);
+
+    const fetchGuards = async () => {
+        try {
+            const apiClient = (await import('@/lib/api-client')).default;
+            const response = await apiClient.get('/admin/guards');
+            if (response.data.success) {
+                setGuards(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching guards:', error);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -40,19 +65,39 @@ export const AddGateModal: React.FC<AddGateModalProps> = ({ isOpen, onClose, onS
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <InputField label="Gate Name" value={form.gateName} onChange={(v) => setForm({ ...form, gateName: v })} placeholder="e.g., Main Gate" />
+                    <InputField label="Gate Number" value={form.gateNo} onChange={(v) => setForm({ ...form, gateNo: v })} placeholder="G-1" />
                     <SelectField
                         label="Hostel"
                         value={form.hostel}
-                        onChange={(v) => setForm({ ...form, hostel: v })}
+                        onChange={(v) => {
+                            const selected = hostels.find(h => h.name === v);
+                            setForm({ ...form, hostel: v, hostel_id: selected ? parseInt(selected.id) : 0 });
+                        }}
                         options={hostels.map(h => ({ value: h.name, label: h.name }))}
                     />
+                    <InputField label="Location" value={form.location} onChange={(v) => setForm({ ...form, location: v })} placeholder="North Wing" />
                     <SelectField
                         label="Gate Type"
                         value={form.gateType}
                         onChange={(v) => setForm({ ...form, gateType: v })}
                         options={["Entry & Exit", "Entry Only", "Exit Only"]}
                     />
-                    <InputField label="Assign Guard (Optional)" value={form.guard} onChange={(v) => setForm({ ...form, guard: v })} placeholder="Guard name" required={false} />
+                    <SelectField
+                        label="Assign Guard (Optional)"
+                        value={form.guard_id?.toString() || ''}
+                        onChange={(v) => {
+                            const selectedGuard = guards.find(g => g.guard_id?.toString() === v);
+                            setForm({
+                                ...form,
+                                guard_id: v ? parseInt(v) : undefined,
+                                guard: selectedGuard ? selectedGuard.name : ''
+                            });
+                        }}
+                        options={guards.map(g => ({
+                            label: g.name || 'Unknown',
+                            value: g.guard_id?.toString() || ''
+                        }))}
+                    />
 
                     <div className="flex gap-3 mt-6 pt-4">
                         <button

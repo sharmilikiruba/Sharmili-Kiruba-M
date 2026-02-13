@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { Request } from './types';
 
 interface RequestDetailModalProps {
@@ -49,6 +49,31 @@ export function RequestDetailModal({
                             <p className="font-semibold">{request.status}</p>
                         </div>
                     </div>
+
+                    {request.status === 'Approved' && (request.remarks || (request.approvedStartTime && request.approvedEndTime)) && (
+                        <div className="bg-green-50 p-4 rounded-xl border border-green-100 space-y-3">
+                            <h4 className="text-sm font-bold text-green-800 flex items-center gap-2">
+                                <Check size={16} />
+                                Approval Details
+                            </h4>
+                            {request.approvedStartTime && request.approvedEndTime && (
+                                <div className="flex items-center gap-2 text-sm text-green-700 bg-white/50 p-2 rounded-lg inline-block">
+                                    <span className="font-bold">Approved Time:</span>
+                                    <span>{request.approvedStartTime} - {request.approvedEndTime}</span>
+                                </div>
+                            )}
+                            {request.remarks && (
+                                <p className="text-sm text-green-700 italic">"{request.remarks}"</p>
+                            )}
+                        </div>
+                    )}
+
+                    {request.status === 'Rejected' && request.rejectionReason && (
+                        <div className="bg-red-50 p-4 rounded-xl border border-red-100">
+                            <h4 className="text-sm font-bold text-red-800 mb-1">Rejection Reason</h4>
+                            <p className="text-sm text-red-700">{request.rejectionReason}</p>
+                        </div>
+                    )}
 
                     {request.status === 'Approved' && request.qrCode && (
                         <div className="bg-blue-50 p-6 rounded-lg text-center border-2 border-dashed border-blue-200">

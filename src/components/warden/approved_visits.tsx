@@ -14,28 +14,7 @@ const ApprovedVisitsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
 
-  const approvedRequests = [
-    {
-      id: 'VR002',
-      student: 'Rahul Sharma',
-      room: 'Room A-204',
-      visitor: 'Kiran Sharma',
-      relation: 'Mother',
-      visitDate: 'Jan 04, 2026',
-      approvedTime: '14:00 - 17:00',
-      status: 'Approved',
-    },
-    {
-      id: 'VR004',
-      student: 'Amit Kumar',
-      room: 'Room C-310',
-      visitor: 'Dr. Mohan Kumar',
-      relation: 'Father',
-      visitDate: 'Jan 05, 2026',
-      approvedTime: '08:00 - 12:00',
-      status: 'Approved',
-    },
-  ]
+  const approvedRequests: any[] = [];
 
   // 🔍 SEARCH LOGIC
   const filteredApprovedRequests = approvedRequests.filter((request) => {
@@ -138,7 +117,7 @@ const ApprovedVisitsPage = () => {
                           <td className="px-6 py-4 text-sm">
                             {request.visitDate}
                           </td>
-                          <td className="px-6 py-4 text-sm">
+                          <td className="px-6 py-4 text-sm font-medium text-blue-600">
                             {request.approvedTime}
                           </td>
                           <td className="px-6 py-4">

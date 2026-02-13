@@ -1,8 +1,5 @@
 export type ReportType =
     | 'daily-visitor'
-    | 'weekly-summary'
-    | 'monthly-statistics'
-    | 'student-wise'
     | 'emergency-visit'
     | 'rejected-requests';
 
@@ -24,31 +21,6 @@ export interface DailyVisitorData {
     date: string;
 }
 
-export interface WeeklySummaryData {
-    day: string;
-    total: number;
-    approved: number;
-    rejected: number;
-    pending: number;
-    date: string;
-}
-
-export interface MonthlyStatisticsData {
-    week: string;
-    total: number;
-    approved: number;
-    rejected: number;
-    emergency: number;
-    month: string;
-}
-
-export interface StudentWiseData {
-    studentName: string;
-    total: number;
-    unique: number;
-    frequency: string;
-    lastVisit: string;
-}
 
 export interface EmergencyVisitData {
     date: string;
@@ -66,4 +38,29 @@ export interface RejectedRequestData {
     purpose: string;
     reason: string;
     status: string;
+}
+
+export interface MonthlyStatisticsData {
+    week: string;
+    total: number;
+    approved: number;
+    rejected: number;
+    emergency: number;
+}
+
+export interface StudentWiseData {
+    studentName: string;
+    total: number;
+    unique: number;
+    frequency: number;
+    lastVisit: string;
+}
+
+export interface WeeklySummaryData {
+    day: string;
+    date: string;
+    total: number;
+    approved: number;
+    rejected: number;
+    pending: number;
 }

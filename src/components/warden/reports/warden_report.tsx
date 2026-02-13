@@ -27,48 +27,21 @@ import { StudentWiseHistoryReport } from './StudentWiseHistoryReport';
 import { EmergencyVisitLogReport } from './EmergencyVisitLogReport';
 import { RejectedRequestsReport } from './RejectedRequestsReport';
 
-const students = ['All Students', 'Rahul Sharma', 'Priya Patel', 'Amit Kumar', 'Sneha Singh'];
 const purposes = ['All Purposes', 'Family Visit', 'Birthday Celebration', 'Medical Emergency', 'Other'];
 
 // --- Centralized MOCK DATA ---
-const MOCK_DATA = {
-  'daily-visitor': [
-    { visitorName: 'Suresh Sharma', student: 'Rahul Sharma', purpose: 'Family Visit', time: '10:00', duration: '2 hours', status: 'Pending', date: '2026-01-06' },
-    { visitorName: 'Rekha Patel', student: 'Priya Patel', purpose: 'Birthday Celebration', time: '16:00', duration: '4 hours', status: 'Pending', date: '2026-01-06' },
-    { visitorName: 'Mohan Lal', student: 'Amit Kumar', purpose: 'Medical Emergency', time: '11:00', duration: '1 hour', status: 'Approved', date: '2026-01-06' }
-  ],
-  'weekly-summary': [
-    { day: 'Monday', total: 8, approved: 7, rejected: 0, pending: 0, date: '2026-01-05' },
-    { day: 'Tuesday', total: 7, approved: 6, rejected: 1, pending: 1, date: '2026-01-06' },
-    { day: 'Wednesday', total: 6, approved: 5, rejected: 0, pending: 2, date: '2026-01-07' },
-    { day: 'Thursday', total: 5, approved: 4, rejected: 1, pending: 0, date: '2026-01-08' },
-    { day: 'Friday', total: 9, approved: 8, rejected: 1, pending: 0, date: '2026-01-09' },
-    { day: 'Saturday', total: 12, approved: 10, rejected: 1, pending: 1, date: '2026-01-10' },
-    { day: 'Sunday', total: 14, approved: 12, rejected: 2, pending: 0, date: '2026-01-11' }
-  ],
-  'monthly-statistics': [
-    { week: 'Week 1 (1-7)', total: 45, approved: 40, rejected: 3, emergency: 2, month: '2026-01' },
-    { week: 'Week 2 (8-14)', total: 50, approved: 44, rejected: 4, emergency: 3, month: '2026-01' }
-  ],
-  'student-wise': [
-    { studentName: 'Rahul Sharma', total: 12, unique: 4, frequency: '3/month', lastVisit: '2026-01-04' },
-    { studentName: 'Priya Patel', total: 8, unique: 3, frequency: '2/month', lastVisit: '2026-01-03' }
-  ],
-  'emergency-visit': [
-    { date: '2026-01-05', visitor: 'Dr. Mohan Kumar', student: 'Amit Kumar', purpose: 'Medical Emergency', responseTime: '15 min', status: 'Approved' }
-  ],
-  'rejected-requests': [
-    { date: '2026-01-02', student: 'Rahul Sharma', visitor: 'Unknown Person', purpose: 'Other', reason: 'Request denied. Late hours and too many visitors.', status: 'Rejected' },
-    { date: '2026-01-06', student: 'Sneha Singh', visitor: 'Salesperson', purpose: 'Other', reason: 'Not allowed.', status: 'Rejected' }
-  ]
+const MOCK_DATA: Record<ReportType, any[]> = {
+  'daily-visitor': [],
+  'emergency-visit': [],
+  'rejected-requests': []
 };
 
 export default function WardenReports() {
   const [selectedReport, setSelectedReport] = useState<ReportType>('daily-visitor');
   const [filters, setFilters] = useState<FilterState>({
-    startDate: '2026-01-01',
-    endDate: '2026-07-01',
-    student: 'All Students',
+    startDate: '',
+    endDate: '',
+    student: '',
     purpose: 'All Purposes',
     exportFormat: 'PDF'
   });
@@ -79,9 +52,9 @@ export default function WardenReports() {
 
   const handleReset = () => {
     setFilters({
-      startDate: '2026-01-01',
-      endDate: '2026-07-01',
-      student: 'All Students',
+      startDate: '',
+      endDate: '',
+      student: '',
       purpose: 'All Purposes',
       exportFormat: 'PDF'
     });
@@ -99,7 +72,7 @@ export default function WardenReports() {
 
       // Student Filter
       const itemStudent = item.student || item.studentName;
-      if (filters.student !== 'All Students' && itemStudent && itemStudent !== filters.student) return false;
+      if (filters.student && itemStudent && !itemStudent.toLowerCase().includes(filters.student.toLowerCase())) return false;
 
       // Purpose Filter
       if (filters.purpose !== 'All Purposes' && item.purpose && item.purpose !== filters.purpose) return false;
@@ -111,11 +84,8 @@ export default function WardenReports() {
   const currentData = getFilteredData(selectedReport);
 
   const handleExport = () => {
-    const reportNames = {
+    const reportNames: Record<ReportType, string> = {
       'daily-visitor': 'Daily Visitor Report',
-      'weekly-summary': 'Weekly Summary',
-      'monthly-statistics': 'Monthly Statistics',
-      'student-wise': 'Student-wise History',
       'emergency-visit': 'Emergency Visit Log',
       'rejected-requests': 'Rejected Requests'
     };
@@ -182,12 +152,6 @@ export default function WardenReports() {
     switch (selectedReport) {
       case 'daily-visitor':
         return <DailyVisitorReport data={currentData} />;
-      case 'weekly-summary':
-        return <WeeklySummaryReport data={currentData} />;
-      case 'monthly-statistics':
-        return <MonthlyStatisticsReport data={currentData} />;
-      case 'student-wise':
-        return <StudentWiseHistoryReport data={currentData} />;
       case 'emergency-visit':
         return <EmergencyVisitLogReport data={currentData} />;
       case 'rejected-requests':
@@ -226,14 +190,14 @@ export default function WardenReports() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Student</label>
-              <select
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search Student</label>
+              <input
+                type="text"
+                placeholder="Type student name..."
                 value={filters.student}
                 onChange={(e) => handleFilterChange('student', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {students.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Purpose</label>
@@ -282,9 +246,6 @@ export default function WardenReports() {
               </div>
               <div className="space-y-2">
                 <ReportBtn icon={<Calendar className="w-5 h-5" />} title="Daily Visitor Report" subtitle="Visitors for selected date" active={selectedReport === 'daily-visitor'} onClick={() => setSelectedReport('daily-visitor')} />
-                <ReportBtn icon={<TrendingUp className="w-5 h-5" />} title="Weekly Summary" subtitle="Aggregated weekly data" active={selectedReport === 'weekly-summary'} onClick={() => setSelectedReport('weekly-summary')} />
-                <ReportBtn icon={<BarChart3 className="w-5 h-5" />} title="Monthly Statistics" subtitle="Monthly visitor counts" active={selectedReport === 'monthly-statistics'} onClick={() => setSelectedReport('monthly-statistics')} />
-                <ReportBtn icon={<Users className="w-5 h-5" />} title="Student-wise History" subtitle="Visitor history per student" active={selectedReport === 'student-wise'} onClick={() => setSelectedReport('student-wise')} />
                 <ReportBtn icon={<AlertTriangle className="w-5 h-5" />} title="Emergency Visit Log" subtitle="Emergency visit records" active={selectedReport === 'emergency-visit'} onClick={() => setSelectedReport('emergency-visit')} />
                 <ReportBtn icon={<XCircle className="w-5 h-5" />} title="Rejected Requests" subtitle="Rejected visit requests" active={selectedReport === 'rejected-requests'} onClick={() => setSelectedReport('rejected-requests')} />
               </div>

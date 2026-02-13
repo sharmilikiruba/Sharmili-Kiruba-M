@@ -5,80 +5,51 @@ import { Building, AlertCircle, MessageSquare, Bell } from 'lucide-react';
 // Modular Imports
 import {
     TabType,
-    GeneralConfig,
-    VisitorRules,
     QRSettings,
     SMSTemplates,
     NotificationSettings,
     NotificationTriggers
-} from './types';
-import { GeneralTab } from './GeneralTab';
-import { VisitorRulesTab } from './VisitorRulesTab';
+} from './types'
 import { QRSettingsTab } from './QRSettingsTab';
 import { SMSTab } from './SMSTab';
 import { NotificationsTab } from './NotificationsTab';
 
 export default function SystemConfiguration() {
-    const [activeTab, setActiveTab] = useState<TabType>('General');
+    const [activeTab, setActiveTab] = useState<TabType>('QR Settings');
 
-    // General Tab State
-    const [generalConfig, setGeneralConfig] = useState<GeneralConfig>({
-        instituteName: 'Central University',
-        contactEmail: 'admin@university.edu',
-        contactPhone: '+91 11 2345 6789',
-        address: 'University Road, Academic City, State - 110001',
-        timezone: 'Asia/Kolkata (IST)',
-        dateFormat: 'DD/MM/YYYY',
-        timeFormat: '12-hour',
-    });
-
-    // Visitor Rules State
-    const [visitorRules, setVisitorRules] = useState<VisitorRules>({
-        weekdayStart: '08:00',
-        weekdayEnd: '20:00',
-        weekendStart: '10:00',
-        weekendEnd: '18:00',
-        defaultDuration: '2 hours',
-        maxDailyVisitors: '3',
-        advanceBookingDays: '7',
-        emergencyAutoNotify: true,
-        allowWalkIn: false,
-    });
-
-    // QR Settings State
     const [qrSettings, setQrSettings] = useState<QRSettings>({
-        passValidity: '4',
+        passValidity: '',
         passFormat: 'Standard (Compact)',
-        autoExpiry: true,
-        includePhoto: true,
+        autoExpiry: false,
+        includePhoto: false,
         requireSignature: false,
     });
 
     // SMS Templates State
     const [smsTemplates, setSmsTemplates] = useState<SMSTemplates>({
-        approvalSms: { enabled: true, template: "Hi {visitor_name}, your visit request to meet {host_name} has been approved. Please show QR code at gate." },
-        rejectionSms: { enabled: true, template: "Hi {visitor_name}, your visit request to meet {host_name} was not approved." },
-        entryConfirmation: { enabled: true, template: "Welcome {visitor_name}! You have successfully checked in at {time}." },
-        exitConfirmation: { enabled: true, template: "Goodbye {visitor_name}. You checked out at {time}. thanks for visiting." },
-        reminderSms: { enabled: true, template: "Reminder: You have a scheduled visit tomorrow with {host_name} at {time}." },
+        approvalSms: { enabled: false, template: "" },
+        rejectionSms: { enabled: false, template: "" },
+        entryConfirmation: { enabled: false, template: "" },
+        exitConfirmation: { enabled: false, template: "" },
+        reminderSms: { enabled: false, template: "" },
     });
 
     // Notification Channels State
     const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-        emailNotifications: true,
-        pushNotifications: true,
-        smsNotifications: true,
+        emailNotifications: false,
+        pushNotifications: false,
+        smsNotifications: false,
     });
 
     // Notification Triggers State
     const [notificationTriggers, setNotificationTriggers] = useState<NotificationTriggers>({
-        requestSubmitted: true,
-        requestApproved: true,
-        requestRejected: true,
-        visitorEntered: true,
-        visitorExited: true,
-        overstayAlert: true,
-        emergencyRequest: true,
+        requestSubmitted: false,
+        requestApproved: false,
+        requestRejected: false,
+        visitorEntered: false,
+        visitorExited: false,
+        overstayAlert: false,
+        emergencyRequest: false,
     });
 
     // Load settings from localStorage on mount
@@ -103,9 +74,6 @@ export default function SystemConfiguration() {
         alert('Configuration saved successfully!');
     };
 
-    const handleLogoUpload = () => {
-        alert('Logo upload functionality triggered');
-    };
 
     return (
         <div className="p-8 w-full bg-gray-50 min-h-screen">
@@ -116,18 +84,7 @@ export default function SystemConfiguration() {
 
             {/* Tabs Navigation */}
             <div className="flex border-b border-gray-200 mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
-                <TabButton
-                    active={activeTab === 'General'}
-                    onClick={() => setActiveTab('General')}
-                    icon={Building}
-                    label="General"
-                />
-                <TabButton
-                    active={activeTab === 'Visitor Rules'}
-                    onClick={() => setActiveTab('Visitor Rules')}
-                    icon={AlertCircle}
-                    label="Visitor Rules"
-                />
+
                 <TabButton
                     active={activeTab === 'QR Settings'}
                     onClick={() => setActiveTab('QR Settings')}
@@ -154,12 +111,6 @@ export default function SystemConfiguration() {
 
             {/* Tab Content */}
             <div className="transition-all duration-300">
-                {activeTab === 'General' && (
-                    <GeneralTab config={generalConfig} onChange={setGeneralConfig} onLogoUpload={handleLogoUpload} />
-                )}
-                {activeTab === 'Visitor Rules' && (
-                    <VisitorRulesTab rules={visitorRules} onChange={setVisitorRules} />
-                )}
                 {activeTab === 'QR Settings' && (
                     <QRSettingsTab settings={qrSettings} onChange={setQrSettings} />
                 )}
@@ -193,8 +144,8 @@ const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, on
     <button
         onClick={onClick}
         className={`px-6 py-3 font-semibold border-b-2 transition-all flex items-center gap-2 ${active
-                ? 'border-blue-600 text-blue-600 bg-blue-50/50'
-                : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
+            ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+            : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
             }`}
     >
         <Icon className="w-4 h-4" />

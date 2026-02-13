@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { 
+import {
   ArrowLeft,
   AlertTriangle,
   User,
@@ -23,18 +23,6 @@ interface FormData {
   emergencyReason: string;
 }
 
-const relations = [
-  'Father',
-  'Mother',
-  'Brother',
-  'Sister',
-  'Uncle',
-  'Aunt',
-  'Cousin',
-  'Friend',
-  'Guardian',
-  'Other'
-];
 
 const idProofTypes = [
   'Aadhar Card',
@@ -53,13 +41,14 @@ const hostels = [
   'APJ Abdul Kalam Hostel'
 ];
 
-const students = [
-  'Rahul Sharma - A-204',
-  'Priya Patel - B-301',
-  'Amit Kumar - C-105',
-  'Sneha Singh - D-202',
-  'Not Applicable'
+const relations = [
+  'Parent',
+  'Sibling',
+  'Friend',
+  'Relative',
+  'Other'
 ];
+
 
 export default function EmergencyVisit() {
   const [formData, setFormData] = useState<FormData>({
@@ -193,7 +182,7 @@ export default function EmergencyVisit() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -204,7 +193,7 @@ export default function EmergencyVisit() {
     setTimeout(() => {
       setIsSubmitting(false);
       setShowSuccess(true);
-      
+
       // Reset form after 3 seconds
       setTimeout(() => {
         setShowSuccess(false);
@@ -296,9 +285,8 @@ export default function EmergencyVisit() {
                   value={formData.visitorName}
                   onChange={handleInputChange}
                   placeholder="Enter visitor name"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.visitorName ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.visitorName ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
                 {errors.visitorName && (
                   <p className="text-red-500 text-xs mt-1">{errors.visitorName}</p>
@@ -318,9 +306,8 @@ export default function EmergencyVisit() {
                     value={formData.mobileNumber}
                     onChange={handleInputChange}
                     placeholder="+91 XXXXX XXXXX"
-                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.mobileNumber ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.mobileNumber ? 'border-red-500' : 'border-gray-300'
+                      }`}
                   />
                 </div>
                 {errors.mobileNumber && (
@@ -337,9 +324,8 @@ export default function EmergencyVisit() {
                   name="relation"
                   value={formData.relation}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.relation ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.relation ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select relation</option>
                   {relations.map(relation => (
@@ -360,9 +346,8 @@ export default function EmergencyVisit() {
                   name="idProofType"
                   value={formData.idProofType}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.idProofType ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idProofType ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select ID type</option>
                   {idProofTypes.map(type => (
@@ -385,9 +370,8 @@ export default function EmergencyVisit() {
                   value={formData.idProofNumber}
                   onChange={handleInputChange}
                   placeholder="Enter ID proof number"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.idProofNumber ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idProofNumber ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
                 {errors.idProofNumber && (
                   <p className="text-red-500 text-xs mt-1">{errors.idProofNumber}</p>
@@ -497,9 +481,8 @@ export default function EmergencyVisit() {
                   name="hostel"
                   value={formData.hostel}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.hostel ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.hostel ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select hostel</option>
                   {hostels.map(hostel => (
@@ -516,17 +499,14 @@ export default function EmergencyVisit() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Student (if applicable)
                 </label>
-                <select
+                <input
+                  type="text"
                   name="student"
                   value={formData.student}
                   onChange={handleInputChange}
+                  placeholder="Enter student name & room"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select student</option>
-                  {students.map(student => (
-                    <option key={student} value={student}>{student}</option>
-                  ))}
-                </select>
+                />
               </div>
 
               {/* Emergency Reason */}
@@ -540,9 +520,8 @@ export default function EmergencyVisit() {
                   onChange={handleInputChange}
                   placeholder="Describe the emergency situation..."
                   rows={4}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.emergencyReason ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.emergencyReason ? 'border-red-500' : 'border-gray-300'
+                    }`}
                 />
                 {errors.emergencyReason && (
                   <p className="text-red-500 text-xs mt-1">{errors.emergencyReason}</p>

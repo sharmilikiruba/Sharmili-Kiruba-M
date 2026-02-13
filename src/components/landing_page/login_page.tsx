@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { Eye, EyeOff, ArrowLeft, LogIn } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
 
   const [showPassword, setShowPassword] = useState(false)
   const [selectedRole, setSelectedRole] = useState('Student')
@@ -14,33 +15,52 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
-
+  const [isLoading, setIsLoading] = useState(false)
 
   const roles = ['Student', 'Warden', 'Admin', 'Guard']
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       setError('Please enter email and password')
       return
     }
 
     setError('')
+    setIsLoading(true)
 
-    switch (selectedRole) {
-      case 'Admin':
-        router.push('/Admin/Admin_dashboard')
-        break
-      case 'Warden':
-        router.push('/Warden/WardenDashboard')
-        break
-      case 'Guard':
-        router.push('/Guard/guard_dashboard')
-        break
-      case 'Student':
-        router.push('/student/student_dashboard')
-        break
-      default:
-        router.push('/login')
+    try {
+      // ✅ Pass role to backend
+      const loggedInUser = await login(email, password, selectedRole)
+
+      // ✅ Validate backend response
+      if (!loggedInUser || typeof loggedInUser !== 'object') {
+        throw new Error('Invalid response from server')
+      }
+
+      // ✅ Safe role handling
+      const role = String(loggedInUser.role || selectedRole).toLowerCase()
+
+      switch (role) {
+        case 'admin':
+          router.push('/Admin/Admin_dashboard')
+          break
+        case 'warden':
+          router.push('/Warden/WardenDashboard')
+          break
+        case 'guard':
+          router.push('/Guard/guard_dashboard')
+          break
+        case 'student':
+          router.push('/student/student_dashboard')
+          break
+        default:
+          throw new Error('Unknown user role')
+      }
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err?.message || 'Login failed. Please check your credentials.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -157,10 +177,28 @@ export default function LoginPage() {
               {/* Login */}
               <button
                 onClick={handleLogin}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <LogIn size={18} />
-                Login
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Logging in...
+                  </>
+                ) : (
+                  <>
+                    <LogIn size={18} />
+                    Login
+                  </>
+                )}
+              </button>
+
+              {/* Register */}
+              <button
+                onClick={() => router.push('/login/registration')}
+                className="w-full bg-white text-blue-600 border-2 border-blue-600 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+              >
+                Register Admin
               </button>
             </div>
           </div>

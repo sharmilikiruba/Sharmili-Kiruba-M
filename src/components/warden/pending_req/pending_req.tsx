@@ -4,53 +4,16 @@ import { useState, useMemo } from 'react';
 import { Request } from './types';
 import { PendingRequestsView } from './PendingRequestsView';
 import { RequestDetailsModal } from './RequestDetailsModal';
+import { ActionRemarksModal } from './ActionRemarksModal';
 
-const initialRequests: Request[] = [
-  {
-    id: 'VR001',
-    studentName: 'Rahul Sharma',
-    hostelBlock: 'Krishna Hostel',
-    room: 'Room A-204',
-    visitorName: 'Suresh Sharma',
-    relation: 'Father',
-    date: 'Jan 06, 2026',
-    time: '10:00',
-    purpose: 'Family Visit',
-    priority: 'Normal',
-    visitorPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
-    visitorDetails: {
-      mobile: '+91 98765 43210',
-      email: 'suresh.sharma@example.com',
-      address: '123, Civil Lines, Jaipur, Rajasthan',
-      idProof: 'Aadhaar Card - XXXX 1234'
-    }
-  },
-  {
-    id: 'VR002',
-    studentName: 'Amit Patel',
-    hostelBlock: 'Saraswati Hostel',
-    room: 'Room B-105',
-    visitorName: 'Priya Patel',
-    relation: 'Sister',
-    date: 'Jan 07, 2026',
-    time: '14:30',
-    purpose: 'Document Delivery',
-    priority: 'Urgent',
-    visitorPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop',
-    visitorDetails: {
-      mobile: '+91 98765 87654',
-      email: 'priya.patel@example.com',
-      address: '45, MG Road, Ahmedabad, Gujarat',
-      idProof: 'Driving License - DL1234567890'
-    }
-  },
-];
+const initialRequests: Request[] = [];
 
 export default function PendingRequestsPage() {
   const [requests, setRequests] = useState<Request[]>(initialRequests);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [actionModal, setActionModal] = useState<{ open: boolean; type: 'Approve' | 'Reject'; requestId: string; visitorName: string } | null>(null);
 
   // Filter requests
   const filteredRequests = useMemo(() => {
@@ -62,19 +25,22 @@ export default function PendingRequestsPage() {
   }, [requests, searchTerm]);
 
   const handleApprove = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to APPROVE the request for ${name}?`)) {
-      setRequests(prev => prev.filter(req => req.id !== id));
-      // In a real app, this would make an API call to update status to 'Approved'
-      alert(`Request ${id} has been Approved.`);
-    }
+    setActionModal({ open: true, type: 'Approve', requestId: id, visitorName: name });
   };
 
   const handleReject = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to REJECT the request for ${name}?`)) {
-      setRequests(prev => prev.filter(req => req.id !== id));
-      // In a real app, this would make an API call to update status to 'Rejected'
-      alert(`Request ${id} has been Rejected.`);
-    }
+    setActionModal({ open: true, type: 'Reject', requestId: id, visitorName: name });
+  };
+
+  const handleConfirmAction = (remarks: string, startTime?: string, endTime?: string) => {
+    if (!actionModal) return;
+    const { type, requestId } = actionModal;
+
+    setRequests(prev => prev.filter(req => req.id !== requestId));
+    // In a real app, this would make an API call with the remarks/reason and times
+    console.log(`${type} request ${requestId} with remarks: ${remarks}, time: ${startTime}-${endTime}`);
+    alert(`Request ${requestId} has been ${type}ed.`);
+    setActionModal(null);
   };
 
   const handleViewDetails = (request: Request) => {
@@ -112,6 +78,16 @@ export default function PendingRequestsPage() {
             handleReject(id, name);
             handleCloseModal();
           }}
+        />
+      )}
+
+      {actionModal && (
+        <ActionRemarksModal
+          isOpen={actionModal.open}
+          type={actionModal.type}
+          visitorName={actionModal.visitorName}
+          onClose={() => setActionModal(null)}
+          onConfirm={handleConfirmAction}
         />
       )}
     </>

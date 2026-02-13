@@ -18,4 +18,8 @@ export interface Request {
         address: string;
         idProof: string;
     };
+    remarks?: string;
+    rejectionReason?: string;
+    approvedStartTime?: string;
+    approvedEndTime?: string;
 }

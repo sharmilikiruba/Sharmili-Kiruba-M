@@ -7,10 +7,10 @@ interface GuardTabProps {
     guards: Guard[];
     onEdit: (guard: Guard) => void;
     onView: (guard: Guard) => void;
-    onToggleStatus: (id: string) => void;
+    onDelete: (id: string) => void;
 }
 
-export const GuardTab: React.FC<GuardTabProps> = ({ guards, onEdit, onView, onToggleStatus }) => {
+export const GuardTab: React.FC<GuardTabProps> = ({ guards, onEdit, onView, onDelete }) => {
     return (
         <div className="overflow-x-auto">
             <table className="w-full">
@@ -30,8 +30,8 @@ export const GuardTab: React.FC<GuardTabProps> = ({ guards, onEdit, onView, onTo
                             <td className="px-6 py-4 text-sm text-gray-900">
                                 <UserColumn name={guard.name} email={guard.email} />
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900">{guard.gate}</td>
-                            <td className="px-6 py-4 text-sm text-gray-900">{guard.shift}</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">{guard.assignedGate?.gate_name || 'Unassigned'}</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">{guard.shift_type || '-'}</td>
                             <td className="px-6 py-4 text-sm text-gray-900">{guard.contact}</td>
                             <td className="px-6 py-4">
                                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${guard.status === 'Active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
@@ -56,9 +56,9 @@ export const GuardTab: React.FC<GuardTabProps> = ({ guards, onEdit, onView, onTo
                                         <Eye className="w-4 h-4" />
                                     </button>
                                     <button
-                                        onClick={() => onToggleStatus(guard.id)}
-                                        className={`p-2 rounded-lg transition-colors ${guard.status === 'Active' ? 'hover:bg-red-50 text-red-600' : 'hover:bg-green-50 text-green-600'}`}
-                                        title={guard.status === 'Active' ? 'Deactivate' : 'Activate'}
+                                        onClick={() => onDelete(guard.id)}
+                                        className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
+                                        title="Delete Guard"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>

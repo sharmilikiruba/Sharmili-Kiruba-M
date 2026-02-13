@@ -7,6 +7,10 @@ export interface BaseUser {
     email: string;
     contact?: string;
     status: 'Active' | 'Inactive';
+    empId?: string;
+    dateOfJoining?: string;
+    address?: string;
+    password?: string;
 }
 
 export interface Student extends BaseUser {
@@ -21,8 +25,15 @@ export interface Warden extends BaseUser {
 }
 
 export interface Guard extends BaseUser {
-    gate: string;
-    shift: string;
+    gender: 'M' | 'F' | 'Other';
+    designation: string;
+    dob: string;
+    gate_id?: number;
+    assignedGate?: { gate_name: string };
+    shift_type?: 'Day' | 'Night' | 'Rotating';
+    shift_start_time?: string;
+    shift_end_time?: string;
+    security_agency?: string;
 }
 
 export interface StudentForm {
@@ -40,12 +51,25 @@ export interface WardenForm {
     email: string;
     mobile: string;
     hostel: string;
+    address: string;
+    empId: string;
+    dateOfJoining: string;
+    password: string;
 }
 
 export interface GuardForm {
     fullName: string;
     email: string;
     mobile: string;
-    gate: string;
-    shift: string;
+    gender: 'M' | 'F' | 'Other';
+    dob: string;
+    designation: string;
+    gate_id?: number;
+    shift_type: 'Day' | 'Night' | 'Rotating';
+    shift_start_time?: string;
+    shift_end_time?: string;
+    address: string;
+    empId: string;
+    dateOfJoining: string;
+    password?: string;
 }

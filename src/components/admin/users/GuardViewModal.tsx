@@ -23,11 +23,21 @@ export const GuardViewModal: React.FC<GuardViewModalProps> = ({ isOpen, onClose,
                 </div>
 
                 <div className="p-6 space-y-4">
+                    <ViewField label="Employee ID" value={guard.empId || 'N/A'} />
                     <ViewField label="Full Name" value={guard.name} />
-                    <ViewField label="Email" value={guard.email} />
+                    <ViewField label="Email" value={guard.email || 'N/A'} />
+                    <ViewField label="Gender" value={guard.gender} />
+                    <ViewField label="DOB" value={guard.dob ? new Date(guard.dob).toLocaleDateString() : 'N/A'} />
+                    <ViewField label="Designation" value={guard.designation} />
                     <ViewField label="Contact" value={guard.contact || 'N/A'} />
-                    <ViewField label="Gate" value={guard.gate} />
-                    <ViewField label="Shift" value={guard.shift} />
+                    <ViewField label="Address" value={guard.address || 'N/A'} />
+                    <ViewField label="Gate" value={guard.assignedGate?.gate_name || 'Unassigned'} />
+                    <ViewField label="Shift Type" value={guard.shift_type || 'N/A'} />
+                    <div className="grid grid-cols-2 gap-4">
+                        <ViewField label="Shift Start" value={guard.shift_start_time || 'N/A'} />
+                        <ViewField label="Shift End" value={guard.shift_end_time || 'N/A'} />
+                    </div>
+                    <ViewField label="Date of Joining" value={guard.dateOfJoining ? new Date(guard.dateOfJoining).toLocaleDateString() : 'N/A'} />
                     <ViewField label="Status" value={guard.status} />
                 </div>
 

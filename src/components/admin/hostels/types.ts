@@ -1,7 +1,8 @@
-export type TabType = 'Hostels' | 'Gates' | 'Guards';
+export type TabType = 'Hostels' | 'Gates';
 
 export interface Hostel {
     id: string;
+    hostel_id?: number;
     name: string;
     address: string;
     type: string;
@@ -13,21 +14,16 @@ export interface Hostel {
 
 export interface Gate {
     id: string;
+    gate_id?: number;
     name: string;
+    gate_no: string;
     code: string;
     hostel: string;
+    hostel_id: number;
+    location: string;
     type: string;
-    guard: string;
-    status: string;
-}
-
-export interface GuardAssignment {
-    id: string;
-    guardName: string;
-    hostel: string;
-    gate: string;
-    shiftStart: string;
-    shiftEnd: string;
+    guard?: string;
+    guard_id?: number;
     status: string;
 }
 
@@ -38,24 +34,16 @@ export interface HostelForm {
     capacity: string;
     warden: string;
     address: string;
-    isNewWarden: boolean;
-    newWardenName: string;
-    newWardenEmail: string;
-    newWardenContact: string;
+    password?: string;
 }
 
 export interface GateForm {
     gateName: string;
+    gateNo: string;
     hostel: string;
+    hostel_id: number;
+    location: string;
     gateType: string;
     guard: string;
-}
-
-export interface AssignmentForm {
-    guard: string;
-    hostel: string;
-    gate: string;
-    shiftStart: string;
-    shiftEnd: string;
-    status: boolean;
+    guard_id?: number;
 }

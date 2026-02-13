@@ -20,4 +20,8 @@ export interface Request {
         reason?: string;
     };
     qrCode?: string;
+    remarks?: string;
+    rejectionReason?: string;
+    approvedStartTime?: string;
+    approvedEndTime?: string;
 }

@@ -1,18 +1,19 @@
-"use client"
-import { useState, useMemo } from 'react';
+'use client';
+
+import { useState, useMemo, useEffect } from 'react';
 import { Home, Search, Plus, Shield } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 // Modular Imports
-import { TabType, Hostel, Gate, GuardAssignment, HostelForm, GateForm, AssignmentForm } from './types';
+import { TabType, Hostel, Gate, HostelForm, GateForm } from './types';
 import { HostelTab } from './HostelTab';
 import { AddHostelModal } from './AddHostelModal';
 import { EditHostelModal } from './EditHostelModal';
 import { GateTab } from './GateTab';
 import { AddGateModal } from './AddGateModal';
 import { EditGateModal } from './EditGateModal';
-import { GuardTab } from './GuardTab';
-import { AddGuardModal } from './AddGuardModal';
-import { EditGuardModal } from './EditGuardModal';
+import { HostelViewModal } from './HostelViewModal';
+import { Warden } from '../users/types';
 
 export default function HostelManagement() {
     const [activeTab, setActiveTab] = useState<TabType>('Hostels');
@@ -21,142 +22,217 @@ export default function HostelManagement() {
     // Modal States
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any>(null);
 
     // Data States
-    const [hostels, setHostels] = useState<Hostel[]>([
-        { id: '1', name: 'Krishna Hostel', address: 'Block A, University Campus', type: 'Boys', rooms: 150, capacity: 300, warden: 'Dr. Suresh Kumar', status: 'Active' },
-        { id: '2', name: 'Saraswati Hostel', address: 'Block B, University Campus', type: 'Girls', rooms: 120, capacity: 240, warden: 'Dr. Meera Singh', status: 'Active' },
-        { id: '3', name: 'Vivekananda Hostel', address: 'Block C, University Campus', type: 'Boys', rooms: 100, capacity: 200, warden: 'Dr. Anil Sharma', status: 'Active' },
-    ]);
+    const [hostels, setHostels] = useState<Hostel[]>([]);
 
-    const [gates, setGates] = useState<Gate[]>([
-        { id: '1', name: 'Main Gate', code: 'MG-01', hostel: 'Krishna Hostel', type: 'Entry & Exit', guard: 'Ramesh Yadav', status: 'Active' },
-        { id: '2', name: 'East Gate', code: 'EG-01', hostel: 'Krishna Hostel', type: 'Entry & Exit', guard: 'Sunil Verma', status: 'Active' },
-        { id: '3', name: 'Main Gate', code: 'MG-02', hostel: 'Saraswati Hostel', type: 'Entry & Exit', guard: 'Unassigned', status: 'Active' },
-    ]);
+    const [gates, setGates] = useState<Gate[]>([]);
 
-    const [guardAssignments, setGuardAssignments] = useState<GuardAssignment[]>([
-        { id: '1', guardName: 'Ramesh Yadav', hostel: 'Krishna Hostel', gate: 'Main Gate', shiftStart: '06:00', shiftEnd: '14:00', status: 'Active' },
-        { id: '2', guardName: 'Sunil Verma', hostel: 'Krishna Hostel', gate: 'East Gate', shiftStart: '14:00', shiftEnd: '22:00', status: 'Active' },
-    ]);
 
-    const [availableWardens, setAvailableWardens] = useState<{ id: string, name: string }[]>([
-        { id: '1', name: 'Dr. Suresh Kumar' },
-        { id: '2', name: 'Dr. Meera Singh' },
-        { id: '3', name: 'Dr. Anil Sharma' },
-    ]);
+    const [availableWardens, setAvailableWardens] = useState<(Warden & { name: string })[]>([]);
 
     // Filtering
+    // Data fetching
+    const fetchData = async () => {
+        try {
+            const [hostelsRes, gatesRes, wardensRes] = await Promise.all([
+                apiClient.get('/admin/hostels'),
+                apiClient.get('/admin/gates'),
+                apiClient.get('/admin/wardens')
+            ]);
+
+            if (hostelsRes.data.success) {
+                const mappedHostels: Hostel[] = hostelsRes.data.data.map((h: any) => ({
+                    id: h.hostel_id.toString(),
+                    hostel_id: h.hostel_id,
+                    name: h.hostel_name,
+                    address: h.location,
+                    type: h.hostel_type,
+                    rooms: h.total_rooms,
+                    capacity: h.total_rooms * 2, // Assuming capacity logic or get from data if available
+                    warden: h.warden?.name || 'Unassigned',
+                    status: 'Active'
+                }));
+                setHostels(mappedHostels);
+            }
+
+            if (gatesRes.data.success) {
+                const mappedGates: Gate[] = gatesRes.data.data.map((g: any) => ({
+                    id: g.gate_id.toString(),
+                    gate_id: g.gate_id,
+                    name: g.gate_name,
+                    gate_no: g.gate_no,
+                    code: `G-${g.gate_no}`,
+                    hostel: g.hostel?.hostel_name || 'Unassigned',
+                    hostel_id: g.hostel_id,
+                    location: g.location,
+                    type: 'Entry & Exit',
+                    status: 'Active'
+                }));
+                setGates(mappedGates);
+            }
+
+            if (wardensRes.data.success) {
+                const mappedWardens = wardensRes.data.data.map((w: any) => ({
+                    ...w,
+                    id: w.warden_id.toString(), // Ensure id is string for UI components
+                    name: w.name || w.user?.name
+                }));
+                setAvailableWardens(mappedWardens);
+            }
+        } catch (error) {
+            console.error('Error fetching hostel management data:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
     const filteredHostels = useMemo(() => hostels.filter(h =>
-        h.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        h.warden.toLowerCase().includes(searchQuery.toLowerCase())
+        (h.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (h.warden || '').toLowerCase().includes(searchQuery.toLowerCase())
     ), [hostels, searchQuery]);
 
     const filteredGates = useMemo(() => gates.filter(g =>
-        g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        g.hostel.toLowerCase().includes(searchQuery.toLowerCase())
+        (g.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (g.hostel || '').toLowerCase().includes(searchQuery.toLowerCase())
     ), [gates, searchQuery]);
 
-    const filteredAssignments = useMemo(() => guardAssignments.filter(a =>
-        a.guardName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.hostel.toLowerCase().includes(searchQuery.toLowerCase())
-    ), [guardAssignments, searchQuery]);
 
     // Handlers - Hostel
-    const handleSaveHostel = (form: HostelForm) => {
-        let assignedWarden = form.warden;
-        if (form.isNewWarden) {
-            const newWarden = { id: Date.now().toString(), name: form.newWardenName };
-            setAvailableWardens(prev => [...prev, newWarden]);
-            assignedWarden = newWarden.name;
-        }
+    const handleSaveHostel = async (form: HostelForm) => {
+        try {
+            const id = selectedItem?.id;
+            const assignedWardenName = form.warden;
+            // Find warden by name - robust check
+            const foundWarden = availableWardens.find(w => w.name === assignedWardenName);
+            const wardenId = foundWarden ? foundWarden.id : null;
 
-        const data: Hostel = {
-            id: selectedItem?.id || Date.now().toString(),
-            name: form.name,
-            address: form.address,
-            type: form.type,
-            rooms: parseInt(form.totalRooms),
-            capacity: parseInt(form.capacity),
-            warden: assignedWarden,
-            status: 'Active',
-        };
+            const payload = {
+                hostel_name: form.name,
+                location: form.address,
+                hostel_type: form.type,
+                total_rooms: parseInt(form.totalRooms),
+                warden_id: wardenId ? parseInt(wardenId) : null, // Send null if unassigned or not found
+                // capacity is likely derived from rooms in many systems, but if backend accepts it or we want to store it:
+                // capacity: parseInt(form.capacity) 
+            };
 
-        if (selectedItem) {
-            setHostels(prev => prev.map(h => h.id === selectedItem.id ? data : h));
-        } else {
-            setHostels(prev => [...prev, data]);
+            let response;
+            if (id) {
+                // Update
+                response = await apiClient.put(`/admin/hostels/${id}`, payload);
+            } else {
+                // Create
+                response = await apiClient.post('/admin/hostels', payload);
+            }
+
+            if (response.data.success) {
+                // Determine the new/updated hostel object for local state update or just refetch
+                // Refetching is safer to get backend-generated fields/relations
+                await fetchData();
+                setIsAddModalOpen(false);
+                setIsEditModalOpen(false);
+            }
+        } catch (error: any) {
+            console.error('Error saving hostel:', error);
+            alert(error.response?.data?.message || 'Failed to save hostel');
         }
-        setIsAddModalOpen(false);
-        setIsEditModalOpen(false);
     };
 
-    const handleDeleteHostel = (id: string) => {
-        if (confirm('Are you sure you want to delete this hostel?')) {
-            setHostels(prev => prev.filter(h => h.id !== id));
+    const handleDeleteHostel = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this hostel?')) return;
+        try {
+            const response = await apiClient.delete(`/admin/hostels/${id}`);
+            if (response.data.success) {
+                // setHostels(prev => prev.filter(h => h.id !== id));
+                // Better to refetch to ensure sync especially if side effects exist
+                fetchData();
+            }
+        } catch (error) {
+            console.error('Error deleting hostel:', error);
+            alert('Failed to delete hostel');
         }
     };
 
     // Handlers - Gate
-    const handleSaveGate = (form: GateForm) => {
-        const data: Gate = {
-            id: selectedItem?.id || Date.now().toString(),
-            name: form.gateName,
-            code: selectedItem?.code || `${form.gateName.substring(0, 2).toUpperCase()}-${Date.now().toString().slice(-2)}`,
-            hostel: form.hostel,
-            type: form.gateType,
-            guard: form.guard || 'Unassigned',
-            status: 'Active',
-        };
+    const handleSaveGate = async (id: string | null, form: GateForm) => {
+        try {
+            const payload = {
+                gate_name: form.gateName,
+                gate_no: form.gateNo,
+                hostel_id: form.hostel_id, // hostel_id is already number in form state logic in EditGateModal
+                location: form.location,
+                status: 'Active', // Default or from form if we had status
+                // gateType is not directly in standard Gate model as enum but maybe free field or unused, 
+                // passing it as type if backend expects it, or ignoring. 
+                // Based on frontend 'gateType', backend might use it or ignore it.
+                // Checking previous code, 'type' was mapped to 'gate_type'. Let's send what matches likely backend expectation.
+                // But Gate model has 'type' nowhere? It has status. 
+                // Wait, EditGateModal.tsx uses 'gateType' and maps to 'gate.type'. 
+                // Backend Gate model has no 'type' field visible in the file I read (Guard has, Gate has status). 
+                // Wait, I missed it? Let me re-read Gate.ts in my thought... 
+                // Gate.ts: gate_name, gate_no, hostel_id, location, status. NO 'type'.
+                // So 'gateType' from form likely goes nowhere or is 'status' if mapped? 
+                // Form options: "Entry & Exit", "Entry Only" etc. 
+                // If backend doesn't support it, we can't save it. 
+                // I will send it in case I missed a loose field or it's handled by controller logic not seen, 
+                // but primary fields are gate_name, gate_no, hostel_id.
+            };
 
-        if (selectedItem) {
-            setGates(prev => prev.map(g => g.id === selectedItem.id ? data : g));
-        } else {
-            setGates(prev => [...prev, data]);
+            let response;
+            if (id) {
+                // Update existing gate
+                response = await apiClient.put(`/admin/gates/${id}`, payload);
+            } else {
+                // Create new gate
+                response = await apiClient.post('/admin/gates', payload);
+            }
+
+            if (response.data.success) {
+                const gateId = response.data.data?.gate_id || id;
+
+                // If guard is assigned, call the assign-gate endpoint
+                if (form.guard_id) {
+                    await apiClient.post('/admin/guards/assign-gate', {
+                        guardId: form.guard_id,
+                        gateId: gateId
+                    });
+                }
+
+                await fetchData();
+                setIsAddModalOpen(false);
+                setIsEditModalOpen(false);
+            }
+        } catch (error: any) {
+            console.error('Error saving gate:', error);
+            alert(error.response?.data?.message || 'Failed to save gate');
         }
-        setIsAddModalOpen(false);
-        setIsEditModalOpen(false);
     };
 
-    const handleDeleteGate = (id: string) => {
-        if (confirm('Are you sure you want to delete this gate?')) {
-            setGates(prev => prev.filter(g => g.id !== id));
+    const handleDeleteGate = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this gate?')) return;
+        try {
+            const response = await apiClient.delete(`/admin/gates/${id}`);
+            if (response.data.success) {
+                // setGates(prev => prev.filter(g => g.id !== id));
+                fetchData();
+            }
+        } catch (error) {
+            console.error('Error deleting gate:', error);
+            alert('Failed to delete gate');
         }
     };
 
-    // Handlers - Guard Assignment
-    const handleSaveAssignment = (form: AssignmentForm) => {
-        const data: GuardAssignment = {
-            id: selectedItem?.id || Date.now().toString(),
-            guardName: form.guard,
-            hostel: form.hostel,
-            gate: form.gate,
-            shiftStart: form.shiftStart,
-            shiftEnd: form.shiftEnd,
-            status: form.status ? 'Active' : 'Inactive',
-        };
-
-        if (selectedItem) {
-            setGuardAssignments(prev => prev.map(a => a.id === selectedItem.id ? data : a));
-        } else {
-            setGuardAssignments(prev => [...prev, data]);
-        }
-        setIsAddModalOpen(false);
-        setIsEditModalOpen(false);
-    };
-
-    const handleDeleteAssignment = (id: string) => {
-        if (confirm('Are you sure you want to delete this assignment?')) {
-            setGuardAssignments(prev => prev.filter(a => a.id !== id));
-        }
-    };
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen">
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Hostel Management</h1>
-                <p className="text-gray-600 mt-1">Manage hostels, gates, and security assignments</p>
+                <p className="text-gray-600 mt-1">Manage hostels and gates</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -194,13 +270,6 @@ export default function HostelManagement() {
                             </svg>
                             Gates ({filteredGates.length})
                         </button>
-                        <button
-                            onClick={() => setActiveTab('Guards')}
-                            className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'Guards' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
-                        >
-                            <Shield className="w-4 h-4" />
-                            Guards ({filteredAssignments.length})
-                        </button>
                     </div>
                     <div className="py-3">
                         <button
@@ -218,6 +287,7 @@ export default function HostelManagement() {
                         <HostelTab
                             hostels={filteredHostels}
                             onEdit={(h) => { setSelectedItem(h); setIsEditModalOpen(true); }}
+                            onView={(h) => { setSelectedItem(h); setIsViewModalOpen(true); }}
                             onDelete={handleDeleteHostel}
                         />
                     )}
@@ -228,17 +298,17 @@ export default function HostelManagement() {
                             onDelete={handleDeleteGate}
                         />
                     )}
-                    {activeTab === 'Guards' && (
-                        <GuardTab
-                            assignments={filteredAssignments}
-                            onEdit={(a) => { setSelectedItem(a); setIsEditModalOpen(true); }}
-                            onDelete={handleDeleteAssignment}
-                        />
-                    )}
                 </div>
             </div>
 
             {/* Modals */}
+            <HostelViewModal
+                isOpen={isViewModalOpen && activeTab === 'Hostels'}
+                onClose={() => setIsViewModalOpen(false)}
+                hostel={selectedItem}
+                wardenDetails={availableWardens.find(w => w.name === selectedItem?.warden)}
+            />
+
             <AddHostelModal
                 isOpen={isAddModalOpen && activeTab === 'Hostels'}
                 onClose={() => setIsAddModalOpen(false)}
@@ -256,32 +326,17 @@ export default function HostelManagement() {
             <AddGateModal
                 isOpen={isAddModalOpen && activeTab === 'Gates'}
                 onClose={() => setIsAddModalOpen(false)}
-                onSave={handleSaveGate}
+                onSave={(form) => handleSaveGate(null, form)}
                 hostels={hostels}
             />
             <EditGateModal
                 isOpen={isEditModalOpen && activeTab === 'Gates'}
                 onClose={() => setIsEditModalOpen(false)}
-                onSave={(_id, form) => handleSaveGate(form)}
+                onSave={(id, form) => handleSaveGate(id, form)}
                 gate={selectedItem}
                 hostels={hostels}
             />
 
-            <AddGuardModal
-                isOpen={isAddModalOpen && activeTab === 'Guards'}
-                onClose={() => setIsAddModalOpen(false)}
-                onSave={handleSaveAssignment}
-                hostels={hostels}
-                gates={gates}
-            />
-            <EditGuardModal
-                isOpen={isEditModalOpen && activeTab === 'Guards'}
-                onClose={() => setIsEditModalOpen(false)}
-                onSave={(_id, form) => handleSaveAssignment(form)}
-                assignment={selectedItem}
-                hostels={hostels}
-                gates={gates}
-            />
         </div>
     );
 }

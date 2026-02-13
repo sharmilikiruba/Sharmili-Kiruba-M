@@ -3,15 +3,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Menu, X, Bell, LogOut, User, CheckCircle, XCircle, AlertTriangle, Info, Clock, LogIn, LogOut as LogOutIcon } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  userRole: 'student' | 'warden' | 'guard' | 'admin';
-  userName: string;
-  userEmail: string;
-  hostelInfo?: string;
-  roomInfo?: string;
 }
 
 interface Notification {
@@ -26,12 +22,13 @@ interface Notification {
 const Header: React.FC<HeaderProps> = ({
   sidebarOpen,
   setSidebarOpen,
-  userRole,
-  userName,
-  userEmail,
-  hostelInfo,
-  roomInfo
 }) => {
+  const { user } = useAuth();
+  const userName = user?.name || '';
+  const userEmail = user?.email || '';
+  const userRole = user?.role || 'student';
+  const hostelInfo = user?.hostelInfo;
+  const roomInfo = user?.roomInfo;
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);

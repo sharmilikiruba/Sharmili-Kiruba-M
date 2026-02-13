@@ -30,8 +30,8 @@ export function MyRequestsView({
                 {/* Header */}
                 <div className="bg-white p-6 rounded-lg border flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">Welcome, Rahul Sharma</h1>
-                        <p className="text-gray-600">Krishna Hostel • Room A-204</p>
+                        <h1 className="text-2xl font-bold">My Requests</h1>
+                        <p className="text-gray-600">Track and manage your visitor requests</p>
                     </div>
 
                     <button
@@ -99,8 +99,27 @@ export function MyRequestsView({
                                         <td className="px-6 py-4 font-medium text-gray-900">{r.requestId}</td>
                                         <td className="px-6 py-4 text-gray-700">{r.visitorName}</td>
                                         <td className="px-6 py-4 text-gray-700">{r.relation}</td>
-                                        <td className="px-6 py-4 text-gray-700">{r.visitDate}</td>
-                                        <td className="px-6 py-4 text-gray-700">{r.purpose}</td>
+                                        <td className="px-6 py-4 text-gray-700">
+                                            <div>{r.visitDate}</div>
+                                            {r.status === 'Approved' && r.approvedStartTime && r.approvedEndTime && (
+                                                <div className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 inline-block mt-1">
+                                                    {r.approvedStartTime} - {r.approvedEndTime}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-700">
+                                            <div>{r.purpose}</div>
+                                            {r.status === 'Approved' && r.remarks && (
+                                                <div className="text-[10px] text-gray-500 italic truncate max-w-[150px]" title={r.remarks}>
+                                                    "{r.remarks}"
+                                                </div>
+                                            )}
+                                            {r.status === 'Rejected' && r.rejectionReason && (
+                                                <div className="text-[10px] text-red-500 italic truncate max-w-[150px]" title={r.rejectionReason}>
+                                                    "{r.rejectionReason}"
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4">
                                             <StatusBadge status={r.status} />
                                         </td>

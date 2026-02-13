@@ -9,6 +9,9 @@ export interface Student {
     year: string;
     semester: string;
     photo: string | null;
+    gender?: string;
+    dob?: string;
+    address?: string;
     parentName?: string;
     parentMobile?: string;
     guardianName?: string;
@@ -31,15 +34,15 @@ export interface StudentFormData {
     parentMobile: string;
     parentRelation: string;
     address: string;
+    gender: string;
+    dob: string;
     bloodGroup: string;
     emergencyContact: string;
     guardianName: string;
     guardianMobile: string;
+    password: string;
 }
 
 export interface StudentPhotos {
     student: string | null;
-    father: string | null;
-    mother: string | null;
-    guardian: string | null;
 }

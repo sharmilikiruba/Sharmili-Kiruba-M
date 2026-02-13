@@ -25,17 +25,17 @@ export default function ScanEntry() {
 
   // Mock Data
   const visitorData = {
-    name: 'Kiran Sharma',
-    relation: 'Mother',
-    phone: '+91 98888 12346',
-    aadhar: 'XXXX-XXXX-5678',
-    studentName: 'Rahul Sharma',
-    room: 'A-204',
-    hostel: 'Krishna Hostel',
-    purpose: 'Family Visit',
-    approvedTime: '14:00 - 17:00',
-    entryTime: '01:40 PM',
-    durationInside: '02h 15m',
+    name: '',
+    relation: '',
+    phone: '',
+    aadhar: '',
+    studentName: '',
+    room: '',
+    hostel: '',
+    purpose: '',
+    approvedTime: '',
+    entryTime: '',
+    durationInside: '',
     isOverdue: false,
   };
 

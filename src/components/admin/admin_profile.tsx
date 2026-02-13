@@ -31,12 +31,12 @@ export default function AdminProfile() {
   const [passwordOpen, setPasswordOpen] = useState(false);
 
   const [profile, setProfile] = useState({
-    name: 'Prof. Rajesh Gupta',
-    gender: 'Male',
-    mobile: '+91 98765 00000',
-    altMobile: '+91 98765 00001',
-    email: 'admin@university.edu',
-    address: 'Admin Block, University Campus, City - 560001',
+    name: '',
+    gender: '',
+    mobile: '',
+    altMobile: '',
+    email: '',
+    address: '',
   });
 
   const [passwords, setPasswords] = useState({
@@ -134,10 +134,10 @@ export default function AdminProfile() {
             label="Designation"
             value="Chief Warden & System Administrator"
           />
-          <Info label="Department" value="Hostel Administration" />
-          <Info label="Date of Assignment" value="15 Jan 2020" />
-          <Info label="Institution" value="University of Technology" />
-          <Info label="Office Location" value="Admin Block, Room 101" />
+          <Info label="Hostel" value="Hostel Administration" />
+          <Info label="Date of Assignment" value="" />
+          <Info label="Institution" value="" />
+          <Info label="Office Location" value="" />
         </CardContent>
       </Card>
 

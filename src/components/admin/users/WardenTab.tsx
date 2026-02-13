@@ -8,9 +8,10 @@ interface WardenTabProps {
     onEdit: (warden: Warden) => void;
     onView: (warden: Warden) => void;
     onToggleStatus: (id: string) => void;
+    onDelete: (id: string) => void;
 }
 
-export const WardenTab: React.FC<WardenTabProps> = ({ wardens, onEdit, onView, onToggleStatus }) => {
+export const WardenTab: React.FC<WardenTabProps> = ({ wardens, onEdit, onView, onToggleStatus, onDelete }) => {
     return (
         <div className="overflow-x-auto">
             <table className="w-full">
@@ -53,10 +54,11 @@ export const WardenTab: React.FC<WardenTabProps> = ({ wardens, onEdit, onView, o
                                     >
                                         <Eye className="w-4 h-4" />
                                     </button>
+                                
                                     <button
-                                        onClick={() => onToggleStatus(warden.id)}
-                                        className={`p-2 rounded-lg transition-colors ${warden.status === 'Active' ? 'hover:bg-red-50 text-red-600' : 'hover:bg-green-50 text-green-600'}`}
-                                        title={warden.status === 'Active' ? 'Deactivate' : 'Activate'}
+                                        onClick={() => onDelete(warden.id)}
+                                        className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
+                                        title="Delete Warden"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>

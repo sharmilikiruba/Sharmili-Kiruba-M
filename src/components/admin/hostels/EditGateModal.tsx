@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Gate, GateForm, Hostel } from './types';
@@ -14,18 +16,45 @@ interface EditGateModalProps {
 export const EditGateModal: React.FC<EditGateModalProps> = ({ isOpen, onClose, onSave, gate, hostels }) => {
     const [form, setForm] = useState<GateForm>({
         gateName: '',
+        gateNo: '',
         hostel: '',
+        hostel_id: 0,
+        location: '',
         gateType: '',
-        guard: ''
+        guard: '',
+        guard_id: undefined
     });
+    const [guards, setGuards] = useState<any[]>([]);
+
+    React.useEffect(() => {
+        if (isOpen) {
+            fetchGuards();
+        }
+    }, [isOpen]);
+
+    const fetchGuards = async () => {
+        try {
+            const apiClient = (await import('@/lib/api-client')).default;
+            const response = await apiClient.get('/admin/guards');
+            if (response.data.success) {
+                setGuards(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching guards:', error);
+        }
+    };
 
     useEffect(() => {
         if (gate) {
             setForm({
                 gateName: gate.name,
-                hostel: gate.hostel,
-                gateType: gate.type,
-                guard: gate.guard === 'Unassigned' ? '' : gate.guard,
+                gateNo: gate.gate_no || '',
+                hostel: gate.hostel || '',
+                hostel_id: gate.hostel_id || 0,
+                location: gate.location || '',
+                gateType: gate.type || '',
+                guard: gate.guard === 'Unassigned' ? '' : (gate.guard || ''),
+                guard_id: gate.guard_id
             });
         }
     }, [gate]);
@@ -49,19 +78,39 @@ export const EditGateModal: React.FC<EditGateModalProps> = ({ isOpen, onClose, o
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <InputField label="Gate Name" value={form.gateName} onChange={(v) => setForm({ ...form, gateName: v })} />
+                    <InputField label="Gate Number" value={form.gateNo} onChange={(v) => setForm({ ...form, gateNo: v })} />
                     <SelectField
                         label="Hostel"
                         value={form.hostel}
-                        onChange={(v) => setForm({ ...form, hostel: v })}
+                        onChange={(v) => {
+                            const selected = hostels.find(h => h.name === v);
+                            setForm({ ...form, hostel: v, hostel_id: selected ? parseInt(selected.id) : 0 });
+                        }}
                         options={hostels.map(h => ({ value: h.name, label: h.name }))}
                     />
+                    <InputField label="Location" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
                     <SelectField
                         label="Gate Type"
                         value={form.gateType}
                         onChange={(v) => setForm({ ...form, gateType: v })}
                         options={["Entry & Exit", "Entry Only", "Exit Only"]}
                     />
-                    <InputField label="Assign Guard (Optional)" value={form.guard} onChange={(v) => setForm({ ...form, guard: v })} required={false} />
+                    <SelectField
+                        label="Assign Guard (Optional)"
+                        value={form.guard_id?.toString() || ''}
+                        onChange={(v) => {
+                            const selectedGuard = guards.find(g => g.guard_id?.toString() === v);
+                            setForm({
+                                ...form,
+                                guard_id: v ? parseInt(v) : undefined,
+                                guard: selectedGuard ? selectedGuard.name : ''
+                            });
+                        }}
+                        options={guards.map(g => ({
+                            label: g.name || 'Unknown',
+                            value: g.guard_id?.toString() || ''
+                        }))}
+                    />
 
                     <div className="flex gap-3 mt-6 pt-4">
                         <button

@@ -7,7 +7,6 @@ export interface ProfileData {
     alternateMobile: string;
     email: string;
     address: string;
-    designation: string;
     securityAgency: string;
     dateOfJoining: string;
     assignedHostel: string;

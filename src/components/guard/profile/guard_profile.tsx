@@ -11,29 +11,28 @@ export default function GuardProfile() {
 
     // Profile data
     const [profileData, setProfileData] = useState<ProfileData>({
-        fullName: 'Ramesh Yadav',
-        employeeId: 'SEC2021089',
-        gender: 'Male',
-        dateOfBirth: '22 Jul 1985',
-        mobileNumber: '+91 98765 33333',
-        alternateMobile: '+91 98765 33334',
-        email: 'ramesh.guard@university.edu',
-        address: 'Security Quarters, Block B, University Campus',
-        designation: 'Senior Security Guard',
-        securityAgency: 'University Security Services',
-        dateOfJoining: '15 Mar 2021',
-        assignedHostel: 'Krishna Hostel',
-        assignedGate: 'Main Gate',
-        shiftType: 'Morning',
-        shiftStart: '06:00 AM',
-        shiftEnd: '02:00 PM',
+        fullName: '',
+        employeeId: '',
+        gender: '',
+        dateOfBirth: '',
+        mobileNumber: '',
+        alternateMobile: '',
+        email: '',
+        address: '',
+        securityAgency: '',
+        dateOfJoining: '',
+        assignedHostel: '',
+        assignedGate: '',
+        shiftType: '',
+        shiftStart: '',
+        shiftEnd: '',
     });
 
     const activityMetrics = [
-        { label: 'Entries Handled', value: '24', icon: LogIn, color: 'bg-green-50', iconColor: 'text-green-600' },
-        { label: 'Exits Handled', value: '18', icon: LogOut, color: 'bg-blue-50', iconColor: 'text-blue-600' },
-        { label: 'Manual Entries', value: '3', icon: Clipboard, color: 'bg-yellow-50', iconColor: 'text-yellow-600' },
-        { label: 'Overstay Alerts', value: '2', icon: AlertTriangle, color: 'bg-red-50', iconColor: 'text-red-600' },
+        { label: 'Entries Handled', value: '', icon: LogIn, color: 'bg-green-50', iconColor: 'text-green-600' },
+        { label: 'Exits Handled', value: '', icon: LogOut, color: 'bg-blue-50', iconColor: 'text-blue-600' },
+        { label: 'Manual Entries', value: '', icon: Clipboard, color: 'bg-yellow-50', iconColor: 'text-yellow-600' },
+        { label: 'Overstay Alerts', value: '', icon: AlertTriangle, color: 'bg-red-50', iconColor: 'text-red-600' },
     ];
 
     const handleEditSave = (updatedData: ProfileData) => {
@@ -54,19 +53,18 @@ export default function GuardProfile() {
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-t-xl px-8 py-12 relative">
                 <div className="flex items-end gap-6">
                     <div className="relative">
-                        <div className="w-32 h-32 bg-white rounded-full overflow-hidden border-4 border-white shadow-lg">
-                            <img src="/api/placeholder/128/128" alt="Profile" className="w-full h-full object-cover" />
+                        <div className="w-32 h-32 bg-white rounded-full overflow-hidden border-4 border-white shadow-lg flex items-center justify-center">
+                            <Shield className="w-16 h-16 text-gray-200" />
                         </div>
                         <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
                             <Camera className="w-5 h-5 text-gray-700" />
                         </button>
                     </div>
                     <div className="flex-1 text-white pb-4">
-                        <h1 className="text-3xl font-bold">{profileData.fullName}</h1>
-                        <p className="text-green-100 text-lg mt-1">{profileData.designation}</p>
+                        <h1 className="text-3xl font-bold">{profileData.fullName || 'Guard Profile'}</h1>
                         <p className="text-green-100 text-sm mt-2 flex items-center gap-2">
                             <Clock className="w-4 h-4" />
-                            Last Login: 2024-01-15 06:15:00
+                            {profileData.employeeId}
                         </p>
                     </div>
                     <button
@@ -150,10 +148,6 @@ export default function GuardProfile() {
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Employee ID</p>
                             <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Designation</p>
-                            <p className="font-semibold text-gray-900">{profileData.designation}</p>
                         </div>
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Security Agency</p>

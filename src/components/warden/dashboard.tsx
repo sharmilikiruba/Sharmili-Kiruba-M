@@ -21,7 +21,7 @@ export default function WardenDashboard() {
   const stats = [
     {
       title: 'Pending Requests',
-      count: 1,
+      count: 0,
       icon: ClipboardList,
       color: 'bg-yellow-100',
       iconColor: 'bg-yellow-500'
@@ -42,14 +42,14 @@ export default function WardenDashboard() {
     },
     {
       title: 'Active Visitors',
-      count: 1,
+      count: 0,
       icon: Users,
       color: 'bg-blue-100',
       iconColor: 'bg-blue-500'
     },
     {
       title: 'Monthly Visitors',
-      count: 42,
+      count: 0,
       icon: Calendar,
       color: 'bg-white',
       iconColor: 'bg-gray-200',
@@ -57,34 +57,15 @@ export default function WardenDashboard() {
     }
   ];
 
-  const pendingRequests = [
-    {
-      id: '1',
-      visitorName: 'Suresh Sharma',
-      studentName: 'Rahul Sharma',
-      room: 'Room A-204',
-      priority: 'Normal',
-      date: 'Jan 06',
-      avatar: 'S'
-    }
-  ];
+  const pendingRequests: any[] = [];
 
-  const activeVisitors = [
-    {
-      id: '1',
-      visitorName: 'Dr. Mohan Kumar',
-      visitingStudent: 'Amit Kumar',
-      room: 'Room C-310',
-      status: 'Active',
-      since: 'Since 13:40'
-    }
-  ];
+  const activeVisitors: any[] = [];
 
   const weeklyOverview = [
-    { label: 'Requests This Week', value: 28, color: 'text-gray-900' },
-    { label: 'Approved', value: 24, color: 'text-green-600' },
-    { label: 'Rejected', value: 4, color: 'text-red-600' },
-    { label: 'Avg. Visit Duration', value: '2.5 hrs', color: 'text-gray-900' }
+    { label: 'Requests This Week', value: 0, color: 'text-gray-900' },
+    { label: 'Approved', value: 0, color: 'text-green-600' },
+    { label: 'Rejected', value: 0, color: 'text-red-600' },
+    { label: 'Avg. Visit Duration', value: '0 hrs', color: 'text-gray-900' }
   ];
 
   return (
@@ -92,9 +73,9 @@ export default function WardenDashboard() {
       {/* Welcome Section */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-1">
-          Welcome, Dr. Suresh Kumar!
+          Welcome!
         </h2>
-        <p className="text-gray-600">Krishna Hostel</p>
+        <p className="text-gray-600">Warden Dashboard</p>
       </div>
 
       {/* Stats Cards */}
@@ -144,29 +125,35 @@ export default function WardenDashboard() {
             </button>
           </div>
           <div className="divide-y divide-gray-200">
-            {pendingRequests.map((request) => (
-              <div key={request.id} className="p-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-600 font-bold text-lg">{request.avatar}</span>
+            {pendingRequests.length > 0 ? (
+              pendingRequests.map((request) => (
+                <div key={request.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-blue-600 font-bold text-lg">{request.avatar}</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">{request.visitorName}</h4>
+                        <p className="text-sm text-gray-600">
+                          {request.studentName} • {request.room}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">{request.visitorName}</h4>
-                      <p className="text-sm text-gray-600">
-                        {request.studentName} • {request.room}
-                      </p>
+                    <div className="text-right">
+                      <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium mb-2">
+                        {request.priority}
+                      </span>
+                      <p className="text-xs text-gray-500">{request.date}</p>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium mb-2">
-                      {request.priority}
-                    </span>
-                    <p className="text-xs text-gray-500">{request.date}</p>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-gray-500 italic">
+                No pending requests.
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -181,22 +168,28 @@ export default function WardenDashboard() {
             </button>
           </div>
           <div className="divide-y divide-gray-200">
-            {activeVisitors.map((visitor) => (
-              <div key={visitor.id} className="p-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">{visitor.visitorName}</h4>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Visiting {visitor.visitingStudent} • {visitor.room}
-                    </p>
-                    <p className="text-xs text-gray-500">{visitor.since}</p>
+            {activeVisitors.length > 0 ? (
+              activeVisitors.map((visitor) => (
+                <div key={visitor.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-1">{visitor.visitorName}</h4>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Visiting {visitor.visitingStudent} • {visitor.room}
+                      </p>
+                      <p className="text-xs text-gray-500">{visitor.since}</p>
+                    </div>
+                    <span className="bg-green-500 text-white px-4 py-1.5 rounded-full text-sm font-medium">
+                      {visitor.status}
+                    </span>
                   </div>
-                  <span className="bg-green-500 text-white px-4 py-1.5 rounded-full text-sm font-medium">
-                    {visitor.status}
-                  </span>
                 </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-gray-500 italic">
+                No active visitors.
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

@@ -13,20 +13,20 @@ export default function WardenProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [profileData, setProfileData] = useState({
-    fullName: 'Dr. Suresh Kumar',
-    employeeId: 'EMP2020156',
-    gender: 'Male',
-    dob: '15 Mar 1978',
-    mobile: '+91 98765 11111',
-    alternateMobile: '+91 98765 11112',
-    email: 'suresh.kumar@university.edu',
-    address: 'Warden Quarters, Block A, University Campus',
-    designation: 'Senior Warden',
-    department: 'Hostel Administration',
-    dateOfJoining: '01 Aug 2020',
-    hostel: 'Krishna Hostel',
-    hostelType: 'Boys',
-    officeLocation: 'Krishna Hostel, Ground Floor'
+    fullName: '',
+    employeeId: '',
+    gender: '',
+    dob: '',
+    mobile: '',
+    alternateMobile: '',
+    email: '',
+    address: '',
+    designation: '',
+    department: '',
+    dateOfJoining: '',
+    hostel: '',
+    hostelType: '',
+    officeLocation: ''
   });
 
   const [notifications, setNotifications] = useState({
@@ -76,17 +76,17 @@ export default function WardenProfile() {
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl font-bold">{profileData.fullName}</h1>
+                <h1 className="text-2xl font-bold">{profileData.fullName || 'User Profile'}</h1>
                 <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full">
-                  {profileData.designation.split(' ')[0]}
+                  {profileData.designation ? profileData.designation.split(' ')[0] : 'Role'}
                 </span>
                 <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full">
-                  Active
+                  Status
                 </span>
               </div>
               <p className="text-blue-100">{profileData.designation}</p>
               <p className="text-sm text-blue-200 mt-1">
-                Last Login: 2024-01-15 08:45:30
+                Last Login: -
               </p>
             </div>
           </div>
@@ -255,7 +255,7 @@ export default function WardenProfile() {
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <p className="text-sm text-gray-600">Total Requests</p>
-                          <p className="text-3xl font-bold mt-1">342</p>
+                          <p className="text-3xl font-bold mt-1">0</p>
                         </div>
                         <TrendingUp className="w-8 h-8 text-gray-400" />
                       </div>
@@ -267,7 +267,7 @@ export default function WardenProfile() {
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <p className="text-sm text-gray-600">Approval Rate</p>
-                          <p className="text-3xl font-bold mt-1">87.5%</p>
+                          <p className="text-3xl font-bold mt-1">0%</p>
                         </div>
                         <CheckCircle2 className="w-8 h-8 text-green-600" />
                       </div>
@@ -279,7 +279,7 @@ export default function WardenProfile() {
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <p className="text-sm text-gray-600">Avg Response Time</p>
-                          <p className="text-3xl font-bold mt-1">2.5 <span className="text-base">hrs</span></p>
+                          <p className="text-3xl font-bold mt-1">0 <span className="text-base">hrs</span></p>
                         </div>
                         <Clock className="w-8 h-8 text-blue-600" />
                       </div>
@@ -291,7 +291,7 @@ export default function WardenProfile() {
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <p className="text-sm text-gray-600">Rejected Requests</p>
-                          <p className="text-3xl font-bold mt-1">43</p>
+                          <p className="text-3xl font-bold mt-1">0</p>
                         </div>
                         <XCircle className="w-8 h-8 text-red-600" />
                       </div>

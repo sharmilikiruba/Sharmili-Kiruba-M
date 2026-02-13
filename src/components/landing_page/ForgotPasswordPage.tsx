@@ -12,6 +12,7 @@ export default function ForgotPasswordPage() {
     const router = useRouter();
     const [step, setStep] = useState<ForgotPasswordStep>('EMAIL');
     const [email, setEmail] = useState('');
+    const [otp, setOtp] = useState('');
 
     const renderStep = () => {
         switch (step) {
@@ -27,6 +28,7 @@ export default function ForgotPasswordPage() {
                 return (
                     <OtpStep
                         email={email}
+                        setOtp={setOtp}
                         onNext={() => setStep('RESET')}
                         onBack={() => setStep('EMAIL')}
                     />
@@ -34,6 +36,8 @@ export default function ForgotPasswordPage() {
             case 'RESET':
                 return (
                     <ResetPasswordStep
+                        email={email}
+                        otp={otp}
                         onComplete={() => {
                             router.push('/login/login_page');
                         }}

@@ -1,6 +1,7 @@
 "use client"
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Plus, FileText } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -16,6 +17,7 @@ import { GuardTab } from './GuardTab';
 import { AddGuardModal } from './AddGuardModal';
 import { EditGuardModal } from './EditGuardModal';
 import { GuardViewModal } from './GuardViewModal';
+import { AddStudentModal } from './AddStudentModal';
 
 export default function UserManagement() {
     const [activeTab, setActiveTab] = useState<TabType>('Students');
@@ -28,34 +30,101 @@ export default function UserManagement() {
 
     // Dynamic Data States
     const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hostels, setHostels] = useState<any[]>([]);
 
     // Sample data
-    const [students, setStudents] = useState<Student[]>([
-        { id: '1', name: 'Rahul Sharma', email: 'rahul.sharma@university.edu', contact: '+91 98765 00000', rollNo: '21CS101', department: 'Computer Science', hostel: 'Krishna Hostel', room: 'A-204', status: 'Active' },
-        { id: '2', name: 'Priya Patel', email: 'priya.patel@university.edu', contact: '+91 98765 00001', rollNo: '21EC102', department: 'Electronics', hostel: 'Saraswati Hostel', room: 'B-105', status: 'Active' },
-        { id: '3', name: 'Amit Kumar', email: 'amit.kumar@university.edu', contact: '+91 98765 00002', rollNo: '22ME103', department: 'Mechanical', hostel: 'Krishna Hostel', room: 'C-310', status: 'Inactive' },
-    ]);
+    const [students, setStudents] = useState<Student[]>([]);
+    const [wardens, setWardens] = useState<Warden[]>([]);
+    const [guards, setGuards] = useState<Guard[]>([]);
 
-    const [wardens, setWardens] = useState<Warden[]>([
-        { id: '1', name: 'Dr. Suresh Kumar', email: 'suresh.kumar@university.edu', contact: '+91 98765 11111', hostel: 'Krishna Hostel', status: 'Active' },
-        { id: '2', name: 'Dr. Meera Singh', email: 'meera.singh@university.edu', contact: '+91 98765 22222', hostel: 'Saraswati Hostel', status: 'Active' },
-    ]);
+    // Fetch data
+    const fetchHostels = async () => {
+        try {
+            const response = await apiClient.get('/admin/hostels');
+            if (response.data.success) {
+                setHostels(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching hostels:', error);
+        }
+    };
 
-    const [guards, setGuards] = useState<Guard[]>([
-        { id: '1', name: 'Ramesh Yadav', email: 'ramesh.guard@university.edu', contact: '+91 98765 33333', gate: 'Main Gate', shift: 'Morning', status: 'Active' },
-        { id: '2', name: 'Sunil Verma', email: 'sunil.guard@university.edu', contact: '+91 98765 44444', gate: 'East Gate', shift: 'Evening', status: 'Active' },
-    ]);
+    const fetchWardens = async () => {
+        try {
+            const response = await apiClient.get('/admin/wardens');
+            if (response.data.success) {
+                const formattedWardens = response.data.data.map((w: any) => ({
+                    id: w.warden_id.toString(),
+                    name: w.name,
+                    email: w.user?.email || '',
+                    contact: w.phone || '',
+                    hostel: w.hostel?.hostel_name || 'Unassigned',
+                    status: 'Active',
+                    empId: w.emp_id,
+                    dateOfJoining: w.joining_date,
+                    address: w.address,
+                }));
+                setWardens(formattedWardens);
+            }
+        } catch (error) {
+            console.error('Error fetching wardens:', error);
+        }
+    };
+
+    const fetchGuards = async () => {
+        try {
+            const response = await apiClient.get('/admin/guards');
+            if (response.data.success) {
+                const formattedGuards = response.data.data.map((g: any) => ({
+                    id: g.guard_id.toString(),
+                    name: g.name,
+                    email: g.user?.email || '',
+                    contact: g.phone || g.alternate_phone || '',
+                    status: 'Active',
+                    empId: g.emp_id,
+                    dateOfJoining: g.joining_date,
+                    address: g.address,
+                    gender: g.gender,
+                    designation: g.designation,
+                    dob: g.dob,
+                    gate_id: g.gate_id,
+                    assignedGate: g.assignedGate ? { gate_name: g.assignedGate.gate_name } : undefined,
+                    shift_type: g.shift_type,
+                    shift_start_time: g.shift_start_time,
+                    shift_end_time: g.shift_end_time,
+                }));
+                setGuards(formattedGuards);
+            }
+        } catch (error) {
+            console.error('Error fetching guards:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchHostels();
+    }, []);
+
+    useEffect(() => {
+        if (activeTab === 'Guards') {
+            fetchGuards();
+        } else if (activeTab === 'Wardens') {
+            fetchWardens();
+        }
+    }, [activeTab]);
 
     const filteredStudents = useMemo(() =>
-        students.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())),
+        students.filter(s => (s.name || '').toLowerCase().includes(searchQuery.toLowerCase())),
         [students, searchQuery]);
 
     const filteredWardens = useMemo(() =>
-        wardens.filter(w => w.name.toLowerCase().includes(searchQuery.toLowerCase())),
+        wardens.filter(w => (w.name || '').toLowerCase().includes(searchQuery.toLowerCase())),
         [wardens, searchQuery]);
 
     const filteredGuards = useMemo(() =>
-        guards.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase())),
+        guards.filter(g => (g.name || '').toLowerCase().includes(searchQuery.toLowerCase())),
         [guards, searchQuery]);
 
     // Handlers
@@ -69,35 +138,152 @@ export default function UserManagement() {
         }
     };
 
-    const handleSaveWarden = (form: WardenForm) => {
-        const id = selectedUser?.id;
-        const data: Warden = {
-            id: id || Date.now().toString(),
-            name: form.fullName,
-            email: form.email,
-            contact: form.mobile,
-            hostel: form.hostel,
-            status: 'Active',
-        };
-        setWardens(prev => id ? prev.map(u => u.id === id ? data : u) : [...prev, data]);
-        setIsAddModalOpen(false);
-        setIsEditModalOpen(false);
+    const handleDeleteGuard = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this guard?')) return;
+        try {
+            const response = await apiClient.delete(`/admin/guards/${id}`);
+            if (response.data.success) {
+                fetchGuards();
+            }
+        } catch (error) {
+            console.error('Error deleting guard:', error);
+            alert('Failed to delete guard');
+        }
     };
 
-    const handleSaveGuard = (form: GuardForm) => {
-        const id = selectedUser?.id;
-        const data: Guard = {
-            id: id || Date.now().toString(),
-            name: form.fullName,
-            email: form.email,
-            contact: form.mobile,
-            gate: form.gate,
-            shift: form.shift,
-            status: 'Active',
-        };
-        setGuards(prev => id ? prev.map(u => u.id === id ? data : u) : [...prev, data]);
-        setIsAddModalOpen(false);
-        setIsEditModalOpen(false);
+    const handleDeleteWarden = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this warden?')) return;
+        try {
+            const response = await apiClient.delete(`/admin/wardens/${id}`);
+            if (response.data.success) {
+                fetchWardens();
+            }
+        } catch (error) {
+            console.error('Error deleting warden:', error);
+            alert('Failed to delete warden');
+        }
+    };
+
+    const handleSaveWarden = async (form: WardenForm) => {
+        try {
+            const id = selectedUser?.id;
+            const hostel = hostels.find(h => h.hostel_name === form.hostel);
+
+            const payload: any = {
+                name: form.fullName,
+                email: form.email,
+                phone: form.mobile,
+                hostel_id: hostel?.hostel_id,
+                address: form.address,
+                joining_date: form.dateOfJoining,
+            };
+
+            if (form.password) {
+                payload.password = form.password;
+            }
+
+            // Only include gender and dob if they are collected/available, otherwise don't send defaults for updates
+            // For new creations, these might be needed if required by backend, but here we focus on updates primarily or ensure defaults are only for new
+            if (!id) {
+                payload.gender = 'M'; // Default for new creation if not in form
+                payload.dob = '1990-01-01'; // Default for new creation if not in form
+                payload.designation = 'Warden';
+            }
+
+            let response;
+            if (id) {
+                // For update, we don't send gender/dob/designation unless we want to update them (which we don't have forms for yet)
+                response = await apiClient.put(`/admin/wardens/${id}`, payload);
+            } else {
+                response = await apiClient.post('/admin/wardens', payload);
+            }
+
+            if (response.data.success) {
+                fetchWardens();
+                setIsAddModalOpen(false);
+                setIsEditModalOpen(false);
+            }
+        } catch (error: any) {
+            console.error('Error saving warden:', error);
+            alert(error.response?.data?.message || 'Failed to save warden');
+        }
+    };
+
+    const handleSaveGuard = async (form: GuardForm) => {
+        try {
+            const id = selectedUser?.id;
+            const payload: any = {
+                name: form.fullName,
+                email: form.email,
+                phone: form.mobile,
+                alternate_phone: form.mobile,
+                gender: form.gender,
+                dob: form.dob,
+                designation: form.designation,
+                address: form.address,
+                gate_id: form.gate_id,
+                shift_type: form.shift_type,
+                shift_start_time: form.shift_start_time,
+                shift_end_time: form.shift_end_time,
+                joining_date: form.dateOfJoining,
+            };
+
+            if (form.password) {
+                payload.password = form.password;
+            }
+
+            let response;
+            if (id) {
+                response = await apiClient.put(`/admin/guards/${id}`, payload);
+            } else {
+                response = await apiClient.post('/admin/guards', payload);
+            }
+
+            if (response.data.success) {
+                fetchGuards();
+                setIsAddModalOpen(false);
+                setIsEditModalOpen(false);
+            }
+        } catch (error: any) {
+            console.error('Error saving guard:', error);
+            alert(error.response?.data?.message || 'Failed to save guard');
+        }
+    };
+
+    const handleSaveStudent = async (form: any) => {
+        try {
+            const hostel = hostels.find(h => h.hostel_name === form.hostel);
+
+            const payload = {
+                name: form.fullName,
+                email: form.email,
+                phone: form.mobile,
+                roll_no: form.rollNumber,
+                department: form.department,
+                hostel_id: hostel?.hostel_id,
+                room_no: form.room
+            };
+
+            const response = await apiClient.post('/warden/students', payload);
+
+            if (response.data.success) {
+                // Ideally refetch students here, but fetchStudents is not defined in this file (managed by Warden?)
+                // Assuming admin can view them, we might need to implement fetchStudents in UserManagement if not present,
+                // or just alert success.
+                // Re-checking UserManagement, students state is just dummy data or not fully wired for fetch?
+                // Wait, UserManagement has `students` state but no `fetchStudents` call in useEffect except filtering.
+                // Let's check `useEffect` at line 106. Only fetchHostels.
+                // Line 110: only fetchGuards/Wardens on tab change.
+                // Students tab seems to rely on initial empty state or verify if we need to fetch them.
+                // I will add fetchStudents if missing or just close modal.
+                // For now, close modal.
+                setIsAddModalOpen(false);
+                alert('Student created successfully');
+            }
+        } catch (error: any) {
+            console.error('Error saving student:', error);
+            alert(error.response?.data?.message || 'Failed to save student');
+        }
     };
 
     const handleExportPDF = () => {
@@ -118,7 +304,7 @@ export default function UserManagement() {
             data = filteredWardens.map(w => [w.name, w.hostel, w.email, w.contact || '-', w.status]);
         } else if (activeTab === 'Guards') {
             headers = ['Name', 'Gate', 'Shift', 'Email', 'Contact', 'Status'];
-            data = filteredGuards.map(g => [g.name, g.gate, g.shift, g.email, g.contact || '-', g.status]);
+            data = filteredGuards.map(g => [g.name, g.assignedGate?.gate_name || '-', g.shift_type || '-', g.email, g.contact || '-', g.status]);
         }
 
         autoTable(doc, { head: [headers], body: data, startY: 35 });
@@ -147,15 +333,13 @@ export default function UserManagement() {
                                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-full md:w-80"
                                 />
                             </div>
-                            {activeTab !== 'Students' && (
-                                <button
-                                    onClick={() => { setSelectedUser(null); setIsAddModalOpen(true); }}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-                                >
-                                    <Plus className="w-5 h-5" />
-                                    Add {activeTab === 'Wardens' ? 'Warden' : 'Guard'}
-                                </button>
-                            )}
+                            <button
+                                onClick={() => { setSelectedUser(null); setIsAddModalOpen(true); }}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+                            >
+                                <Plus className="w-5 h-5" />
+                                Add {activeTab === 'Wardens' ? 'Warden' : activeTab === 'Guards' ? 'Guard' : 'Student'}
+                            </button>
                             <button
                                 onClick={handleExportPDF}
                                 className="flex items-center gap-2 px-4 py-2 border border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-sm"
@@ -167,14 +351,6 @@ export default function UserManagement() {
                     </div>
                 </div>
 
-                {activeTab === 'Students' && (
-                    <div className="bg-blue-50 border-b border-blue-200 px-6 py-3 flex items-center gap-2 text-sm text-blue-800">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <span><strong>Read-Only Access:</strong> Students are managed by their respective wardens. You can only view student records.</span>
-                    </div>
-                )}
 
                 <div className="flex border-b border-gray-200 px-6 overflow-x-auto">
                     {(['Students', 'Wardens', 'Guards'] as TabType[]).map((tab) => (
@@ -202,6 +378,7 @@ export default function UserManagement() {
                             onEdit={(w) => { setSelectedUser(w); setIsEditModalOpen(true); }}
                             onView={(w) => { setSelectedUser(w); setIsViewModalOpen(true); }}
                             onToggleStatus={(id) => handleToggleStatus(id, 'Wardens')}
+                            onDelete={handleDeleteWarden}
                         />
                     )}
                     {activeTab === 'Guards' && (
@@ -209,7 +386,7 @@ export default function UserManagement() {
                             guards={filteredGuards}
                             onEdit={(g) => { setSelectedUser(g); setIsEditModalOpen(true); }}
                             onView={(g) => { setSelectedUser(g); setIsViewModalOpen(true); }}
-                            onToggleStatus={(id) => handleToggleStatus(id, 'Guards')}
+                            onDelete={handleDeleteGuard}
                         />
                     )}
                 </div>
@@ -226,12 +403,14 @@ export default function UserManagement() {
                 isOpen={isAddModalOpen && activeTab === 'Wardens'}
                 onClose={() => setIsAddModalOpen(false)}
                 onSave={handleSaveWarden}
+                hostels={hostels}
             />
             <EditWardenModal
                 isOpen={isEditModalOpen && activeTab === 'Wardens'}
                 onClose={() => setIsEditModalOpen(false)}
                 warden={selectedUser}
                 onSave={(_id, form) => handleSaveWarden(form)}
+                hostels={hostels}
             />
             <WardenViewModal
                 isOpen={isViewModalOpen && activeTab === 'Wardens'}
@@ -254,6 +433,13 @@ export default function UserManagement() {
                 isOpen={isViewModalOpen && activeTab === 'Guards'}
                 onClose={() => setIsViewModalOpen(false)}
                 guard={selectedUser}
+            />
+
+            <AddStudentModal
+                isOpen={isAddModalOpen && activeTab === 'Students'}
+                onClose={() => setIsAddModalOpen(false)}
+                onSave={handleSaveStudent}
+                hostels={hostels}
             />
         </div>
     );

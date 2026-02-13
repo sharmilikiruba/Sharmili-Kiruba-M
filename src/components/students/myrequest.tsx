@@ -8,47 +8,7 @@ import { RequestDetailModal } from './myrequest/RequestDetailModal';
 
 /* ---------------- SAMPLE DATA ---------------- */
 
-const sampleRequests: Request[] = [
-  {
-    id: '1',
-    requestId: 'VR001',
-    visitorName: 'Suresh Sharma',
-    relation: 'Father',
-    visitDate: 'Jan 06, 2026',
-    purpose: 'Family Visit',
-    status: 'Pending',
-    visitorDetails: {
-      phone: '+91 98765 43210',
-      email: 'suresh.sharma@email.com',
-      address: '123 Main Street, Mumbai',
-      idProof: 'Aadhar - XXXX 1234',
-    },
-    visitDetails: {
-      entryTime: '02:00 PM',
-      exitTime: '06:00 PM',
-    },
-  },
-  {
-    id: '2',
-    requestId: 'VR002',
-    visitorName: 'Kiran Sharma',
-    relation: 'Mother',
-    visitDate: 'Jan 04, 2026',
-    purpose: 'Family Visit',
-    status: 'Approved',
-    visitorDetails: {
-      phone: '+91 98765 43211',
-      email: 'kiran.sharma@email.com',
-      address: 'Mumbai',
-      idProof: 'Aadhar - XXXX 5678',
-    },
-    visitDetails: {
-      entryTime: '07:45 PM',
-      exitTime: '10:00 PM',
-    },
-    qrCode: 'QR_VR002_APPROVED',
-  },
-];
+const sampleRequests: Request[] = [];
 
 const allStatuses = ['All Status', 'Pending', 'Approved', 'Rejected'];
 

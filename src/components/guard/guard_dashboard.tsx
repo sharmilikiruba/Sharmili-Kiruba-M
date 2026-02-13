@@ -6,10 +6,10 @@ export default function Dashboard() {
   const router = useRouter();
 
   const stats = [
-    { label: 'Active Visitors', value: '1', icon: Users },
-    { label: 'Entries Today', value: '1', icon: LogIn },
-    { label: 'Exits Today', value: '0', icon: LogOut },
-    { label: 'Pending Exits', value: '1', icon: UserCheck },
+    { label: 'Active Visitors', value: '', icon: Users },
+    { label: 'Entries Today', value: '', icon: LogIn },
+    { label: 'Exits Today', value: '', icon: LogOut },
+    { label: 'Pending Exits', value: '', icon: UserCheck },
   ];
 
   const quickActions = [
@@ -19,10 +19,10 @@ export default function Dashboard() {
 
   const recentEntries = [
     {
-      name: 'Kiran Sharma',
-      details: 'Visiting Rahul Sharma • Room A-204',
-      time: '07:45 PM',
-      status: 'Exited',
+      name: '',
+      details: '',
+      time: '',
+      status: '',
     },
   ];
 

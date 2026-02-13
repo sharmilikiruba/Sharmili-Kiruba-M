@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { HostelForm } from './types';
@@ -17,10 +19,7 @@ const initialForm: HostelForm = {
     capacity: '',
     warden: '',
     address: '',
-    isNewWarden: false,
-    newWardenName: '',
-    newWardenEmail: '',
-    newWardenContact: ''
+    password: '',
 };
 
 export const AddHostelModal: React.FC<AddHostelModalProps> = ({ isOpen, onClose, onSave, availableWardens }) => {
@@ -54,32 +53,12 @@ export const AddHostelModal: React.FC<AddHostelModalProps> = ({ isOpen, onClose,
                         <InputField label="Capacity" type="number" value={form.capacity} onChange={(v) => setForm({ ...form, capacity: v })} placeholder="200" />
                     </div>
 
-                    <div>
-                        <label className="flex items-center gap-2 mb-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={form.isNewWarden}
-                                onChange={(e) => setForm({ ...form, isNewWarden: e.target.checked, warden: '' })}
-                                className="w-4 h-4 text-blue-600 rounded"
-                            />
-                            <span className="text-sm font-medium text-gray-700">Create New Warden</span>
-                        </label>
-                    </div>
-
-                    {form.isNewWarden ? (
-                        <>
-                            <InputField label="Warden Name" value={form.newWardenName} onChange={(v) => setForm({ ...form, newWardenName: v })} placeholder="Enter warden name" />
-                            <InputField label="Email" type="email" value={form.newWardenEmail} onChange={(v) => setForm({ ...form, newWardenEmail: v })} placeholder="warden@university.edu" />
-                            <InputField label="Contact" type="tel" value={form.newWardenContact} onChange={(v) => setForm({ ...form, newWardenContact: v })} placeholder="+91 98765 43210" />
-                        </>
-                    ) : (
-                        <SelectField
-                            label="Assign Warden"
-                            value={form.warden}
-                            onChange={(v) => setForm({ ...form, warden: v })}
-                            options={availableWardens.map(w => ({ value: w.name, label: w.name }))}
-                        />
-                    )}
+                    <SelectField
+                        label="Assign Warden"
+                        value={form.warden}
+                        onChange={(v) => setForm({ ...form, warden: v })}
+                        options={availableWardens.map(w => ({ value: w.name, label: w.name }))}
+                    />
 
                     <div className="flex gap-3 mt-6 pt-4">
                         <button

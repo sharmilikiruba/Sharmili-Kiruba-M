@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/shared/layout";
 
 export default function AdminDashboardPage() {
   return (
-    <DashboardLayout userRole="admin" userName="Ram Kumar" userEmail="ram.admin@example.com" hostelInfo="Main Gate">
+    <DashboardLayout>
       <AdminDashboard />
     </DashboardLayout>
   )

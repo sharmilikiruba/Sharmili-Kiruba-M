@@ -53,7 +53,7 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
                     </button>
                 </div>
 
-                <div className="p-8 pb-32">
+                <div className="p-8">
                     <StudentForm
                         formData={formData}
                         setFormData={setFormData}
@@ -66,21 +66,19 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
                     />
                 </div>
 
-                <div className="fixed bottom-0 left-0 right-0 max-w-4xl mx-auto p-8 pointer-events-none">
-                    <div className="flex gap-4 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-gray-100 shadow-2xl pointer-events-auto">
-                        <button
-                            onClick={onClose}
-                            className="flex-1 px-6 py-3.5 border border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 transition-all active:scale-95"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={onSubmit}
-                            className="flex-1 px-6 py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
-                        >
-                            Submit
-                        </button>
-                    </div>
+                <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-8 py-5 border-t border-gray-100 flex gap-4 rounded-b-2xl">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 px-6 py-3 border border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 transition-all active:scale-95"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onSubmit}
+                        className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+                    >
+                        Submit
+                    </button>
                 </div>
             </div>
         </div>

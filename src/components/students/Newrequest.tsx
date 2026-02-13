@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 const NewVisitorRequestPage = () => {
   const router = useRouter();
   const studentInfo = {
-    name: 'Rahul Sharma',
-    rollNumber: '21CS101',
-    hostelName: 'Krishna Hostel',
-    roomNumber: 'A-204',
-    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
+    name: '',
+    rollNumber: '',
+    hostelName: '',
+    roomNumber: '',
+    profileImage: ''
   };
 
   const [formData, setFormData] = useState({
@@ -20,11 +20,11 @@ const NewVisitorRequestPage = () => {
     visitorPhoto: null,
     idProofType: '',
     idProofNumber: '',
+    visitorAddress: '',
     purpose: '',
     visitDate: '',
-    visitTime: '',
-    duration: '',
-    location: '',
+    visitStartTime: '',
+    visitEndTime: '',
     accompanyingPersons: '0'
   });
 
@@ -113,11 +113,11 @@ const NewVisitorRequestPage = () => {
         visitorPhoto: null,
         idProofType: '',
         idProofNumber: '',
+        visitorAddress: '',
         purpose: '',
         visitDate: '',
-        visitTime: '',
-        duration: '',
-        location: '',
+        visitStartTime: '',
+        visitEndTime: '',
         accompanyingPersons: '0'
       });
       setPhotoPreview(null);
@@ -145,12 +145,12 @@ const NewVisitorRequestPage = () => {
       visitorDetails: {
         phone: formData.mobileNumber,
         email: '', // Not collected in form
-        address: '', // Not collected in form
+        address: formData.visitorAddress,
         idProof: `${formData.idProofType} - ${formData.idProofNumber}`,
       },
       visitDetails: {
-        entryTime: formData.visitTime || '-',
-        exitTime: '-',
+        startTime: formData.visitStartTime || '-',
+        endTime: formData.visitEndTime || '-',
         reason: formData.purpose
       },
       qrCode: ''
@@ -176,11 +176,11 @@ const NewVisitorRequestPage = () => {
       visitorPhoto: null,
       idProofType: '',
       idProofNumber: '',
+      visitorAddress: '',
       purpose: '',
       visitDate: '',
-      visitTime: '',
-      duration: '',
-      location: '',
+      visitStartTime: '',
+      visitEndTime: '',
       accompanyingPersons: '0'
     });
     setPhotoPreview(null);
@@ -351,6 +351,17 @@ const NewVisitorRequestPage = () => {
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visitor Address</label>
+                <textarea
+                  value={formData.visitorAddress}
+                  onChange={(e) => handleInputChange('visitorAddress', e.target.value)}
+                  placeholder="Enter visitor's permanent address"
+                  rows={2}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                ></textarea>
+              </div>
             </div>
           </div>
 
@@ -358,7 +369,7 @@ const NewVisitorRequestPage = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <h3 className="text-xl font-bold text-gray-900 mb-6">Visit Details</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Purpose of Visit <span className="text-red-500">*</span>
@@ -390,48 +401,27 @@ const NewVisitorRequestPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Visit Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visit From Time</label>
                 <input
                   type="time"
-                  value={formData.visitTime}
-                  onChange={(e) => handleInputChange('visitTime', e.target.value)}
+                  value={formData.visitStartTime}
+                  onChange={(e) => handleInputChange('visitStartTime', e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visit To Time</label>
+                <input
+                  type="time"
+                  value={formData.visitEndTime}
+                  onChange={(e) => handleInputChange('visitEndTime', e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Expected Duration</label>
-                <select
-                  value={formData.duration}
-                  onChange={(e) => handleInputChange('duration', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select duration</option>
-                  <option value="1-2 hours">1-2 hours</option>
-                  <option value="2-4 hours">2-4 hours</option>
-                  <option value="Half day">Half day</option>
-                  <option value="Full day">Full day</option>
-                  <option value="Multiple days">Multiple days</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Meeting Location</label>
-                <select
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select location</option>
-                  <option value="Hostel Room">Hostel Room</option>
-                  <option value="Visitor's Lounge">Visitor's Lounge</option>
-                  <option value="Campus Garden">Campus Garden</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Accompanying Persons</label>
                 <input

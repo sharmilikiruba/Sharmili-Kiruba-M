@@ -19,19 +19,19 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                     icon={<Users className="w-6 h-6 text-slate-600" />}
                     label="Total Visits"
                     value={totalVisits.toString()}
-                    change="+12% from last month"
-                    subChange="↑ 12% from last week"
+                    change=""
+                    subChange=""
                     changePositive
                 />
                 <StatCard
                     icon={<Clock className="w-6 h-6 text-slate-600" />}
                     label="Avg Duration"
-                    value="2h 15m"
+                    value=""
                 />
                 <StatCard
                     icon={<TrendingUp className="w-6 h-6 text-slate-600" />}
                     label="Peak Hours"
-                    value="2-4 PM"
+                    value=""
                 />
                 <StatCard
                     icon={<Eye className="w-6 h-6 text-slate-600" />}
@@ -66,11 +66,11 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                                 </linearGradient>
                             </defs>
                             <path
-                                d="M 40 100 L 100 120 L 160 110 L 220 60 L 280 50 L 340 65 L 400 55 L 460 70 L 520 60 L 580 75 L 580 180 L 40 180 Z"
+                                d=""
                                 fill="url(#areaGradient)"
                             />
                             <path
-                                d="M 40 90 L 100 110 L 160 100 L 220 50 L 280 45 L 340 55 L 400 50 L 460 65 L 520 55 L 580 70"
+                                d=""
                                 fill="none"
                                 stroke="url(#strokeGradient)"
                                 strokeWidth="3"
@@ -84,13 +84,11 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                     <div className="flex items-center justify-center h-64">
                         <div className="relative w-48 h-48">
                             <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#10b981" strokeWidth="40" strokeDasharray="396 396" strokeDashoffset="0" />
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#fbbf24" strokeWidth="40" strokeDasharray="60 396" strokeDashoffset="-313" />
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#ef4444" strokeWidth="40" strokeDasharray="45 396" strokeDashoffset="-373" />
+                                <circle cx="100" cy="100" r="80" fill="none" stroke="#f1f5f9" strokeWidth="40" />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="text-center">
-                                    <div className="text-2xl font-bold text-slate-800">79%</div>
+                                    <div className="text-2xl font-bold text-slate-800"></div>
                                     <div className="text-xs text-slate-500">Approved</div>
                                 </div>
                             </div>
@@ -98,15 +96,15 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                         <div className="ml-8 space-y-3">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                                <span className="text-sm text-slate-600">Approved 79%</span>
+                                <span className="text-sm text-slate-600">Approved </span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                                <span className="text-sm text-slate-600">Pending 12%</span>
+                                <span className="text-sm text-slate-600">Pending </span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                                <span className="text-sm text-slate-600">Rejected 9%</span>
+                                <span className="text-sm text-slate-600">Rejected </span>
                             </div>
                         </div>
                     </div>
@@ -117,24 +115,24 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                 <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
                     <h3 className="font-bold text-slate-800 mb-4">Visit Purpose Distribution</h3>
                     <div className="space-y-3">
-                        <PurposeBar label="Family Visit" percentage={75} color="bg-blue-600" />
-                        <PurposeBar label="Medical" percentage={30} color="bg-blue-600" />
-                        <PurposeBar label="Birthday" percentage={25} color="bg-blue-600" />
-                        <PurposeBar label="Delivery" percentage={15} color="bg-blue-600" />
-                        <PurposeBar label="Other" percentage={10} color="bg-blue-600" />
+                        <PurposeBar label="Family Visit" percentage={0} color="bg-blue-600" />
+                        <PurposeBar label="Medical" percentage={0} color="bg-blue-600" />
+                        <PurposeBar label="Birthday" percentage={0} color="bg-blue-600" />
+                        <PurposeBar label="Delivery" percentage={0} color="bg-blue-600" />
+                        <PurposeBar label="Other" percentage={0} color="bg-blue-600" />
                     </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
                     <h3 className="font-bold text-slate-800 mb-4">Hourly Distribution</h3>
                     <div className="h-48 flex items-end justify-between gap-2">
-                        <HourBar height={20} label="8AM" />
-                        <HourBar height={45} label="10AM" />
-                        <HourBar height={60} label="12PM" />
-                        <HourBar height={80} label="2PM" />
-                        <HourBar height={90} label="4PM" />
-                        <HourBar height={65} label="6PM" />
-                        <HourBar height={25} label="8PM" />
+                        <HourBar height={0} label="8AM" />
+                        <HourBar height={0} label="10AM" />
+                        <HourBar height={0} label="12PM" />
+                        <HourBar height={0} label="2PM" />
+                        <HourBar height={0} label="4PM" />
+                        <HourBar height={0} label="6PM" />
+                        <HourBar height={0} label="8PM" />
                     </div>
                 </div>
             </div>

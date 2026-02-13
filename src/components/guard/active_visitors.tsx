@@ -10,14 +10,14 @@ export default function ActiveVisitors() {
   // Mock active visitors data
   const activeVisitors = [
     {
-      id: 1,
-      name: 'Dr. Mohan Kumar',
-      relation: 'Father',
-      student: 'Amit Kumar',
-      room: 'C-310',
-      entryTime: '01:40 PM',
-      duration: '91h 48m',
-      status: 'Overstay',
+      id: 0,
+      name: '',
+      relation: '',
+      student: '',
+      room: '',
+      entryTime: '',
+      duration: '',
+      status: '',
     },
   ];
 

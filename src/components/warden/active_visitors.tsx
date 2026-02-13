@@ -3,24 +3,7 @@
 import { useState } from "react"
 import { Search, Phone, Clock } from "lucide-react"
 
-const activeVisitors = [
-  {
-    id: "AV001",
-    visitorName: "Dr. Mohan Kumar",
-    studentName: "Amit Kumar",
-    room: "Room C-310",
-    duration: "94h 30m",
-    status: "Active",
-  },
-  {
-    id: "AV002",
-    visitorName: "Kiran Sharma",
-    studentName: "Rahul Sharma",
-    room: "Room A-204",
-    duration: "2h 10m",
-    status: "Active",
-  },
-]
+const activeVisitors: any[] = [];
 
 export default function ActiveVisitorsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -102,7 +85,7 @@ export default function ActiveVisitorsPage() {
                 </div>
 
                 {/* Action Button */}
-  
+
               </div>
             ))
           ) : (

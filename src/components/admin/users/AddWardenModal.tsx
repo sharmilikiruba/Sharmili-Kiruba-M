@@ -7,11 +7,21 @@ interface AddWardenModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (form: WardenForm) => void;
+    hostels: any[];
 }
 
-const initialForm: WardenForm = { fullName: '', email: '', mobile: '', hostel: '' };
+const initialForm: WardenForm = {
+    fullName: '',
+    email: '',
+    mobile: '',
+    hostel: '',
+    address: '',
+    empId: '',
+    dateOfJoining: new Date().toISOString().split('T')[0],
+    password: ''
+};
 
-export const AddWardenModal: React.FC<AddWardenModalProps> = ({ isOpen, onClose, onSave }) => {
+export const AddWardenModal: React.FC<AddWardenModalProps> = ({ isOpen, onClose, onSave, hostels }) => {
     const [form, setForm] = useState<WardenForm>(initialForm);
 
     if (!isOpen) return null;
@@ -33,10 +43,13 @@ export const AddWardenModal: React.FC<AddWardenModalProps> = ({ isOpen, onClose,
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <InputField label="Joining Date" value={form.dateOfJoining} onChange={() => { }} type="date" disabled={true} />
                     <InputField label="Full Name" value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })} />
                     <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
+                    <InputField label="Password" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
                     <InputField label="Mobile" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
-                    <SelectField label="Hostel" value={form.hostel} onChange={(v) => setForm({ ...form, hostel: v })} options={["Krishna Hostel", "Saraswati Hostel", "Ganga Hostel"]} />
+                    <InputField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+                    <SelectField label="Hostel" value={form.hostel} onChange={(v) => setForm({ ...form, hostel: v })} options={hostels.map(h => ({ value: h.hostel_name, label: h.hostel_name }))} />
 
                     <button type="submit" className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30">
                         Create Warden

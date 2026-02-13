@@ -16,50 +16,21 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 // Modular Imports
-import { ReportType, VisitorStat, WardenPerf, SecurityEvent, StudentStat, HostelStat, ExportFormat } from './types';
+import { ReportType, VisitorStat, StudentStat, HostelStat, ExportFormat } from './types';
 import { ReportCard } from './ReportComponents';
 import { VisitorStatistics } from './VisitorStatistics';
-import { WardenPerformance } from './WardenPerformance';
-import { SecurityReport } from './SecurityReport';
 import { StudentWise } from './StudentWise';
 import { HostelWise } from './HostelWise';
-import { CustomReport } from './CustomReport';
 
 // --- Centralized Mock Data ---
 const REPORTS_DATA: {
   visitorStats: VisitorStat[];
-  wardenPerf: WardenPerf[];
-  securityEvents: SecurityEvent[];
   studentStats: StudentStat[];
   hostelStats: HostelStat[];
 } = {
-  visitorStats: [
-    { date: '2026-01-04', visitor: 'Kiran Sharma', student: 'Rahul Sharma', purpose: 'Family Visit', entryTime: '14:00', exitTime: '17:30', duration: '3 hours', status: 'Completed' },
-    { date: '2026-01-05', visitor: 'Dr. Mohan Kumar', student: 'Amit Kumar', purpose: 'Medical Emergency', entryTime: '08:00', exitTime: '17:30', duration: '1 hour', status: 'Completed' },
-    { date: '2026-01-06', visitor: 'Sunita Devi', student: 'Priya Patel', purpose: 'Parent Meeting', entryTime: '15:30', exitTime: '18:00', duration: '2h 30m', status: 'Completed' },
-  ],
-  wardenPerf: [
-    { name: 'Dr. Suresh Kumar', hostel: 'Krishna Hostel', totalRequests: 156, approved: 142, rejected: 14, approvalRate: '91%', avgResponseTime: '25 min' },
-    { name: 'Dr. Meera Singh', hostel: 'Saraswati Hostel', totalRequests: 134, approved: 118, rejected: 16, approvalRate: '88%', avgResponseTime: '18 min' },
-    { name: 'Dr. Anil Sharma', hostel: 'Vivekananda Hostel', totalRequests: 98, approved: 89, rejected: 9, approvalRate: '91%', avgResponseTime: '32 min' },
-  ],
-  securityEvents: [
-    { timestamp: 'Jan 06, 02:00 PM', visitor: 'Dr. Mohan Kumar', student: 'Amit Kumar', eventType: 'Entry', status: 'Normal', remarks: 'Verified and allowed' },
-    { timestamp: 'Jan 05, 10:15 PM', visitor: 'Kiran Sharma', student: 'Rahul Sharma', eventType: 'Exit', status: 'Normal', remarks: 'On time exit' },
-    { timestamp: 'Jan 06, 01:00 AM', visitor: 'Raj Malhotra', student: 'Vikash Gupta', eventType: 'Overstay', status: 'Warning', remarks: 'Exceeded by 45 min' },
-    { timestamp: 'Jan 04, 07:30 PM', visitor: 'Unknown Person', student: 'N/A', eventType: 'Denied', status: 'Alert', remarks: 'No valid pass' },
-    { timestamp: 'Jan 04, 03:45 PM', visitor: 'Sunita Devi', student: 'Priya Patel', eventType: 'Manual Entry', status: 'Warning', remarks: 'System bypass - emergency' },
-  ],
-  studentStats: [
-    { studentId: 'STU001', studentName: 'Rahul Sharma', totalVisitors: 12, uniqueVisitors: 4, frequency: '3/month', lastVisit: '2026-01-04' },
-    { studentId: 'STU002', studentName: 'Priya Patel', totalVisitors: 8, uniqueVisitors: 3, frequency: '2/month', lastVisit: '2026-01-03' },
-    { studentId: 'STU003', studentName: 'Amit Kumar', totalVisitors: 5, uniqueVisitors: 2, frequency: '1.5/month', lastVisit: '2026-01-05' },
-  ],
-  hostelStats: [
-    { name: 'Krishna Hostel', totalVisitors: 456, peakTime: '14:00-16:00', compliance: '94%' },
-    { name: 'Saraswati Hostel', totalVisitors: 389, peakTime: '15:00-17:00', compliance: '97%' },
-    { name: 'Vivekananda Hostel', totalVisitors: 278, peakTime: '14:00-15:00', compliance: '92%' },
-  ]
+  visitorStats: [],
+  studentStats: [],
+  hostelStats: []
 };
 
 // --- Export Helper ---
@@ -115,14 +86,12 @@ export default function ReportsPage() {
     return data;
   };
 
-  const getFilteredSecurityEvents = () => REPORTS_DATA.securityEvents;
   const getFilteredStudentStats = () => {
     let data = REPORTS_DATA.studentStats;
     if (dateFrom) data = data.filter(d => d.lastVisit >= dateFrom);
     if (dateTo) data = data.filter(d => d.lastVisit <= dateTo);
     return data;
   };
-  const getFilteredWardenPerf = () => REPORTS_DATA.wardenPerf;
   const getFilteredHostelStats = () => REPORTS_DATA.hostelStats;
 
   const handleExport = (format: ExportFormat) => {
@@ -133,14 +102,6 @@ export default function ReportsPage() {
       case 'visitor-statistics':
         data = getFilteredVisitorStats();
         title = 'Visitor Statistics';
-        break;
-      case 'warden-performance':
-        data = getFilteredWardenPerf();
-        title = 'Warden Performance';
-        break;
-      case 'security-report':
-        data = getFilteredSecurityEvents();
-        title = 'Security Report';
         break;
       case 'student-wise':
         data = getFilteredStudentStats();
@@ -172,18 +133,6 @@ export default function ReportsPage() {
                     onClick={() => setSelectedReport('visitor-statistics')}
                   />
                   <ReportCard
-                    icon={<UserCheck className="w-5 h-5" />}
-                    title="Warden Performance"
-                    isActive={selectedReport === 'warden-performance'}
-                    onClick={() => setSelectedReport('warden-performance')}
-                  />
-                  <ReportCard
-                    icon={<Shield className="w-5 h-5" />}
-                    title="Security Report"
-                    isActive={selectedReport === 'security-report'}
-                    onClick={() => setSelectedReport('security-report')}
-                  />
-                  <ReportCard
                     icon={<Users className="w-5 h-5" />}
                     title="Student-wise"
                     isActive={selectedReport === 'student-wise'}
@@ -194,12 +143,6 @@ export default function ReportsPage() {
                     title="Hostel-wise"
                     isActive={selectedReport === 'hostel-wise'}
                     onClick={() => setSelectedReport('hostel-wise')}
-                  />
-                  <ReportCard
-                    icon={<Filter className="w-5 h-5" />}
-                    title="Custom Report"
-                    isActive={selectedReport === 'custom-report'}
-                    onClick={() => setSelectedReport('custom-report')}
                   />
                 </div>
               </div>
@@ -232,33 +175,28 @@ export default function ReportsPage() {
                   </div>
                 </div>
 
-                {selectedReport !== 'custom-report' && (
-                  <div className="mt-6 pt-6 border-t border-slate-100">
-                    <h4 className="text-sm font-medium text-slate-600 mb-3">Export</h4>
-                    <div className="space-y-2">
-                      <button onClick={() => handleExport('pdf')} className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-                        <FileText className="w-4 h-4" /> PDF
-                      </button>
-                      <button onClick={() => handleExport('excel')} className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-                        <Download className="w-4 h-4" /> Excel
-                      </button>
-                      <button onClick={() => handleExport('csv')} className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-                        <Download className="w-4 h-4" /> CSV
-                      </button>
-                    </div>
+                <div className="mt-6 pt-6 border-t border-slate-100">
+                  <h4 className="text-sm font-medium text-slate-600 mb-3">Export</h4>
+                  <div className="space-y-2">
+                    <button onClick={() => handleExport('pdf')} className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                      <FileText className="w-4 h-4" /> PDF
+                    </button>
+                    <button onClick={() => handleExport('excel')} className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                      <Download className="w-4 h-4" /> Excel
+                    </button>
+                    <button onClick={() => handleExport('csv')} className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                      <Download className="w-4 h-4" /> CSV
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </aside>
 
           <main className="flex-1">
             {selectedReport === 'visitor-statistics' && <VisitorStatistics data={getFilteredVisitorStats()} />}
-            {selectedReport === 'warden-performance' && <WardenPerformance data={getFilteredWardenPerf()} />}
-            {selectedReport === 'security-report' && <SecurityReport data={getFilteredSecurityEvents()} />}
             {selectedReport === 'student-wise' && <StudentWise data={getFilteredStudentStats()} />}
             {selectedReport === 'hostel-wise' && <HostelWise data={getFilteredHostelStats()} />}
-            {selectedReport === 'custom-report' && <CustomReport visitorData={REPORTS_DATA.visitorStats} />}
           </main>
         </div>
       </div>
