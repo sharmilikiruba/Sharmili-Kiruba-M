@@ -1,6 +1,6 @@
 export interface Student {
     id: number;
-    name: string;
+    fullName: string;
     rollNumber: string;
     email: string;
     mobile: string;
@@ -26,8 +26,9 @@ export interface StudentFormData {
     rollNumber: string;
     email: string;
     mobile: string;
+    course: string;
     department: string;
-    year: string;
+    currentYear: string;
     semester: string;
     roomNumber: string;
     parentName: string;

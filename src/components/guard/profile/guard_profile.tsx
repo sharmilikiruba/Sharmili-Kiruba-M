@@ -1,13 +1,21 @@
 "use client";
-import { useState } from 'react';
-import { Camera, Lock, LogIn, LogOut, Clipboard, AlertTriangle, MapPin, Clock, Shield, Edit } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, MapPin, Phone, Mail, Calendar, Edit2, Key, HelpCircle, LogOut, CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, Camera, Lock, LogIn, Clipboard, AlertTriangle } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import { ProfileData, PasswordForm } from './types';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
+import protectedService from '@/lib/protected-service';
 
 export default function GuardProfile() {
+    const { user } = useAuth();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isStatsLoading, setIsStatsLoading] = useState(true);
+    const [verificationStatus, setVerificationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [verificationMessage, setVerificationMessage] = useState('');
 
     // Profile data
     const [profileData, setProfileData] = useState<ProfileData>({
@@ -28,23 +36,130 @@ export default function GuardProfile() {
         shiftEnd: '',
     });
 
-    const activityMetrics = [
-        { label: 'Entries Handled', value: '', icon: LogIn, color: 'bg-green-50', iconColor: 'text-green-600' },
-        { label: 'Exits Handled', value: '', icon: LogOut, color: 'bg-blue-50', iconColor: 'text-blue-600' },
-        { label: 'Manual Entries', value: '', icon: Clipboard, color: 'bg-yellow-50', iconColor: 'text-yellow-600' },
-        { label: 'Overstay Alerts', value: '', icon: AlertTriangle, color: 'bg-red-50', iconColor: 'text-red-600' },
-    ];
+    const [stats, setStats] = useState({
+        entriesHandled: 0,
+        exitsHandled: 0,
+        manualEntries: 0,
+        overstayAlerts: 0
+    });
 
-    const handleEditSave = (updatedData: ProfileData) => {
-        setProfileData(updatedData);
-        setIsEditModalOpen(false);
-        alert('Profile updated successfully!');
+    useEffect(() => {
+        if (user?.id) {
+            fetchProfile();
+            fetchStats();
+        }
+    }, [user]);
+
+    const fetchProfile = async () => {
+        try {
+            setIsLoading(true);
+            const response = await apiClient.get(`/guard/profile/${user?.id}`);
+            if (response.data.success) {
+                const guard = response.data.data;
+                setProfileData({
+                    fullName: guard.name || '',
+                    employeeId: guard.emp_id || '',
+                    gender: guard.gender || '',
+                    dateOfBirth: guard.dob ? new Date(guard.dob).toISOString().split('T')[0] : '',
+                    mobileNumber: guard.phone || '',
+                    alternateMobile: guard.alternate_phone || '',
+                    email: guard.user?.email || user?.email || '',
+                    address: guard.address || '',
+                    securityAgency: guard.security_agency || '',
+                    dateOfJoining: guard.joining_date ? new Date(guard.joining_date).toISOString().split('T')[0] : '',
+                    assignedHostel: guard.assignedGate?.hostel?.name || 'Not assigned',
+                    assignedGate: guard.assignedGate?.gate_name || 'Not assigned',
+                    shiftType: guard.shift_type || '',
+                    shiftStart: guard.shift_start_time || '',
+                    shiftEnd: guard.shift_end_time || '',
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching guard profile:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handlePasswordSave = (data: PasswordForm) => {
-        // In real app, send to backend
-        alert('Password changed successfully!');
-        setIsPasswordModalOpen(false);
+    const fetchStats = async () => {
+        try {
+            setIsStatsLoading(true);
+            const response = await apiClient.get('/guard/stats');
+            if (response.data.success) {
+                setStats(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching guard stats:', error);
+        } finally {
+            setIsStatsLoading(false);
+        }
+    };
+
+    const activityMetrics = [
+        { label: 'Entries Handled', value: stats.entriesHandled.toString(), icon: LogIn, color: 'bg-green-50', iconColor: 'text-green-600' },
+        { label: 'Exits Handled', value: stats.exitsHandled.toString(), icon: LogOut, color: 'bg-blue-50', iconColor: 'text-blue-600' },
+        { label: 'Manual Entries', value: stats.manualEntries.toString(), icon: Clipboard, color: 'bg-yellow-50', iconColor: 'text-yellow-600' },
+        { label: 'Overstay Alerts', value: stats.overstayAlerts.toString(), icon: AlertTriangle, color: 'bg-red-50', iconColor: 'text-red-600' },
+    ];
+
+    const handleEditSave = async (updatedData: ProfileData) => {
+        try {
+            const payload = {
+                name: updatedData.fullName,
+                gender: updatedData.gender,
+                dob: updatedData.dateOfBirth,
+                phone: updatedData.mobileNumber,
+                email: updatedData.email,
+                alternate_phone: updatedData.alternateMobile,
+                address: updatedData.address,
+            };
+
+            const response = await apiClient.put(`/guard/profile/${user?.id}`, payload);
+            if (response.data.success) {
+                setIsEditModalOpen(false);
+                alert('Profile updated successfully!');
+                fetchProfile();
+            }
+        } catch (error: any) {
+            console.error('Error updating guard profile:', error);
+            alert(error.response?.data?.message || 'Failed to update profile');
+        }
+    };
+
+    const handlePasswordSave = async (data: PasswordForm) => {
+        if (data.newPassword !== data.confirmPassword) {
+            alert('New passwords do not match');
+            return;
+        }
+
+        try {
+            const response = await apiClient.post('/guard/change-password', {
+                oldPassword: data.currentPassword,
+                newPassword: data.newPassword
+            });
+
+            if (response.data.success) {
+                setIsPasswordModalOpen(false);
+                alert('Password changed successfully!');
+            }
+        } catch (error: any) {
+            console.error('Error changing password:', error);
+            alert(error.response?.data?.message || 'Failed to change password');
+        }
+    };
+
+    const handleVerifyAccess = async () => {
+        try {
+            setVerificationStatus('loading');
+            const response = await protectedService.checkGuardAccess();
+            if (response.success) {
+                setVerificationStatus('success');
+                setVerificationMessage(response.message);
+            }
+        } catch (error: any) {
+            setVerificationStatus('error');
+            setVerificationMessage(error.response?.data?.message || 'Access Denied');
+        }
     };
 
     return (
@@ -77,6 +192,13 @@ export default function GuardProfile() {
                 </div>
             </div>
 
+            {isLoading && (
+                <div className="flex items-center justify-center p-12 bg-white border border-gray-200 border-t-0 rounded-b-xl shadow-sm mb-6">
+                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                    <span className="ml-2 text-gray-600">Loading profile...</span>
+                </div>
+            )}
+
             {/* Personal & Contact Information */}
             <div className="bg-white rounded-b-xl shadow-sm border border-gray-200 border-t-0 p-6 mb-6">
                 <div className="flex items-center justify-between mb-4">
@@ -90,7 +212,7 @@ export default function GuardProfile() {
                         onClick={() => setIsEditModalOpen(true)}
                         className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2"
                     >
-                        <Edit className="w-4 h-4" />
+                        <Edit2 className="w-4 h-4" />
                         Edit
                     </button>
                 </div>
@@ -210,7 +332,7 @@ export default function GuardProfile() {
                 </div>
 
                 {/* Activity Metrics */}
-                <div>
+                <div className="mb-6">
                     <h3 className="font-semibold text-gray-900 mb-4">Activity Metrics (Today)</h3>
                     <div className="grid grid-cols-4 gap-4">
                         {activityMetrics.map((metric, index) => (
@@ -224,6 +346,41 @@ export default function GuardProfile() {
                                 <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Role Verification section */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-green-600" />
+                        Access Verification
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                        Verify your security personnel access clearances with the central server.
+                    </p>
+
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleVerifyAccess}
+                            disabled={verificationStatus === 'loading'}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                        >
+                            {verificationStatus === 'loading' ? 'Verifying...' : 'Verify Guard Access'}
+                        </button>
+
+                        {verificationStatus === 'success' && (
+                            <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-lg text-sm">
+                                <ShieldCheck className="w-4 h-4" />
+                                {verificationMessage}
+                            </div>
+                        )}
+
+                        {verificationStatus === 'error' && (
+                            <div className="flex items-center gap-2 text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm">
+                                <ShieldAlert className="w-4 h-4" />
+                                {verificationMessage}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

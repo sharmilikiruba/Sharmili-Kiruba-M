@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Calendar,
@@ -8,8 +8,11 @@ import {
   User,
   CheckCircle,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
 
 interface Visit {
   id: string;
@@ -23,8 +26,6 @@ interface Visit {
   remarks?: string;
 }
 
-const sampleVisits: Visit[] = [];
-
 const allPurposes = [
   'All Purposes',
   'Family Visit',
@@ -36,36 +37,88 @@ const allPurposes = [
 ];
 
 export default function VisitorHistory() {
-  const [visits] = useState<Visit[]>(sampleVisits);
+  const { user } = useAuth();
+  const [visits, setVisits] = useState<Visit[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPurpose, setSelectedPurpose] = useState('All Purposes');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Filter visits
-  const filteredVisits = visits.filter(visit => {
-    const matchesSearch =
-      visit.visitorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visit.purpose.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        setIsLoading(true);
+        // 1. Resolve studentId
+        const profileRes = await apiClient.get(`/students/profile/${user?.id}`);
+        if (profileRes.data.success) {
+          const sid = profileRes.data.data.student.student_id;
 
-    const matchesPurpose = selectedPurpose === 'All Purposes' || visit.purpose === selectedPurpose;
+          // 2. Fetch History
+          // Backend getHistory takes (studentId, query, purpose)
+          const params: any = {};
+          if (searchTerm) params.query = searchTerm;
+          if (selectedPurpose !== 'All Purposes') params.purpose = selectedPurpose;
 
-    return matchesSearch && matchesPurpose;
-  });
+          const res = await apiClient.get(`/visitors/history/${sid}`, { params });
+          if (res.data.success) {
+            const mapped: Visit[] = res.data.data.map((v: any) => {
+              const latestLog = v.logs && v.logs.length > 0 ? v.logs[0] : null;
+              return {
+                id: v.visitor_id.toString(),
+                visitorName: v.name,
+                visitorPhoto: v.visitor_photo,
+                visitDate: new Date(v.visit_date).toLocaleDateString(),
+                purpose: v.visit_purpose,
+                entryTime: latestLog?.entry_time || '-',
+                exitTime: latestLog?.exit_time || null,
+                status: latestLog?.exit_time ? 'Checked Out' : 'Checked In',
+                remarks: v.approval_remarks || v.remarks
+              };
+            });
+            setVisits(mapped);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching visitor history:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      fetchHistory();
+    }
+  }, [user, searchTerm, selectedPurpose]);
+
+  // Filter is now handled by API for better performance, but we keep local filter for instant UI responsiveness if needed
+  // Or we just use the visits array directly since we re-fetch on searchTerm/selectedPurpose change
+  const filteredVisits = visits;
 
   const approvedCount = filteredVisits.length;
 
+  if (isLoading && visits.length === 0) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600 mb-4" />
+          <p className="text-lg font-medium text-gray-600">Retrieving visitor logs...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="px-6 py-4 border-b border-gray-200">
+    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 min-h-screen">
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-slate-800 mb-2 tracking-tight">
-            Visitor History
+            Visitor Entry Log
           </h1>
-          <p className="text-slate-600 text-lg">View your approved visit records</p>
+          <p className="text-slate-600 text-lg">Detailed history of verified visitor visits</p>
         </div>
 
         {/* Search and Filter Section */}
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex gap-4 items-center">
             {/* Search Input */}
             <div className="flex-1 relative">
@@ -98,13 +151,15 @@ export default function VisitorHistory() {
         {/* Main Content Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
           {/* Header with Count */}
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-              <CheckCircle className="w-6 h-6 text-white" />
+          <div className="px-6 py-4 border-b border-gray-200 bg-blue-600">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-white uppercase tracking-wider">
+                Completed Logs ({approvedCount})
+              </h2>
             </div>
-            <h2 className="text-xl font-bold text-white">
-              Approved Visits ({approvedCount})
-            </h2>
           </div>
 
           {/* Table */}
@@ -135,7 +190,7 @@ export default function VisitorHistory() {
                       Status
                     </th>
                     <th className="text-left py-4 px-6 text-sm font-semibold text-slate-700 uppercase tracking-wider">
-                      Warden Remarks
+                      Remarks
                     </th>
                   </tr>
                 </thead>
@@ -147,9 +202,13 @@ export default function VisitorHistory() {
                     >
                       {/* Photo */}
                       <td className="py-5 px-8">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shadow-md">
-                          <User className="w-6 h-6 text-blue-600" />
-                        </div>
+                        {visit.visitorPhoto ? (
+                          <img src={visit.visitorPhoto} alt="" className="w-12 h-12 rounded-full object-cover shadow-md border-2 border-white" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shadow-md">
+                            <User className="w-6 h-6 text-blue-600" />
+                          </div>
+                        )}
                       </td>
 
                       {/* Visitor Name */}
@@ -190,7 +249,7 @@ export default function VisitorHistory() {
                             <span className="font-medium">{visit.exitTime}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-400 font-medium">-</span>
+                          <span className="text-slate-400 font-medium italic">Still in premise</span>
                         )}
                       </td>
 
@@ -202,7 +261,7 @@ export default function VisitorHistory() {
                       {/* Remarks */}
                       <td className="py-5 px-6">
                         <span className="text-slate-600 text-sm italic">
-                          {visit.remarks || 'No remarks'}
+                          {visit.remarks || 'No remarks provided'}
                         </span>
                       </td>
                     </tr>
@@ -211,15 +270,15 @@ export default function VisitorHistory() {
               </table>
             </div>
           ) : (
-            <div className="py-20 text-center">
+            <div className="py-24 text-center">
               <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-10 h-10 text-slate-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                No visits found
+                No history records found
               </h3>
               <p className="text-slate-600">
-                Try adjusting your search or filter criteria
+                You don't have any completed visitor visits yet.
               </p>
             </div>
           )}
@@ -227,22 +286,22 @@ export default function VisitorHistory() {
 
         {/* Summary Stats */}
         {filteredVisits.length > 0 && (
-          <div className="grid grid-cols-3 gap-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             <StatCard
               icon={<CheckCircle className="w-6 h-6" />}
-              label="Total Approved Visits"
+              label="Total History"
               value={approvedCount}
               color="blue"
             />
             <StatCard
               icon={<User className="w-6 h-6" />}
-              label="Currently Checked In"
+              label="Currently Inside"
               value={filteredVisits.filter(v => v.status === 'Checked In').length}
               color="green"
             />
             <StatCard
               icon={<LogOut className="w-6 h-6" />}
-              label="Checked Out"
+              label="Fully Exited"
               value={filteredVisits.filter(v => v.status === 'Checked Out').length}
               color="purple"
             />
@@ -257,7 +316,7 @@ export default function VisitorHistory() {
 function StatusBadge({ status }: { status: 'Checked In' | 'Checked Out' }) {
   if (status === 'Checked In') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold border-2 border-green-200 shadow-sm">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold border border-green-200">
         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         {status}
       </span>
@@ -291,12 +350,12 @@ function StatCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-all">
       <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center text-white mb-4 shadow-md`}>
         {icon}
       </div>
       <div className="text-3xl font-bold text-slate-800 mb-1">{value}</div>
-      <div className="text-sm text-slate-600 font-medium">{label}</div>
+      <div className="text-sm text-slate-600 font-medium uppercase tracking-tight">{label}</div>
     </div>
   );
 }

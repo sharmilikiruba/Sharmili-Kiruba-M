@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Users,
   Shield,
@@ -22,99 +22,117 @@ import { VisitorStatistics } from './VisitorStatistics';
 import { StudentWise } from './StudentWise';
 import { HostelWise } from './HostelWise';
 
+// --- API Client ---
+import apiClient from '@/lib/api-client';
+
 // --- Centralized Mock Data ---
+// Keep mock data for other reports for now, or until they are connected
 const REPORTS_DATA: {
-  visitorStats: VisitorStat[];
   studentStats: StudentStat[];
   hostelStats: HostelStat[];
 } = {
-  visitorStats: [],
   studentStats: [],
   hostelStats: []
 };
 
 // --- Export Helper ---
-const exportData = (data: any[], format: ExportFormat, title: string) => {
-  if (!data || data.length === 0) {
-    alert('No data to export');
-    return;
-  }
+// --- Export Helper ---
+const exportReport = async (
+  reportType: ReportType,
+  format: ExportFormat,
+  startDate: string,
+  endDate: string,
+  featureName: string
+) => {
+  try {
+    const response = await apiClient.get(`/admin/reports/${reportType}/export`, {
+      params: { startDate, endDate, format },
+      responseType: 'blob', // Important for file download
+    });
 
-  if (format === 'csv') {
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(','),
-      ...data.map(row => headers.map(header => `"${row[header]}"`).join(',')),
-    ].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
+    const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.csv`;
+    const extension = format === 'excel' ? 'xlsx' : format;
+    link.setAttribute('download', `${featureName}-report-${startDate}-to-${endDate}.${extension}`);
+    document.body.appendChild(link);
     link.click();
-  } else if (format === 'excel') {
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-    XLSX.writeFile(workbook, `${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.xlsx`);
-  } else if (format === 'pdf') {
-    const doc = new jsPDF();
-    doc.text(title, 14, 22);
-    const headers = Object.keys(data[0]).map(key =>
-      key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
-    );
-    const rows = data.map(item => Object.values(item));
-    autoTable(doc, {
-      head: [headers],
-      body: rows as any[],
-      startY: 30,
-    });
-    doc.save(`${title.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.pdf`);
+    link.remove();
+  } catch (error) {
+    console.error("Export failed", error);
+    alert("Failed to export report");
   }
 };
 
 export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState<ReportType>('visitor-statistics');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  // Default to current month or reasonable range
+  const [dateFrom, setDateFrom] = useState(new Date().toISOString().split('T')[0]);
+  const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Filters
-  const getFilteredVisitorStats = () => {
-    let data = REPORTS_DATA.visitorStats;
-    if (dateFrom) data = data.filter(d => d.date >= dateFrom);
-    if (dateTo) data = data.filter(d => d.date <= dateTo);
-    return data;
-  };
+  // Data States
+  const [visitorStats, setVisitorStats] = useState<VisitorStat[]>([]);
+  // Placeholder states for other reports until connected
+  const [studentStats, setStudentStats] = useState<StudentStat[]>([]);
+  const [hostelStats, setHostelStats] = useState<HostelStat[]>([]);
 
+  // Fetch Data
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        if (selectedReport === 'visitor-statistics') {
+          const res = await apiClient.get('/admin/reports/visitor-statistics', {
+            params: { startDate: dateFrom, endDate: dateTo }
+          });
+          if (res.data.success) {
+            // Backend returns an object with statistics, not an array
+            // We need to pass the entire stats object to VisitorStatistics component
+            setVisitorStats(res.data.data || {});
+          }
+        }
+        // Implement other report fetches here
+      } catch (error) {
+        console.error("Failed to fetch report data", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (dateFrom && dateTo) {
+      fetchData();
+    }
+  }, [selectedReport, dateFrom, dateTo]);
+
+
+  // Filters - Legacy functions for other reports to not break UI immediately
+  // For Visitor Stats, we use API data directly
   const getFilteredStudentStats = () => {
     let data = REPORTS_DATA.studentStats;
-    if (dateFrom) data = data.filter(d => d.lastVisit >= dateFrom);
-    if (dateTo) data = data.filter(d => d.lastVisit <= dateTo);
+    // ... filtering logic if kept client side for others
     return data;
   };
   const getFilteredHostelStats = () => REPORTS_DATA.hostelStats;
 
   const handleExport = (format: ExportFormat) => {
-    let data: any[] = [];
-    let title = '';
+    let featureName = '';
 
     switch (selectedReport) {
       case 'visitor-statistics':
-        data = getFilteredVisitorStats();
-        title = 'Visitor Statistics';
+        featureName = 'visitor-statistics';
         break;
       case 'student-wise':
-        data = getFilteredStudentStats();
-        title = 'Student Wise Report';
+        featureName = 'student-wise';
         break;
       case 'hostel-wise':
-        data = getFilteredHostelStats();
-        title = 'Hostel Wise Report';
+        featureName = 'hostel-wise';
         break;
       default:
         return;
     }
-    exportData(data, format, title);
+
+    exportReport(selectedReport, format, dateFrom, dateTo, featureName);
   };
 
   return (
@@ -193,10 +211,15 @@ export default function ReportsPage() {
             </div>
           </aside>
 
-          <main className="flex-1">
-            {selectedReport === 'visitor-statistics' && <VisitorStatistics data={getFilteredVisitorStats()} />}
-            {selectedReport === 'student-wise' && <StudentWise data={getFilteredStudentStats()} />}
-            {selectedReport === 'hostel-wise' && <HostelWise data={getFilteredHostelStats()} />}
+          <main className="flex-1 relative">
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            )}
+            {selectedReport === 'visitor-statistics' && <VisitorStatistics data={visitorStats} />}
+            {selectedReport === 'student-wise' && <StudentWise data={studentStats} />}
+            {selectedReport === 'hostel-wise' && <HostelWise data={hostelStats} />}
           </main>
         </div>
       </div>

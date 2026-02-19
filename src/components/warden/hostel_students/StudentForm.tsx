@@ -7,10 +7,8 @@ interface StudentFormProps {
     setFormData: (data: StudentFormData) => void;
     photos: StudentPhotos;
     onPhotoUpload: (type: keyof StudentPhotos, e: React.ChangeEvent<HTMLInputElement>) => void;
-    onRemovePhoto: (type: keyof StudentPhotos) => void;
-    departments: string[];
-    years: string[];
-    semesters: string[];
+   
+    // departments, years, semesters props are no longer needed for select options
 }
 
 export const StudentForm: React.FC<StudentFormProps> = ({
@@ -18,10 +16,7 @@ export const StudentForm: React.FC<StudentFormProps> = ({
     setFormData,
     photos,
     onPhotoUpload,
-    onRemovePhoto,
-    departments,
-    years,
-    semesters,
+    
 }) => {
     const handleInputChange = (field: keyof StudentFormData, value: string) => {
         setFormData({ ...formData, [field]: value });
@@ -37,15 +32,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         alt={label}
                         className="w-full h-32 object-cover transition-all group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button
-                            type="button"
-                            onClick={() => onRemovePhoto(type)}
-                            className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 shadow-xl transform transition-transform hover:scale-110"
-                        >
-                            <Trash2 size={16} />
-                        </button>
-                    </div>
+                   
+                       
                 </div>
             ) : (
                 <label className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-blue-600 cursor-pointer bg-gray-50/50">
@@ -191,39 +179,51 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">Department</label>
-                        <select
+                        <label className="text-sm font-semibold text-gray-700">Course <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.course}
+                            onChange={(e) => handleInputChange('course', e.target.value)}
+                            placeholder="e.g. B.Tech"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Department <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            required
                             value={formData.department}
                             onChange={(e) => handleInputChange('department', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
-                        >
-                            <option value="">Select Dept</option>
-                            {departments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
-                        </select>
+                            placeholder="e.g. Computer Science"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
+                        />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">Year</label>
-                        <select
-                            value={formData.year}
-                            onChange={(e) => handleInputChange('year', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
-                        >
-                            <option value="">Select Year</option>
-                            {years.map(year => <option key={year} value={year}>{year}</option>)}
-                        </select>
+                        <label className="text-sm font-semibold text-gray-700">Current Year <span className="text-red-500">*</span></label>
+                        <input
+                            type="number"
+                            required
+                            value={formData.currentYear}
+                            onChange={(e) => handleInputChange('currentYear', e.target.value)}
+                            placeholder="e.g. 1"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
+                        />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">Semester</label>
-                        <select
+                        <label className="text-sm font-semibold text-gray-700">Semester <span className="text-red-500">*</span></label>
+                        <input
+                            type="number"
+                            required
                             value={formData.semester}
                             onChange={(e) => handleInputChange('semester', e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
-                        >
-                            <option value="">Select Sem</option>
-                            {semesters.map(sem => <option key={sem} value={sem}>{sem}</option>)}
-                        </select>
+                            placeholder="e.g. 1"
+                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
+                        />
                     </div>
 
                     <div className="space-y-2">

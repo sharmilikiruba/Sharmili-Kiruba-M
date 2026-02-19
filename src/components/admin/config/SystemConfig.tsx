@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Building, AlertCircle, MessageSquare, Bell } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 // Modular Imports
 import {
@@ -52,28 +53,108 @@ export default function SystemConfiguration() {
         emergencyRequest: false,
     });
 
-    // Load settings from localStorage on mount
+    // Load settings from API on mount
     useEffect(() => {
-        const savedTriggers = localStorage.getItem('notificationTriggers');
-        if (savedTriggers) {
-            try {
-                setNotificationTriggers(JSON.parse(savedTriggers));
-            } catch (e) {
-                console.error("Failed to parse triggers from localStorage", e);
-            }
-        }
+        fetchSettings();
     }, []);
 
-    const handleSaveConfiguration = () => {
-        // Save relevant settings to localStorage
-        localStorage.setItem('notificationTriggers', JSON.stringify(notificationTriggers));
+    const fetchSettings = async () => {
+        try {
+            // Check if we are in a browser environment to avoid hydration issues with localStorage fallback if needed
+            if (typeof window === 'undefined') return;
 
-        // Dispatch event to notify other components (like Header)
-        window.dispatchEvent(new Event('storage'));
+            const response = await apiClient.get('/admin/config');
+            if (response.data.success) {
+                const settingsGrouped = response.data.data;
 
-        alert('Configuration saved successfully!');
+                // Map API response to state
+                if (settingsGrouped['QR Settings']) {
+                    const qr = settingsGrouped['QR Settings'].reduce((acc: any, curr: any) => {
+                        acc[curr.key] = curr.value === 'true' ? true : curr.value === 'false' ? false : curr.value;
+                        return acc;
+                    }, {});
+                    setQrSettings(prev => ({ ...prev, ...qr }));
+                }
+
+                if (settingsGrouped['SMS']) {
+                    // This might need adjustment based on how SMS templates are stored. 
+                    // Assuming they are stored with keys like "approvalSms.enabled", "approvalSms.template"
+                    const sms: any = {};
+                    settingsGrouped['SMS'].forEach((s: any) => {
+                        const [key, field] = s.key.split('.');
+                        if (key && field) {
+                            if (!sms[key]) sms[key] = {};
+                            sms[key][field] = s.value === 'true' ? true : s.value === 'false' ? false : s.value;
+                        }
+                    });
+                    setSmsTemplates(prev => ({ ...prev, ...sms }));
+                }
+
+                if (settingsGrouped['Notifications']) {
+                    const notif = settingsGrouped['Notifications'].reduce((acc: any, curr: any) => {
+                        // Triggers might be stored here too, or separate group
+                        if (curr.key in notificationSettings) {
+                            acc[curr.key] = curr.value === 'true' ? true : curr.value === 'false' ? false : curr.value;
+                        }
+                        return acc;
+                    }, {});
+                    setNotificationSettings(prev => ({ ...prev, ...notif }));
+
+                    const triggers = settingsGrouped['Notifications'].reduce((acc: any, curr: any) => {
+                        if (curr.key in notificationTriggers) {
+                            acc[curr.key] = curr.value === 'true' ? true : curr.value === 'false' ? false : curr.value;
+                        }
+                        return acc;
+                    }, {});
+                    setNotificationTriggers(prev => ({ ...prev, ...triggers }));
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch settings", error);
+        }
     };
 
+    const handleSaveConfiguration = async () => {
+        try {
+            const settingsToSave = [
+                // QR Settings
+                ...Object.entries(qrSettings).map(([key, value]) => ({
+                    key,
+                    value: String(value),
+                    group: 'QR Settings'
+                })),
+                // Notification Settings
+                ...Object.entries(notificationSettings).map(([key, value]) => ({
+                    key,
+                    value: String(value),
+                    group: 'Notifications'
+                })),
+                // Notification Triggers
+                ...Object.entries(notificationTriggers).map(([key, value]) => ({
+                    key,
+                    value: String(value),
+                    group: 'Notifications'
+                })),
+                // SMS Templates
+                ...Object.entries(smsTemplates).flatMap(([key, value]) => [
+                    { key: `${key}.enabled`, value: String(value.enabled), group: 'SMS' },
+                    { key: `${key}.template`, value: value.template, group: 'SMS' }
+                ])
+            ];
+
+            const response = await apiClient.put('/admin/config', { settings: settingsToSave });
+
+            if (response.data.success) {
+                alert('Configuration saved successfully!');
+                // Dispatch event to notify other components (like Header) if they listen to updated settings
+                // You might need a more robust state management or context for global settings updates
+                window.dispatchEvent(new Event('storage'));
+            }
+        } catch (error: any) {
+            console.error("Error saving configuration:", error);
+            alert(error.response?.data?.message || 'Failed to save configuration');
+        }
+    };
 
     return (
         <div className="p-8 w-full bg-gray-50 min-h-screen">

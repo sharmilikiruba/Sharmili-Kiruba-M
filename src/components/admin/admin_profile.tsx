@@ -23,7 +23,11 @@ import {
   Shield,
   Lock,
   Pencil,
+  ShieldCheck,
+  ShieldAlert,
+  Loader2,
 } from 'lucide-react';
+import protectedService from '@/lib/protected-service';
 
 export default function AdminProfile() {
   /** ---------------- STATE ---------------- */
@@ -45,6 +49,9 @@ export default function AdminProfile() {
     confirm: '',
   });
 
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [verificationMessage, setVerificationMessage] = useState('');
+
   /** ---------------- HANDLERS ---------------- */
   const handleProfileSave = () => {
     console.log('Updated profile:', profile);
@@ -58,6 +65,20 @@ export default function AdminProfile() {
     }
     console.log('Password changed');
     setPasswordOpen(false);
+  };
+
+  const handleVerifyAccess = async () => {
+    try {
+      setVerificationStatus('loading');
+      const response = await protectedService.checkAdminAccess();
+      if (response.success) {
+        setVerificationStatus('success');
+        setVerificationMessage(response.message);
+      }
+    } catch (error: any) {
+      setVerificationStatus('error');
+      setVerificationMessage(error.response?.data?.message || 'Access Denied');
+    }
   };
 
   /** ---------------- UI ---------------- */
@@ -228,6 +249,45 @@ export default function AdminProfile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ACCESS VERIFICATION section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-red-600" />
+            System Privilege Verification
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Confirm your administrative privileges with the backend security core.
+          </p>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={handleVerifyAccess}
+              disabled={verificationStatus === 'loading'}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {verificationStatus === 'loading' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Verify Admin Access
+            </Button>
+
+            {verificationStatus === 'success' && (
+              <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-lg text-sm font-medium">
+                <ShieldCheck className="w-4 h-4" />
+                {verificationMessage}
+              </div>
+            )}
+
+            {verificationStatus === 'error' && (
+              <div className="flex items-center gap-2 text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm font-medium">
+                <ShieldAlert className="w-4 h-4" />
+                {verificationMessage}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

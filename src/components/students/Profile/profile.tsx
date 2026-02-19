@@ -2,11 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Student, VisitorStats } from './types';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
+import protectedService from '@/lib/protected-service';
+import { Loader2, ShieldCheck, ShieldAlert } from 'lucide-react';
 
 const StudentProfile: React.FC = () => {
+    const { user } = useAuth();
     const [student, setStudent] = useState<Student | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [visitorStats] = useState<VisitorStats>({
+    const [verificationStatus, setVerificationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [verificationMessage, setVerificationMessage] = useState('');
+    const [visitorStats, setVisitorStats] = useState<VisitorStats>({
         total: 0,
         approved: 0,
         rejected: 0,
@@ -14,35 +22,65 @@ const StudentProfile: React.FC = () => {
     });
 
     useEffect(() => {
-        fetchStudentData();
-    }, []);
+        if (user?.id) {
+            fetchStudentData();
+        }
+    }, [user]);
 
     const fetchStudentData = async () => {
-        // Replace with actual API call
-        const mockStudent: Student = {
-            id: "",
-            rollNumber: "",
-            name: "",
-            gender: "",
-            dateOfBirth: "",
-            photo: "",
-            phone: "",
-            email: "",
-            address: "",
-            course: "",
-            department: "",
-            yearOfStudy: "",
-            hostelName: "",
-            hostelType: "",
-            roomNumber: "",
-            dateOfJoining: "",
-            status: "Active",
-            parentName: "",
-            parentMobile: "",
-            parentAddress: ""
-        };
+        try {
+            setIsLoading(true);
+            const response = await apiClient.get(`/students/profile/${user?.id}`);
+            if (response.data.success) {
+                const data = response.data.data;
+                const stud = data.student;
 
-        setStudent(mockStudent);
+                setStudent({
+                    id: stud.student_id.toString(),
+                    rollNumber: stud.rollNumber || '',
+                    name: stud.fullName || '',
+                    gender: stud.gender || '',
+                    dateOfBirth: stud.dob || '',
+                    phone: stud.user?.phone || user?.phone || '',
+                    email: stud.user?.email || user?.email || '',
+                    address: '', // Backend doesn't have address for students
+                    course: stud.course || '',
+                    department: stud.department || '',
+                    yearOfStudy: stud.current_year?.toString() || '',
+                    semester: stud.semester?.toString() || '',
+                    hostelName: stud.hostel?.hostel_name || 'Not Assigned',
+                    hostelType: stud.hostel?.hostel_type || 'N/A',
+                    roomNumber: stud.room?.room_no || 'Pending',
+                    dateOfJoining: stud.joining_date || '',
+                    status: stud.status || 'Active',
+                    parentName: stud.parent_name || '',
+                    parentMobile: stud.parent_phone || '',
+                    parentAddress: '' // Backend doesn't have parent address
+                });
+
+                if (data.visitorStats) {
+                    setVisitorStats(data.visitorStats);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching student profile:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyAccess = async () => {
+        try {
+            setVerificationStatus('loading');
+            const response = await protectedService.checkStudentAccess();
+            if (response.success) {
+                setVerificationStatus('success');
+                setVerificationMessage(response.message);
+            }
+        } catch (error: any) {
+            setVerificationStatus('error');
+            setVerificationMessage(error.response?.data?.message || 'Access Denied');
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -53,10 +91,11 @@ const StudentProfile: React.FC = () => {
         });
     };
 
-    if (!student) {
+    if (isLoading || !student) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-lg text-gray-600">Loading...</div>
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+                <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+                <div className="text-lg font-medium text-gray-600">Loading your profile...</div>
             </div>
         );
     }
@@ -180,6 +219,15 @@ const StudentProfile: React.FC = () => {
                                                 </label>
                                                 <p className="text-gray-900 font-medium">{student.yearOfStudy}</p>
                                             </div>
+
+                                            {student.semester && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                                                        Semester
+                                                    </label>
+                                                    <p className="text-gray-900 font-medium">{student.semester}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -300,6 +348,41 @@ const StudentProfile: React.FC = () => {
                                 </div>
                                 <div className="text-sm text-gray-600 font-medium">Pending</div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Role Verification section */}
+                    <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
+                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <ShieldCheck className="w-5 h-5 text-purple-600" />
+                            Access Verification
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Verify your student access privileges with the institution's security system.
+                        </p>
+
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={handleVerifyAccess}
+                                disabled={verificationStatus === 'loading'}
+                                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+                            >
+                                {verificationStatus === 'loading' ? 'Verifying...' : 'Verify Student Access'}
+                            </button>
+
+                            {verificationStatus === 'success' && (
+                                <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-lg text-sm">
+                                    <ShieldCheck className="w-4 h-4" />
+                                    {verificationMessage}
+                                </div>
+                            )}
+
+                            {verificationStatus === 'error' && (
+                                <div className="flex items-center gap-2 text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm">
+                                    <ShieldAlert className="w-4 h-4" />
+                                    {verificationMessage}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

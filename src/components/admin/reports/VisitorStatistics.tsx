@@ -3,9 +3,15 @@ import { Users, Clock, TrendingUp, Eye } from 'lucide-react';
 import { VisitorStat } from './types';
 import { StatCard, PurposeBar, HourBar } from './ReportComponents';
 
-export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
-    const totalVisits = data.length;
-    const uniqueVisitors = new Set(data.map(d => d.visitor)).size;
+export function VisitorStatistics({ data }: { data: any }) {
+    // Backend returns an object with aggregated statistics
+    const totalVisits = data?.totalVisits?.count || 0;
+    const avgDuration = data?.avgDuration || 'N/A';
+    const peakHours = data?.peakHours || 'N/A';
+    const frequentVisitors = data?.frequentVisitors || 0;
+    const visitorTrend = data?.visitorTrend || [];
+    const visitPurposeDistribution = data?.visitPurposeDistribution || [];
+    const hourlyDistribution = data?.hourlyDistribution || [];
 
     return (
         <div className="space-y-6">
@@ -26,17 +32,17 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                 <StatCard
                     icon={<Clock className="w-6 h-6 text-slate-600" />}
                     label="Avg Duration"
-                    value=""
+                    value={avgDuration}
                 />
                 <StatCard
                     icon={<TrendingUp className="w-6 h-6 text-slate-600" />}
                     label="Peak Hours"
-                    value=""
+                    value={peakHours}
                 />
                 <StatCard
                     icon={<Eye className="w-6 h-6 text-slate-600" />}
                     label="Frequent Visitors"
-                    value={uniqueVisitors.toString()}
+                    value={frequentVisitors.toString()}
                 />
             </div>
 
@@ -115,24 +121,39 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                 <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
                     <h3 className="font-bold text-slate-800 mb-4">Visit Purpose Distribution</h3>
                     <div className="space-y-3">
-                        <PurposeBar label="Family Visit" percentage={0} color="bg-blue-600" />
-                        <PurposeBar label="Medical" percentage={0} color="bg-blue-600" />
-                        <PurposeBar label="Birthday" percentage={0} color="bg-blue-600" />
-                        <PurposeBar label="Delivery" percentage={0} color="bg-blue-600" />
-                        <PurposeBar label="Other" percentage={0} color="bg-blue-600" />
+                        {visitPurposeDistribution.length > 0 ? (
+                            visitPurposeDistribution.map((item: any, idx: number) => (
+                                <PurposeBar
+                                    key={idx}
+                                    label={item.purpose || 'Other'}
+                                    percentage={item.percentage || 0}
+                                    color="bg-blue-600"
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center text-slate-500 py-4">No data available</div>
+                        )}
                     </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
                     <h3 className="font-bold text-slate-800 mb-4">Hourly Distribution</h3>
                     <div className="h-48 flex items-end justify-between gap-2">
-                        <HourBar height={0} label="8AM" />
-                        <HourBar height={0} label="10AM" />
-                        <HourBar height={0} label="12PM" />
-                        <HourBar height={0} label="2PM" />
-                        <HourBar height={0} label="4PM" />
-                        <HourBar height={0} label="6PM" />
-                        <HourBar height={0} label="8PM" />
+                        {hourlyDistribution.length > 0 ? (
+                            hourlyDistribution.map((item: any, idx: number) => {
+                                const maxCount = Math.max(...hourlyDistribution.map((h: any) => h.count || 0), 1);
+                                const height = ((item.count || 0) / maxCount) * 100;
+                                return (
+                                    <HourBar
+                                        key={idx}
+                                        height={height}
+                                        label={item.hour || ''}
+                                    />
+                                );
+                            })
+                        ) : (
+                            <div className="text-center text-slate-500 py-4 w-full">No data available</div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -153,21 +174,21 @@ export function VisitorStatistics({ data }: { data: VisitorStat[] }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {data.length > 0 ? (
-                                data.map((visit, index) => (
+                            {data?.recentVisits && data.recentVisits.length > 0 ? (
+                                data.recentVisits.map((visit: any, index: number) => (
                                     <tr key={index} className="border-b border-slate-100 hover:bg-slate-50">
-                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.date}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.visitor}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.student}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.purpose}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.entryTime}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.exitTime}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.duration}</td>
+                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.date || '-'}</td>
+                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.visitorName || '-'}</td>
+                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.studentName || '-'}</td>
+                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.purpose || '-'}</td>
+                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.checkInTime || '-'}</td>
+                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.checkOutTime || '-'}</td>
+                                        <td className="py-3 px-4 text-sm text-slate-700">{visit.duration || '-'}</td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={7} className="py-4 text-center text-slate-500">No data found</td>
+                                    <td colSpan={7} className="py-4 text-center text-slate-500">No visits found for selected date range</td>
                                 </tr>
                             )}
                         </tbody>

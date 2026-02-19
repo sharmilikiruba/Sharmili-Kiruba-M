@@ -15,7 +15,10 @@ const initialForm: StudentForm = {
     email: '',
     mobile: '',
     rollNumber: '',
+    course: '',
     department: '',
+    currentYear: '',
+    semester: '',
     hostel: '',
     room: ''
 };
@@ -46,7 +49,10 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClos
                     <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
                     <InputField label="Mobile" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
                     <InputField label="Roll Number" value={form.rollNumber} onChange={(v) => setForm({ ...form, rollNumber: v })} />
+                    <InputField label="Course" value={form.course} onChange={(v) => setForm({ ...form, course: v })} />
                     <InputField label="Department" value={form.department} onChange={(v) => setForm({ ...form, department: v })} />
+                    <InputField label="Current Year" value={form.currentYear} onChange={(v) => setForm({ ...form, currentYear: v })} />
+                    <InputField label="Semester" value={form.semester} onChange={(v) => setForm({ ...form, semester: v })} />
                     <SelectField
                         label="Hostel"
                         value={form.hostel}

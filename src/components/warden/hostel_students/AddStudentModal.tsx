@@ -12,9 +12,6 @@ interface AddStudentModalProps {
     photos: StudentPhotos;
     onPhotoUpload: (type: keyof StudentPhotos, e: React.ChangeEvent<HTMLInputElement>) => void;
     onRemovePhoto: (type: keyof StudentPhotos) => void;
-    departments: string[];
-    years: string[];
-    semesters: string[];
 }
 
 export const AddStudentModal: React.FC<AddStudentModalProps> = ({
@@ -26,9 +23,6 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
     photos,
     onPhotoUpload,
     onRemovePhoto,
-    departments,
-    years,
-    semesters,
 }) => {
     if (!isOpen) return null;
 
@@ -59,10 +53,6 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
                         setFormData={setFormData}
                         photos={photos}
                         onPhotoUpload={onPhotoUpload}
-                        onRemovePhoto={onRemovePhoto}
-                        departments={departments}
-                        years={years}
-                        semesters={semesters}
                     />
                 </div>
 

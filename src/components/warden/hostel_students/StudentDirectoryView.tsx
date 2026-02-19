@@ -161,7 +161,7 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                                                 <div className="relative">
                                                     <img
                                                         src={student.photo || 'https://via.placeholder.com/150'}
-                                                        alt={student.name}
+                                                        alt={student.fullName}
                                                         className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md transition-all group-hover:scale-105"
                                                     />
                                                     <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full border border-gray-100">
@@ -169,7 +169,7 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <p className="text-base font-bold text-gray-900">{student.name}</p>
+                                                    <p className="text-base font-bold text-gray-900">{student.fullName}</p>
                                                     <p className="text-xs font-medium text-gray-500">{student.department}</p>
                                                 </div>
                                             </div>

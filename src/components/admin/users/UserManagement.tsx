@@ -22,6 +22,7 @@ import { AddStudentModal } from './AddStudentModal';
 export default function UserManagement() {
     const [activeTab, setActiveTab] = useState<TabType>('Students');
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedHostel, setSelectedHostel] = useState<string>('All');
 
     // Modal States
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -74,6 +75,7 @@ export default function UserManagement() {
 
     const fetchGuards = async () => {
         try {
+            setIsLoading(true);
             const response = await apiClient.get('/admin/guards');
             if (response.data.success) {
                 const formattedGuards = response.data.data.map((g: any) => ({
@@ -103,6 +105,51 @@ export default function UserManagement() {
         }
     };
 
+    const fetchStudents = async () => {
+        try {
+            const response = await apiClient.get('/admin/students');
+            if (response.data.success) {
+                const formattedStudents = response.data.data.map((s: any) => ({
+                    id: s.student_id?.toString() || s.id?.toString(),
+                    name: s.name,
+                    email: s.user?.email || s.email || '',
+                    contact: s.phone || s.mobile || '',
+                    rollNo: s.roll_no || s.rollNumber || '',
+                    department: s.department,
+                    hostel: s.hostel?.hostel_name || 'Unassigned',
+                    room: s.room_no || s.roomNumber || '',
+                    status: 'Active', // Default or from data if available
+                }));
+                setStudents(formattedStudents);
+            }
+        } catch (error) {
+            console.error('Error fetching students:', error);
+        }
+    };
+
+    const fetchStudentDetails = async (id: string) => {
+        try {
+            const response = await apiClient.get(`/admin/students/${id}`);
+            if (response.data.success) {
+                const s = response.data.data;
+                return {
+                    id: s.student_id?.toString() || s.id?.toString(),
+                    name: s.name,
+                    email: s.user?.email || s.email || '',
+                    contact: s.phone || s.mobile || '',
+                    rollNo: s.roll_no || s.rollNumber || '',
+                    department: s.department,
+                    hostel: s.hostel?.hostel_name || 'Unassigned',
+                    room: s.room_no || s.roomNumber || '',
+                    status: 'Active',
+                };
+            }
+        } catch (error) {
+            console.error('Error fetching student details:', error);
+        }
+        return null; // Return null if failed
+    };
+
     useEffect(() => {
         fetchHostels();
     }, []);
@@ -112,12 +159,17 @@ export default function UserManagement() {
             fetchGuards();
         } else if (activeTab === 'Wardens') {
             fetchWardens();
+        } else if (activeTab === 'Students') {
+            fetchStudents();
         }
     }, [activeTab]);
 
     const filteredStudents = useMemo(() =>
-        students.filter(s => (s.name || '').toLowerCase().includes(searchQuery.toLowerCase())),
-        [students, searchQuery]);
+        students.filter(s =>
+            (s.name || '').toLowerCase().includes(searchQuery.toLowerCase()) &&
+            (selectedHostel === 'All' || s.hostel === selectedHostel)
+        ),
+        [students, searchQuery, selectedHostel]);
 
     const filteredWardens = useMemo(() =>
         wardens.filter(w => (w.name || '').toLowerCase().includes(searchQuery.toLowerCase())),
@@ -209,6 +261,19 @@ export default function UserManagement() {
         }
     };
 
+    const handleDeleteStudent = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this student?')) return;
+        try {
+            const response = await apiClient.delete(`/admin/students/${id}`);
+            if (response.data.success) {
+                fetchStudents();
+            }
+        } catch (error) {
+            console.error('Error deleting student:', error);
+            alert('Failed to delete student');
+        }
+    };
+
     const handleSaveGuard = async (form: GuardForm) => {
         try {
             const id = selectedUser?.id;
@@ -255,29 +320,25 @@ export default function UserManagement() {
             const hostel = hostels.find(h => h.hostel_name === form.hostel);
 
             const payload = {
-                name: form.fullName,
+                fullName: form.fullName,
+                roll_no: form.rollNumber,
                 email: form.email,
                 phone: form.mobile,
-                roll_no: form.rollNumber,
+                room_no: form.room,
                 department: form.department,
-                hostel_id: hostel?.hostel_id,
-                room_no: form.room
+                hostel_id: hostel?.hostel_id
+                // Backend might require additional fields or defaults?
+                // Warden implementation includes gender, dob, address etc., but admin form doesn't asked for them yet.
+                // If backend requires them, we might fail. 
+                // However, user prompt didn't ask to add those fields to Admin modal.
+                // I will send what we have. If backend fails due to missing fields, I'll know.
             };
 
             const response = await apiClient.post('/warden/students', payload);
 
             if (response.data.success) {
-                // Ideally refetch students here, but fetchStudents is not defined in this file (managed by Warden?)
-                // Assuming admin can view them, we might need to implement fetchStudents in UserManagement if not present,
-                // or just alert success.
-                // Re-checking UserManagement, students state is just dummy data or not fully wired for fetch?
-                // Wait, UserManagement has `students` state but no `fetchStudents` call in useEffect except filtering.
-                // Let's check `useEffect` at line 106. Only fetchHostels.
-                // Line 110: only fetchGuards/Wardens on tab change.
-                // Students tab seems to rely on initial empty state or verify if we need to fetch them.
-                // I will add fetchStudents if missing or just close modal.
-                // For now, close modal.
                 setIsAddModalOpen(false);
+                fetchStudents(); // Refresh list
                 alert('Student created successfully');
             }
         } catch (error: any) {
@@ -333,6 +394,22 @@ export default function UserManagement() {
                                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-full md:w-80"
                                 />
                             </div>
+
+                            {activeTab === 'Students' && (
+                                <select
+                                    value={selectedHostel}
+                                    onChange={(e) => setSelectedHostel(e.target.value)}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white text-gray-700 font-medium cursor-pointer shadow-sm hover:border-gray-400 transition-all min-w-[200px]"
+                                >
+                                    <option value="All">All Hostels</option>
+                                    {hostels.map((h) => (
+                                        <option key={h.hostel_id} value={h.hostel_name}>
+                                            {h.hostel_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+
                             <button
                                 onClick={() => { setSelectedUser(null); setIsAddModalOpen(true); }}
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
@@ -368,7 +445,13 @@ export default function UserManagement() {
                     {activeTab === 'Students' && (
                         <StudentTab
                             students={filteredStudents}
-                            onView={(s) => { setSelectedUser(s); setIsViewModalOpen(true); }}
+                            onView={async (s) => {
+                                setSelectedUser(s); // Show immediate data
+                                setIsViewModalOpen(true);
+                                const details = await fetchStudentDetails(s.id);
+                                if (details) setSelectedUser(details); // Update with fresh data
+                            }}
+                            onDelete={handleDeleteStudent}
                             onToggleStatus={(id) => handleToggleStatus(id, 'Students')}
                         />
                     )}

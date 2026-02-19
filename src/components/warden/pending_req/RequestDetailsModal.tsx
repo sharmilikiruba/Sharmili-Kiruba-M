@@ -45,11 +45,17 @@ export function RequestDetailsModal({
                 <div className="p-8 max-h-[70vh] overflow-y-auto">
                     {/* Visitor Profile */}
                     <div className="flex items-start gap-6 mb-8">
-                        <img
-                            src={request.visitorPhoto}
-                            alt={request.visitorName}
-                            className="w-24 h-24 rounded-2xl object-cover shadow-md"
-                        />
+                        {request.visitorPhoto ? (
+                            <img
+                                src={request.visitorPhoto}
+                                alt={request.visitorName}
+                                className="w-24 h-24 rounded-2xl object-cover shadow-md"
+                            />
+                        ) : (
+                            <div className="w-24 h-24 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 text-3xl font-bold shadow-md flex-shrink-0">
+                                {request.visitorName.charAt(0)}
+                            </div>
+                        )}
                         <div className="flex-1">
                             <h4 className="text-2xl font-bold text-gray-900 mb-1">{request.visitorName}</h4>
                             <p className="text-gray-600 font-medium mb-3">{request.relation}</p>

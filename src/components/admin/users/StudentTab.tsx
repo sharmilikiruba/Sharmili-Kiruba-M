@@ -7,9 +7,10 @@ interface StudentTabProps {
     students: Student[];
     onView: (student: Student) => void;
     onToggleStatus: (id: string) => void;
+    onDelete?: (id: string) => void;
 }
 
-export const StudentTab: React.FC<StudentTabProps> = ({ students, onView, onToggleStatus }) => {
+export const StudentTab: React.FC<StudentTabProps> = ({ students, onView, onToggleStatus, onDelete }) => {
     return (
         <div className="overflow-x-auto">
             <table className="w-full">
@@ -50,9 +51,9 @@ export const StudentTab: React.FC<StudentTabProps> = ({ students, onView, onTogg
                                         <Eye className="w-4 h-4" />
                                     </button>
                                     <button
-                                        onClick={() => onToggleStatus(student.id)}
-                                        className={`p-2 rounded-lg transition-colors ${student.status === 'Active' ? 'hover:bg-red-50 text-red-600' : 'hover:bg-green-50 text-green-600'}`}
-                                        title={student.status === 'Active' ? 'Deactivate' : 'Activate'}
+                                        onClick={() => onDelete && onDelete(student.id)}
+                                        className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
+                                        title="Delete Student"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>

@@ -10,6 +10,7 @@ import {
   FileText,
   Clock
 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface FormData {
   visitorName: string;
@@ -189,27 +190,37 @@ export default function EmergencyVisit() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShowSuccess(true);
+    try {
+      const res = await apiClient.post('/guard/emergency', {
+        visitorData: formData
+      });
 
-      // Reset form after 3 seconds
-      setTimeout(() => {
-        setShowSuccess(false);
-        setFormData({
-          visitorName: '',
-          mobileNumber: '',
-          relation: '',
-          idProofType: '',
-          idProofNumber: '',
-          visitorPhoto: null,
-          hostel: '',
-          student: '',
-          emergencyReason: ''
-        });
-      }, 3000);
-    }, 1500);
+      if (res.data.success) {
+        setShowSuccess(true);
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setShowSuccess(false);
+          setFormData({
+            visitorName: '',
+            mobileNumber: '',
+            relation: '',
+            idProofType: '',
+            idProofNumber: '',
+            visitorPhoto: null,
+            hostel: '',
+            student: '',
+            emergencyReason: ''
+          });
+          // Optional: redirect to dashboard
+          // router.push('/Guard/guard_dashboard');
+        }, 3000);
+      }
+    } catch (error: any) {
+      console.error('Error registering emergency visit:', error);
+      alert(error.response?.data?.message || 'Failed to register emergency visit');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {

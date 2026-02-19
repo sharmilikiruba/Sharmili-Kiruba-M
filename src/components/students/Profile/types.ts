@@ -11,11 +11,12 @@ export interface Student {
   course: string;
   department: string;
   yearOfStudy: string;
+  semester?: string;
   hostelName: string;
   hostelType: string;
   roomNumber: string;
   dateOfJoining: string;
-  status: 'Active' | 'Left';
+  status: 'Active' | 'Left' | 'Inactive' | 'Graduated' | 'Withdrawn';
   parentName: string;
   parentMobile: string;
   parentAddress: string;

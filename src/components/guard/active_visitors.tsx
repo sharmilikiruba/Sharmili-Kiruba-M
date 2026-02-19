@@ -1,36 +1,69 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Search, Clock, LogOut, Users } from 'lucide-react';
+import { ArrowLeft, Search, Clock, LogOut, Users, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
 
 export default function ActiveVisitors() {
   const router = useRouter();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeVisitors, setActiveVisitors] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock active visitors data
-  const activeVisitors = [
-    {
-      id: 0,
-      name: '',
-      relation: '',
-      student: '',
-      room: '',
-      entryTime: '',
-      duration: '',
-      status: '',
-    },
-  ];
+  const fetchActiveVisitors = async () => {
+    if (!user?.id) return;
 
-  const filteredVisitors = activeVisitors.filter(visitor =>
-    visitor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    visitor.student.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    visitor.room.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    try {
+      setIsLoading(true);
+      const params = {
+        userId: user.id,
+        query: searchQuery
+      };
+      const res = await apiClient.get('/guard/active', { params });
 
-  const handleExit = (visitorId: number) => {
-    // In real app, this would initiate exit process
-    router.push('/Guard/Scan-Exit');
+      if (res.data.success) {
+        // Map backend response to frontend structure
+        // Backend returns Visitor[]
+        const mappedVisitors = res.data.data.map((v: any) => ({
+          id: v.visitor_id,
+          name: v.name,
+          relation: v.relation || 'Visitor',
+          student: v.student?.fullName || 'N/A',
+          room: v.student?.room_no || 'N/A',
+          entryTime: v.logs?.[0]?.entry_time || '--:--',
+          duration: calculateDuration(v.logs?.[0]?.entry_time),
+          status: 'In Premise'
+        }));
+        setActiveVisitors(mappedVisitors);
+      }
+    } catch (error) {
+      console.error('Error fetching active visitors:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const calculateDuration = (entryTime: string) => {
+    if (!entryTime) return '-';
+    // Simplified duration calc - in a real app, parse time string properly relative to current date/time
+    return 'Now'; // Placeholder or implement actual diff logic
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchActiveVisitors();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, user]);
+
+  const handleExit = async (visitorId: number) => {
+    // In real app, this would initiate exit process
+    router.push(`/Guard/Scan-Exit?visitorId=${visitorId}`);
+  };
+
 
   return (
     <div className="p-8">
@@ -55,7 +88,7 @@ export default function ActiveVisitors() {
             <div className="flex items-center gap-3">
               <Users className="w-6 h-6 text-gray-700" />
               <h2 className="text-xl font-bold text-gray-900">
-                {filteredVisitors.length} Active Visitors
+                {activeVisitors.length} Active Visitors
               </h2>
             </div>
             <div className="relative">
@@ -86,15 +119,18 @@ export default function ActiveVisitors() {
 
         {/* Table Body */}
         <div className="divide-y divide-gray-200">
-          {filteredVisitors.length > 0 ? (
-            filteredVisitors.map((visitor) => (
+          {isLoading ? (
+            <div className="py-12 text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+              <p className="text-gray-500">Loading active visitors...</p>
+            </div>
+          ) : activeVisitors.length > 0 ? (
+            activeVisitors.map((visitor) => (
               <div key={visitor.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div className="grid grid-cols-12 gap-4 items-center">
                   <div className="col-span-2 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                      {visitor.name.charAt(0)}
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900">{visitor.name}</div>

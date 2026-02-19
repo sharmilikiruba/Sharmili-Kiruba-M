@@ -5,34 +5,48 @@ import { StatCard } from './ReportComponents';
 
 interface DailyVisitorReportProps {
     data: DailyVisitorData[];
+    stats?: {
+        total: number;
+        approved: number;
+        pending: number;
+        emergency: number;
+    };
 }
 
-export function DailyVisitorReport({ data }: DailyVisitorReportProps) {
+export function DailyVisitorReport({ data, stats }: DailyVisitorReportProps) {
+    // Fallback to manual calculation if stats not provided
+    const displayStats = stats || {
+        total: data.length,
+        approved: data.filter(i => i.status === 'Approved').length,
+        pending: data.filter(i => i.status === 'Pending').length,
+        emergency: data.filter(i => i.purpose.toLowerCase().includes('emergency')).length
+    };
+
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-4 gap-4">
                 <StatCard
                     icon={<Users className="w-6 h-6" />}
                     label="Total Records"
-                    value={data.length}
+                    value={displayStats.total}
                     bgColor="bg-blue-500"
                 />
                 <StatCard
                     icon={<CheckCircle className="w-6 h-6" />}
                     label="Approved"
-                    value={data.filter((i) => i.status === 'Approved').length}
+                    value={displayStats.approved}
                     bgColor="bg-green-600"
                 />
                 <StatCard
                     icon={<Clock className="w-6 h-6" />}
                     label="Pending"
-                    value={data.filter((i) => i.status === 'Pending').length}
+                    value={displayStats.pending}
                     bgColor="bg-yellow-500"
                 />
                 <StatCard
                     icon={<AlertTriangle className="w-6 h-6" />}
                     label="Emergency"
-                    value={data.filter((i) => i.purpose === 'Medical Emergency').length}
+                    value={displayStats.emergency}
                     bgColor="bg-red-500"
                 />
             </div>

@@ -16,6 +16,10 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
+import { useEffect, useMemo, useCallback } from 'react';
+import { Loader2 } from 'lucide-react';
 
 // Modular Imports
 import { ReportType, FilterState } from './types';
@@ -37,14 +41,19 @@ const MOCK_DATA: Record<ReportType, any[]> = {
 };
 
 export default function WardenReports() {
+  const { user } = useAuth();
   const [selectedReport, setSelectedReport] = useState<ReportType>('daily-visitor');
   const [filters, setFilters] = useState<FilterState>({
-    startDate: '',
-    endDate: '',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
     student: '',
     purpose: 'All Purposes',
     exportFormat: 'PDF'
   });
+  const [data, setData] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hostelId, setHostelId] = useState<number | null>(null);
 
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -60,28 +69,89 @@ export default function WardenReports() {
     });
   };
 
-  const getFilteredData = (reportType: ReportType) => {
-    const data = MOCK_DATA[reportType];
-
-    return (data as any[]).filter(item => {
-      // Date Filter
-      const itemDate = item.date || item.lastVisit;
-      if (itemDate) {
-        if (itemDate < filters.startDate || itemDate > filters.endDate) return false;
+  // Resolve Hostel ID
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await apiClient.get(`/warden/profile/${user.id}`);
+        if (res.data.success) {
+          setHostelId(res.data.data.profile.hostel_id);
+        }
+      } catch (error) {
+        console.error('Error fetching warden profile:', error);
       }
+    };
+    fetchProfile();
+  }, [user]);
 
-      // Student Filter
-      const itemStudent = item.student || item.studentName;
-      if (filters.student && itemStudent && !itemStudent.toLowerCase().includes(filters.student.toLowerCase())) return false;
+  const fetchReportData = useCallback(async () => {
+    if (!hostelId) return;
 
-      // Purpose Filter
-      if (filters.purpose !== 'All Purposes' && item.purpose && item.purpose !== filters.purpose) return false;
+    try {
+      setIsLoading(true);
+      const params = {
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        purpose: filters.purpose !== 'All Purposes' ? filters.purpose : undefined
+      };
 
-      return true;
+      let endpoint = `/warden/reports/${hostelId}`;
+      if (selectedReport === 'emergency-visit') endpoint = `/warden/reports/emergency/${hostelId}`;
+      if (selectedReport === 'rejected-requests') endpoint = `/warden/reports/rejected/${hostelId}`;
+
+      const res = await apiClient.get(endpoint, { params });
+
+      if (res.data.success) {
+        if (selectedReport === 'daily-visitor') {
+          setData(res.data.data.visitors.map((v: any) => ({
+            visitorName: v.name,
+            student: v.student?.fullName || 'N/A',
+            purpose: v.visit_purpose || 'N/A',
+            time: `${v.visit_from_time} - ${v.visit_to_time}`,
+            duration: v.logs?.[0]?.duration || 'N/A',
+            status: v.request_status,
+            date: new Date(v.visit_date).toLocaleDateString()
+          })));
+          setStats(res.data.data.stats);
+        } else if (selectedReport === 'emergency-visit') {
+          setData(res.data.data.map((v: any) => ({
+            date: new Date(v.visit_date).toLocaleDateString(),
+            visitor: v.name,
+            student: v.student?.fullName || 'N/A',
+            purpose: v.visit_purpose || 'N/A',
+            responseTime: v.logs?.[0]?.entry_time || 'N/A',
+            status: v.request_status
+          })));
+        } else if (selectedReport === 'rejected-requests') {
+          setData(res.data.data.map((v: any) => ({
+            date: new Date(v.visit_date).toLocaleDateString(),
+            student: v.student?.fullName || 'N/A',
+            visitor: v.name,
+            purpose: v.visit_purpose || 'N/A',
+            reason: v.rejection_reason || 'N/A',
+            status: 'Rejected'
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching report data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [hostelId, selectedReport, filters.startDate, filters.endDate, filters.purpose]);
+
+  useEffect(() => {
+    fetchReportData();
+  }, [fetchReportData]);
+
+  const currentData = useMemo(() => {
+    if (!filters.student) return data;
+    return data.filter(item => {
+      const itemStudent = item.student || item.studentName || '';
+      return itemStudent.toLowerCase().includes(filters.student.toLowerCase());
     });
-  };
-
-  const currentData = getFilteredData(selectedReport);
+  }, [data, filters.student]);
 
   const handleExport = () => {
     const reportNames: Record<ReportType, string> = {
@@ -139,6 +209,16 @@ export default function WardenReports() {
   };
 
   const renderReportContent = () => {
+    if (isLoading) {
+      return (
+        <div className="bg-white rounded-lg border border-gray-200 p-24 text-center">
+          <Loader2 className="w-12 h-12 mx-auto mb-4 text-blue-600 animate-spin" />
+          <h3 className="text-lg font-medium text-gray-900">Loading Report Data</h3>
+          <p className="text-gray-500">Connecting to secure database...</p>
+        </div>
+      );
+    }
+
     if (currentData.length === 0) {
       return (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center text-gray-500">
@@ -151,7 +231,7 @@ export default function WardenReports() {
 
     switch (selectedReport) {
       case 'daily-visitor':
-        return <DailyVisitorReport data={currentData} />;
+        return <DailyVisitorReport data={currentData} stats={stats} />;
       case 'emergency-visit':
         return <EmergencyVisitLogReport data={currentData} />;
       case 'rejected-requests':
@@ -223,7 +303,10 @@ export default function WardenReports() {
             </div>
           </div>
           <div className="flex gap-3 mt-4">
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+            <button
+              onClick={fetchReportData}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            >
               <FilterIcon className="w-4 h-4" />
               Apply
             </button>

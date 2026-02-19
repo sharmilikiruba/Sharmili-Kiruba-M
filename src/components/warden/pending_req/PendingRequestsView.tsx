@@ -84,11 +84,17 @@ export function PendingRequestsView({
                                         </td>
 
                                         <td className="px-6 py-4 flex items-center gap-3">
-                                            <img
-                                                src={req.visitorPhoto}
-                                                alt="visitor"
-                                                className="w-8 h-8 rounded-full object-cover"
-                                            />
+                                            {req.visitorPhoto ? (
+                                                <img
+                                                    src={req.visitorPhoto}
+                                                    alt="visitor"
+                                                    className="w-8 h-8 rounded-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs flex-shrink-0">
+                                                    {req.visitorName.charAt(0)}
+                                                </div>
+                                            )}
                                             <div>
                                                 <p className="font-medium text-gray-900">
                                                     {req.visitorName}

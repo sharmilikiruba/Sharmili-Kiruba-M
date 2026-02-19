@@ -1,27 +1,34 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, X, Save, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Upload, X, Save, Send, Trash2, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
 
 const NewVisitorRequestPage = () => {
   const router = useRouter();
-  const studentInfo = {
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchingStudent, setFetchingStudent] = useState(true);
+  const [studentInfo, setStudentInfo] = useState({
     name: '',
     rollNumber: '',
     hostelName: '',
     roomNumber: '',
-    profileImage: ''
-  };
+    profileImage: '',
+    student_id: 0
+  });
 
   const [formData, setFormData] = useState({
     visitorName: '',
     mobileNumber: '',
     relation: '',
+    gender: 'M',
     visitorPhoto: null,
-    idProofType: '',
+    idProofType: 'Aadhar',
     idProofNumber: '',
     visitorAddress: '',
-    purpose: '',
+    purpose: 'Family Visit',
     visitDate: '',
     visitStartTime: '',
     visitEndTime: '',
@@ -31,49 +38,37 @@ const NewVisitorRequestPage = () => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [showDraftMessage, setShowDraftMessage] = useState(false);
 
-  // Load draft from memory on component mount
+  // Fetch student data on mount
   useEffect(() => {
-    const savedDraft = getDraft();
-    if (savedDraft) {
-      setFormData(savedDraft.formData);
-      if (savedDraft.photoPreview) {
-        setPhotoPreview(savedDraft.photoPreview);
+    const fetchStudent = async () => {
+      try {
+        setFetchingStudent(true);
+        const response = await apiClient.get(`/students/profile/${user?.id}`);
+        if (response.data.success) {
+          const data = response.data.data.student;
+          setStudentInfo({
+            name: data.fullName,
+            rollNumber: data.rollNumber,
+            hostelName: data.hostel?.hostel_name || 'N/A',
+            roomNumber: data.room?.room_no || 'N/A',
+            profileImage: '', // No profile image in student entity yet
+            student_id: data.student_id
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching student info:', error);
+      } finally {
+        setFetchingStudent(false);
       }
-    }
-  }, []);
-
-  // Helper functions for draft management (using in-memory storage)
-  const drafts: any = {};
-  const requests: any[] = [];
-
-  const saveDraft = (data: any) => {
-    drafts['visitorRequestDraft'] = {
-      formData: data,
-      photoPreview: photoPreview,
-      savedAt: new Date().toISOString()
     };
-  };
 
-  const getDraft = () => {
-    return drafts['visitorRequestDraft'] || null;
-  };
-
-  const clearDraft = () => {
-    delete drafts['visitorRequestDraft'];
-  };
-
-  const saveRequests = (requestsData: any) => {
-    if (typeof window !== 'undefined') {
-      (window as any).visitorRequests = requestsData;
+    if (user?.id) {
+      fetchStudent();
     }
-  };
+  }, [user]);
 
-  const getRequests = () => {
-    if (typeof window !== 'undefined' && (window as any).visitorRequests) {
-      return (window as any).visitorRequests;
-    }
-    return [];
-  };
+  // Handle persistence in local storage during form filling
+  const DRAFT_KEY = `visitor_draft_local_${user?.id}`;
 
   const handleInputChange = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
@@ -96,36 +91,62 @@ const NewVisitorRequestPage = () => {
     setFormData({ ...formData, visitorPhoto: null });
   };
 
-  const handleSaveDraft = () => {
-    saveDraft(formData);
-    setShowDraftMessage(true);
-    setTimeout(() => setShowDraftMessage(false), 3000);
-    alert('Draft saved successfully! You can continue editing later.');
+  const handleSaveDraft = async () => {
+    try {
+      setIsLoading(true);
+      const payload = {
+        name: formData.visitorName,
+        phone: formData.mobileNumber,
+        relation: formData.relation,
+        gender: formData.gender,
+        id_proof_type: formData.idProofType,
+        id_proof_no: formData.idProofNumber,
+        address: formData.visitorAddress,
+        visit_purpose: formData.purpose,
+        visit_date: formData.visitDate,
+        visit_from_time: formData.visitStartTime,
+        visit_to_time: formData.visitEndTime,
+        student_id: studentInfo.student_id,
+        accompanying_persons: parseInt(formData.accompanyingPersons) || 0,
+        visitor_photo: photoPreview
+      };
+
+      const response = await apiClient.post('/visitors/draft', payload);
+      if (response.data.success) {
+        setShowDraftMessage(true);
+        setTimeout(() => setShowDraftMessage(false), 3000);
+        alert('Draft saved to cloud successfully!');
+      }
+    } catch (error: any) {
+      alert('Failed to save draft: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
     if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      clearDraft();
       setFormData({
         visitorName: '',
         mobileNumber: '',
         relation: '',
+        gender: 'M',
         visitorPhoto: null,
-        idProofType: '',
+        idProofType: 'Aadhar',
         idProofNumber: '',
         visitorAddress: '',
-        purpose: '',
+        purpose: 'Family Visit',
         visitDate: '',
         visitStartTime: '',
         visitEndTime: '',
         accompanyingPersons: '0'
       });
       setPhotoPreview(null);
-      alert('Form cancelled and draft cleared.');
+      alert('Form reset successfully.');
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate required fields
     if (!formData.visitorName || !formData.mobileNumber || !formData.relation ||
       !formData.purpose || !formData.visitDate) {
@@ -133,68 +154,47 @@ const NewVisitorRequestPage = () => {
       return;
     }
 
-    // Create new request object with structure matching MyRequests page
-    const newRequest = {
-      id: Date.now().toString(),
-      requestId: `REQ${Date.now().toString().slice(-6)}`,
-      visitorName: formData.visitorName,
-      relation: formData.relation,
-      visitDate: new Date(formData.visitDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-      purpose: formData.purpose,
-      status: 'Pending',
-      visitorDetails: {
+    if (!studentInfo.student_id) {
+      alert('Student identification not loaded yet. Please wait a moment.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const payload = {
+        name: formData.visitorName,
         phone: formData.mobileNumber,
-        email: '', // Not collected in form
+        relation: formData.relation,
+        gender: formData.gender,
+        id_proof_type: formData.idProofType,
+        id_proof_no: formData.idProofNumber,
         address: formData.visitorAddress,
-        idProof: `${formData.idProofType} - ${formData.idProofNumber}`,
-      },
-      visitDetails: {
-        startTime: formData.visitStartTime || '-',
-        endTime: formData.visitEndTime || '-',
-        reason: formData.purpose
-      },
-      qrCode: ''
-    };
+        visit_purpose: formData.purpose,
+        visit_date: formData.visitDate,
+        visit_from_time: formData.visitStartTime,
+        visit_to_time: formData.visitEndTime,
+        student_id: studentInfo.student_id,
+        accompanying_persons: parseInt(formData.accompanyingPersons) || 0,
+        visitor_photo: photoPreview
+      };
 
-    // Save to requests storage (using window for temporary persistence across pages)
-    // In a real app, this would be an API call
-    const existingRequests = getRequests();
-    // Add new request to the beginning of the list
-    const updatedRequests = [newRequest, ...existingRequests];
-    saveRequests(updatedRequests);
-
-    console.log('Submitting form:', newRequest);
-
-    // Clear draft after successful submission
-    clearDraft();
-
-    // Reset form
-    setFormData({
-      visitorName: '',
-      mobileNumber: '',
-      relation: '',
-      visitorPhoto: null,
-      idProofType: '',
-      idProofNumber: '',
-      visitorAddress: '',
-      purpose: '',
-      visitDate: '',
-      visitStartTime: '',
-      visitEndTime: '',
-      accompanyingPersons: '0'
-    });
-    setPhotoPreview(null);
-
-    // Redirect to My Requests page
-    router.push('/student/myrequest');
+      const response = await apiClient.post('/visitors/submit', payload);
+      if (response.data.success) {
+        alert('Visitor request submitted successfully!');
+        router.push('/student/myrequest');
+      }
+    } catch (error: any) {
+      alert('Submission failed: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackClick = () => {
     if (confirm('Do you want to save your progress as a draft before going back?')) {
       handleSaveDraft();
     }
-    // In a real app, you would use router.back() here
-    alert('Going back...');
+    router.back();
   };
 
   return (
@@ -296,6 +296,27 @@ const NewVisitorRequestPage = () => {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gender <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-4 mt-2">
+                  {['M', 'F', 'Other'].map((g) => (
+                    <label key={g} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value={g}
+                        checked={formData.gender === g}
+                        onChange={(e) => handleInputChange('gender', e.target.value)}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{g === 'M' ? 'Male' : g === 'F' ? 'Female' : 'Other'}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Visitor Photo</label>
                 {photoPreview ? (
                   <div className="relative">
@@ -332,12 +353,12 @@ const NewVisitorRequestPage = () => {
                   onChange={(e) => handleInputChange('idProofType', e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
-                  <option value="">Select ID type</option>
-                  <option value="Aadhaar">Aadhaar Card</option>
+                  <option value="Aadhar">Aadhar Card</option>
                   <option value="PAN">PAN Card</option>
-                  <option value="DL">Driving License</option>
-                  <option value="Voter">Voter ID</option>
+                  <option value="Driving License">Driving License</option>
+                  <option value="Voter ID">Voter ID</option>
                   <option value="Passport">Passport</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
 
@@ -448,23 +469,25 @@ const NewVisitorRequestPage = () => {
 
             <button
               onClick={handleSaveDraft}
-              className="px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center gap-2"
+              disabled={isLoading}
+              className="px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
             >
-              <Save size={18} />
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={18} />}
               Save Draft
             </button>
 
             <button
               onClick={handleSubmit}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+              disabled={isLoading}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
             >
-              <Send size={18} />
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send size={18} />}
               Submit Request
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

@@ -41,7 +41,10 @@ export interface StudentForm {
     email: string;
     mobile: string;
     rollNumber: string;
+    course: string;
     department: string;
+    currentYear: string;
+    semester: string;
     hostel: string;
     room: string;
 }
