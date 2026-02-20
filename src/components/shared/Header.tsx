@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({
   sidebarOpen,
   setSidebarOpen,
 }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const userName = user?.name || '';
   const userEmail = user?.email || '';
   const userRole = user?.role || 'student';
@@ -170,24 +170,33 @@ const Header: React.FC<HeaderProps> = ({
           href: '/Admin/Admin_Profile',
         },
       ],
+      super_admin: [
+        {
+          icon: User,
+          label: 'My Profile',
+          href: '/Admin/Admin_Profile',
+        },
+      ],
     }
 
-    return roleSpecificItems[userRole]
+    return roleSpecificItems[userRole] || [];
   }
 
 
-  const roleColors = {
+  const roleColors: Record<string, string> = {
     student: 'bg-blue-600',
     warden: 'bg-purple-600',
     guard: 'bg-green-600',
-    admin: 'bg-red-600'
+    admin: 'bg-red-600',
+    super_admin: 'bg-red-700'
   };
 
-  const roleBadgeColors = {
+  const roleBadgeColors: Record<string, string> = {
     student: 'bg-blue-100 text-blue-800',
     warden: 'bg-purple-100 text-purple-800',
     guard: 'bg-green-100 text-green-800',
-    admin: 'bg-red-100 text-red-800'
+    admin: 'bg-red-100 text-red-800',
+    super_admin: 'bg-red-100 text-red-800'
   };
 
   return (
@@ -317,6 +326,7 @@ const Header: React.FC<HeaderProps> = ({
                   <button
                     className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
                     onClick={() => {
+                      logout();
                       router.push('/login/login_page');
                     }}
                   >

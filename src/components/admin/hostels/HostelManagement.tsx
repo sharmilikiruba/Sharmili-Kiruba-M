@@ -33,33 +33,62 @@ export default function HostelManagement() {
 
     const [availableWardens, setAvailableWardens] = useState<(Warden & { name: string })[]>([]);
 
+
     // Filtering
     // Data fetching
-    const fetchData = async () => {
-        try {
-            const [hostelsRes, gatesRes, wardensRes] = await Promise.all([
-                apiClient.get('/admin/hostels'),
-                apiClient.get('/admin/gates'),
-                apiClient.get('/admin/wardens')
-            ]);
+    const fetchData = () => {
+        fetchHostels();
+        fetchGates();
+        fetchAvailableWardens();
+    };
 
-            if (hostelsRes.data.success) {
-                const mappedHostels: Hostel[] = hostelsRes.data.data.map((h: any) => ({
-                    id: h.hostel_id.toString(),
-                    hostel_id: h.hostel_id,
-                    name: h.hostel_name,
-                    address: h.location,
-                    type: h.hostel_type,
-                    rooms: h.total_rooms,
-                    capacity: h.total_rooms * 2, // Assuming capacity logic or get from data if available
-                    warden: h.warden?.name || 'Unassigned',
-                    status: 'Active'
-                }));
+    const fetchHostels = async () => {
+        try {
+            console.log('[HostelManagement] Fetching hostels...');
+            const response = await apiClient.get('/admin/hostels');
+            console.log('[HostelManagement] Hostels API Response Data:', response.data);
+
+            if (response.data.success) {
+                const rawData = response.data.data;
+                if (!Array.isArray(rawData)) {
+                    console.error('[HostelManagement] Hostels data is not an array:', rawData);
+                    return;
+                }
+
+                const mappedHostels: Hostel[] = rawData.map((h: any) => {
+                    try {
+                        return {
+                            id: (h.hostel_id || h.id || Math.random().toString()).toString(),
+                            hostel_id: h.hostel_id,
+                            name: h.hostel_name || h.name || 'Unknown',
+                            address: h.location || h.address || 'N/A',
+                            type: h.hostel_type || h.type || 'N/A',
+                            rooms: h.total_rooms || h.rooms || 0,
+                            capacity: h.capacity || (h.total_rooms ? h.total_rooms * 2 : 0),
+                            warden: (Array.isArray(h.wardens) && h.wardens.length > 0)
+                                ? h.wardens.map((w: any) => w.name || w.fullName || w.user?.name || 'Unknown').join(', ')
+                                : (h.warden_name || h.warden || 'Unassigned'),
+                            status: h.status || 'Active'
+                        };
+                    } catch (e) {
+                        console.error('[HostelManagement] Error mapping individual hostel:', h, e);
+                        return null;
+                    }
+                }).filter(Boolean) as Hostel[];
+
+                console.log('[HostelManagement] Successfully formatted hostels. Count:', mappedHostels.length);
                 setHostels(mappedHostels);
             }
+        } catch (error) {
+            console.error('[HostelManagement] Critical error in fetchHostels:', error);
+        }
+    };
 
-            if (gatesRes.data.success) {
-                const mappedGates: Gate[] = gatesRes.data.data.map((g: any) => ({
+    const fetchGates = async () => {
+        try {
+            const response = await apiClient.get('/admin/gates');
+            if (response.data.success && Array.isArray(response.data.data)) {
+                const mappedGates: Gate[] = response.data.data.map((g: any) => ({
                     id: g.gate_id.toString(),
                     gate_id: g.gate_id,
                     name: g.gate_name,
@@ -73,22 +102,31 @@ export default function HostelManagement() {
                 }));
                 setGates(mappedGates);
             }
+        } catch (error) {
+            console.error('Error fetching gates:', error);
+        }
+    };
 
-            if (wardensRes.data.success) {
-                const mappedWardens = wardensRes.data.data.map((w: any) => ({
+    const fetchAvailableWardens = async () => {
+        try {
+            const response = await apiClient.get('/admin/wardens');
+            if (response.data.success && Array.isArray(response.data.data)) {
+                const mappedWardens = response.data.data.map((w: any) => ({
                     ...w,
-                    id: w.warden_id.toString(), // Ensure id is string for UI components
-                    name: w.name || w.user?.name
+                    id: (w.warden_id || w.id || '').toString(),
+                    name: w.name || w.user?.name || 'Unknown'
                 }));
                 setAvailableWardens(mappedWardens);
             }
         } catch (error) {
-            console.error('Error fetching hostel management data:', error);
+            console.error('Error fetching available wardens:', error);
         }
     };
 
     useEffect(() => {
-        fetchData();
+        fetchHostels();
+        fetchGates();
+        fetchAvailableWardens();
     }, []);
 
     const filteredHostels = useMemo(() => hostels.filter(h =>
@@ -100,6 +138,14 @@ export default function HostelManagement() {
         (g.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (g.hostel || '').toLowerCase().includes(searchQuery.toLowerCase())
     ), [gates, searchQuery]);
+
+    console.log('[HostelManagement] Render State:', {
+        activeTab,
+        searchQuery,
+        hostelsCount: hostels.length,
+        gatesCount: gates.length,
+        filteredHostelsCount: filteredHostels?.length || 0
+    });
 
 
     // Handlers - Hostel
@@ -133,7 +179,7 @@ export default function HostelManagement() {
             if (response.data.success) {
                 // Determine the new/updated hostel object for local state update or just refetch
                 // Refetching is safer to get backend-generated fields/relations
-                await fetchData();
+                fetchData();
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
             }
@@ -203,7 +249,7 @@ export default function HostelManagement() {
                     });
                 }
 
-                await fetchData();
+                fetchData();
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
             }

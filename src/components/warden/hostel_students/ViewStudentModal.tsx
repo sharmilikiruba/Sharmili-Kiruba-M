@@ -9,7 +9,7 @@ import {
     User,
     MapPin
 } from 'lucide-react';
-import { Student } from './types';
+import { Student } from './types'; // student prop uses the Student interface which we updated
 
 interface ViewStudentModalProps {
     isOpen: boolean;
@@ -66,7 +66,7 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
                         <div className="relative">
                             <img
                                 src={student.photo || 'https://via.placeholder.com/150'}
-                                alt={student.name}
+                                alt={student.fullName}
                                 className="w-40 h-40 rounded-3xl object-cover border-8 border-white shadow-2xl"
                             />
                             <div className="absolute -bottom-2 -right-2 bg-green-500 w-8 h-8 rounded-full border-4 border-white shadow-lg" />
@@ -74,14 +74,14 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
 
                         <div className="pb-8">
                             <h3 className="text-4xl font-bold text-white mb-3">
-                                {student.name}
+                                {student.fullName}
                             </h3>
                             <div className="flex gap-3">
                                 <span className="bg-white/20 text-white text-[11px] font-bold px-4 py-1.5 rounded-full">
                                     {student.rollNumber}
                                 </span>
                                 <span className="bg-white/20 text-white text-[11px] font-bold px-4 py-1.5 rounded-full">
-                                    Room {student.roomNumber}
+                                    Room {student.room_no}
                                 </span>
                             </div>
                         </div>
@@ -93,6 +93,7 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
                     <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <DetailItem icon={Mail} label="University Email" value={student.email} />
                         <DetailItem icon={Phone} label="Primary Contact" value={student.mobile} />
+                        <DetailItem icon={Phone} label="Parent Contact" value={student.parent_phone} />
                         <DetailItem icon={GraduationCap} label="Department" value={student.department} />
                         <DetailItem icon={Calendar} label="Education Year" value={student.year} />
                         <DetailItem icon={Home} label="Current Semester" value={student.semester} />

@@ -24,6 +24,7 @@ export default function WardenDashboard() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [wardenName, setWardenName] = useState<string>('');
   const [stats, setStats] = useState([
     {
       title: 'Pending Requests',
@@ -74,6 +75,7 @@ export default function WardenDashboard() {
         const profileRes = await apiClient.get(`/warden/profile/${user?.id}`);
         if (profileRes.data.success) {
           const profile = profileRes.data.data.profile;
+          setWardenName(profile.name);
           const hostelId = profile.hostel_id;
 
           if (hostelId) {
@@ -166,7 +168,24 @@ export default function WardenDashboard() {
           <h2 className="text-3xl font-bold text-gray-900 mb-1">
             Welcome Back!
           </h2>
-          <p className="text-gray-600 font-medium">Hostel Warden Dashboard</p>
+          {isLoading ? (
+            <div className="flex flex-col gap-2 mb-4">
+              <div className="h-4 bg-gray-200 rounded w-48 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+            </div>
+          ) : (
+            <div className="flex flex-col mb-4">
+              <p className="text-gray-700 font-semibold flex items-center gap-2">
+                <Users className="w-4 h-4 text-blue-500" />
+                <span className="text-blue-600">{wardenName}</span>
+              </p>
+              <p className="text-gray-700 font-semibold flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-blue-500" />
+                Assigned to<span className="text-blue-600">{dashboardData?.hostelName || 'N/A'}</span>
+              </p>
+            </div>
+          )}
+          <p className="text-gray-500 text-sm font-medium">Manage your daily activities and visitor requests</p>
         </div>
         <div className="text-right hidden md:block">
           <p className="text-sm text-gray-500 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>

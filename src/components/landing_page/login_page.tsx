@@ -42,6 +42,7 @@ export default function LoginPage() {
 
       switch (role) {
         case 'admin':
+        case 'super_admin':
           router.push('/Admin/Admin_dashboard')
           break
         case 'warden':

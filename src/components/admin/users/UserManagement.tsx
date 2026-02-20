@@ -39,6 +39,7 @@ export default function UserManagement() {
     const [wardens, setWardens] = useState<Warden[]>([]);
     const [guards, setGuards] = useState<Guard[]>([]);
 
+
     // Fetch data
     const fetchHostels = async () => {
         try {
@@ -53,48 +54,61 @@ export default function UserManagement() {
 
     const fetchWardens = async () => {
         try {
+            console.log('[UserManagement] Fetching wardens...');
             const response = await apiClient.get('/admin/wardens');
+            console.log('[UserManagement] Wardens API Response Headers:', response.headers);
+            console.log('[UserManagement] Wardens API Response Data:', response.data);
+
             if (response.data.success) {
-                const formattedWardens = response.data.data.map((w: any) => ({
-                    id: w.warden_id.toString(),
-                    name: w.name,
-                    email: w.user?.email || '',
-                    contact: w.phone || '',
-                    hostel: w.hostel?.hostel_name || 'Unassigned',
-                    status: 'Active',
-                    empId: w.emp_id,
-                    dateOfJoining: w.joining_date,
-                    address: w.address,
-                }));
+                const rawData = response.data.data;
+                if (!Array.isArray(rawData)) {
+                    console.error('[UserManagement] Wardens data is not an array:', rawData);
+                    return;
+                }
+
+                const formattedWardens = rawData.map((w: any) => {
+                    try {
+                        return {
+                            id: (w.warden_id || w.id || w.userId || Math.random().toString()).toString(),
+                            name: w.name || w.fullName || w.user?.name || w.user?.fullName || 'Unknown',
+                            email: w.user?.email || w.email || 'N/A',
+                            contact: w.phone || w.mobile || w.user?.phone || w.user?.mobile || 'N/A',
+                            hostel: w.hostel?.hostel_name || w.hostel_name || 'Unassigned',
+                            status: 'Active',
+                            empId: w.emp_id || w.employeeId || 'N/A',
+                            dateOfJoining: w.joining_date || w.dateOfJoining || 'N/A',
+                            address: w.address || 'N/A',
+                        };
+                    } catch (e) {
+                        console.error('[UserManagement] Error mapping individual warden:', w, e);
+                        return null;
+                    }
+                }).filter(Boolean) as Warden[];
+
+                console.log('[UserManagement] Successfully formatted wardens. Count:', formattedWardens.length);
                 setWardens(formattedWardens);
             }
         } catch (error) {
-            console.error('Error fetching wardens:', error);
+            console.error('[UserManagement] Critical error in fetchWardens:', error);
         }
     };
 
     const fetchGuards = async () => {
         try {
-            setIsLoading(true);
             const response = await apiClient.get('/admin/guards');
-            if (response.data.success) {
+            if (response.data.success && Array.isArray(response.data.data)) {
                 const formattedGuards = response.data.data.map((g: any) => ({
-                    id: g.guard_id.toString(),
-                    name: g.name,
-                    email: g.user?.email || '',
-                    contact: g.phone || g.alternate_phone || '',
+                    id: (g.guard_id || g.id || '').toString(),
+                    name: g.name || 'Unknown',
+                    email: g.user?.email || g.email || 'N/A',
+                    contact: g.phone || 'N/A',
+                    gate: g.assignedGate?.gate_name || 'Unassigned',
                     status: 'Active',
-                    empId: g.emp_id,
-                    dateOfJoining: g.joining_date,
-                    address: g.address,
-                    gender: g.gender,
-                    designation: g.designation,
-                    dob: g.dob,
-                    gate_id: g.gate_id,
-                    assignedGate: g.assignedGate ? { gate_name: g.assignedGate.gate_name } : undefined,
-                    shift_type: g.shift_type,
-                    shift_start_time: g.shift_start_time,
-                    shift_end_time: g.shift_end_time,
+                    empId: g.emp_id || 'N/A',
+                    dateOfJoining: g.joining_date || 'N/A',
+                    address: g.address || 'N/A',
+                    gender: g.gender || 'N/A',
+                    shift: g.shift_type || 'N/A'
                 }));
                 setGuards(formattedGuards);
             }
@@ -108,22 +122,24 @@ export default function UserManagement() {
     const fetchStudents = async () => {
         try {
             const response = await apiClient.get('/admin/students');
-            if (response.data.success) {
+            console.log('[UserManagement] Students API Response:', response.data);
+            if (response.data.success && Array.isArray(response.data.data)) {
                 const formattedStudents = response.data.data.map((s: any) => ({
-                    id: s.student_id?.toString() || s.id?.toString(),
-                    name: s.name,
-                    email: s.user?.email || s.email || '',
-                    contact: s.phone || s.mobile || '',
-                    rollNo: s.roll_no || s.rollNumber || '',
-                    department: s.department,
-                    hostel: s.hostel?.hostel_name || 'Unassigned',
-                    room: s.room_no || s.roomNumber || '',
-                    status: 'Active', // Default or from data if available
+                    id: (s.student_id || s.id || s.userId || '').toString(),
+                    name: s.name || s.fullName || s.userName || 'Unknown',
+                    email: s.user?.email || s.email || 'N/A',
+                    contact: s.phone || s.mobile || s.user?.phone || s.user?.mobile || 'N/A',
+                    rollNo: s.roll_no || s.rollNumber || s.roll || 'N/A',
+                    department: s.department || 'N/A',
+                    hostel: s.hostel?.hostel_name || s.hostel_name || 'Unassigned',
+                    room: s.room_no || s.roomNumber || s.room || 'N/A',
+                    status: 'Active',
                 }));
+                console.log('[UserManagement] Formatted Students:', formattedStudents);
                 setStudents(formattedStudents);
             }
         } catch (error) {
-            console.error('Error fetching students:', error);
+            console.error('[UserManagement] Error fetching students:', error);
         }
     };
 
@@ -152,17 +168,10 @@ export default function UserManagement() {
 
     useEffect(() => {
         fetchHostels();
+        fetchStudents();
+        fetchWardens();
+        fetchGuards();
     }, []);
-
-    useEffect(() => {
-        if (activeTab === 'Guards') {
-            fetchGuards();
-        } else if (activeTab === 'Wardens') {
-            fetchWardens();
-        } else if (activeTab === 'Students') {
-            fetchStudents();
-        }
-    }, [activeTab]);
 
     const filteredStudents = useMemo(() =>
         students.filter(s =>
@@ -178,6 +187,18 @@ export default function UserManagement() {
     const filteredGuards = useMemo(() =>
         guards.filter(g => (g.name || '').toLowerCase().includes(searchQuery.toLowerCase())),
         [guards, searchQuery]);
+
+    console.log('[UserManagement] Render State:', {
+        activeTab,
+        searchQuery,
+        selectedHostel,
+        studentsCount: students.length,
+        wardensCount: wardens.length,
+        guardsCount: guards.length,
+        filteredStudentsCount: filteredStudents?.length || 0,
+        filteredWardensCount: filteredWardens?.length || 0,
+        filteredGuardsCount: filteredGuards?.length || 0
+    });
 
     // Handlers
     const handleToggleStatus = (id: string, type: TabType) => {

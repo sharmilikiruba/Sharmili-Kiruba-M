@@ -120,7 +120,7 @@ export default function WardenReports() {
             visitor: v.name,
             student: v.student?.fullName || 'N/A',
             purpose: v.visit_purpose || 'N/A',
-            responseTime: v.logs?.[0]?.entry_time || 'N/A',
+            responseTime: v.response_time || 'N/A',
             status: v.request_status
           })));
         } else if (selectedReport === 'rejected-requests') {

@@ -28,10 +28,17 @@ apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Handle unauthorized (e.g., redirect to login)
-            localStorage.removeItem('auth_token');
+            // Only redirect to login if we're NOT already on a login-related page.
+            // This prevents a redirect loop where the admin dashboard fires a 401
+            // (e.g. stale/expired token) and immediately bounces back to login,
+            // making it appear as if login itself is stuck.
             if (typeof window !== 'undefined') {
-                window.location.href = '/login';
+                const isOnLoginPage = window.location.pathname.startsWith('/login');
+                if (!isOnLoginPage) {
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login/login_page';
+                }
             }
         }
         return Promise.reject(error);

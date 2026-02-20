@@ -43,9 +43,9 @@ const HostelStudents: React.FC = () => {
     course: '',
     currentYear: '',
     semester: '',
-    roomNumber: '',
+    room_no: '',
     parentName: '',
-    parentMobile: '',
+    parent_phone: '',
     parentRelation: '',
     address: '',
     gender: '',
@@ -53,7 +53,7 @@ const HostelStudents: React.FC = () => {
     bloodGroup: '',
     emergencyContact: '',
     guardianName: '',
-    guardianMobile: '',
+    guardian_phone: '',
     password: ''
   });
 
@@ -80,7 +80,7 @@ const HostelStudents: React.FC = () => {
           rollNumber: s.roll_no || s.rollNumber || 'N/A',
           email: s.user?.email || s.email || '',
           mobile: s.phone || s.mobile || '',
-          roomNumber: s.room_no || s.roomNumber || 'N/A',
+          room_no: s.room_no || 'N/A',
           department: s.department || 'N/A',
           year: s.year || 'N/A',
           semester: s.semester || 'N/A',
@@ -105,7 +105,7 @@ const HostelStudents: React.FC = () => {
     return students.filter(student => {
       const name = student.fullName?.toLowerCase() || '';
       const roll = student.rollNumber?.toLowerCase() || '';
-      const room = student.roomNumber?.toLowerCase() || '';
+      const room = student.room_no?.toLowerCase() || '';
       const search = searchTerm.toLowerCase();
 
       const matchesSearch =
@@ -137,13 +137,13 @@ const HostelStudents: React.FC = () => {
       doc.text(`Total Students: ${filteredStudents.length}`, 14, 36);
 
       const tableData = filteredStudents.map(student => [
-        student.fullName,
-        student.rollNumber,
-        student.department,
-        student.year,
-        student.roomNumber,
-        student.mobile,
-        student.email
+        student.fullName || '',
+        student.rollNumber || '',
+        student.department || '',
+        student.year || '',
+        student.room_no || '',
+        student.mobile || '',
+        student.email || ''
       ]);
 
       autoTable(doc, {
@@ -161,7 +161,7 @@ const HostelStudents: React.FC = () => {
         margin: { top: 42 }
       });
 
-      doc.save(`Krishna_Hostel_Students_${new Date().toISOString().split('T')[0]}.pdf`);
+      doc.save(`Hostel_Students_${new Date().toISOString().split('T')[0]}.pdf`);
       alert('PDF exported successfully!');
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -186,9 +186,9 @@ const HostelStudents: React.FC = () => {
 
   const resetForm = (): void => {
     setFormData({
-      fullName: '', rollNumber: '', email: '', mobile: '', department: '', course: '', currentYear: '', semester: '', roomNumber: '',
-      parentName: '', parentMobile: '', parentRelation: '', address: '', gender: '', dob: '', bloodGroup: '', emergencyContact: '',
-      guardianName: '', guardianMobile: '', password: ''
+      fullName: '', rollNumber: '', email: '', mobile: '', department: '', course: '', currentYear: '', semester: '', room_no: '',
+      parentName: '', parent_phone: '', parentRelation: '', address: '', gender: '', dob: '', bloodGroup: '', emergencyContact: '',
+      guardianName: '', guardian_phone: '', password: ''
     });
     setPhotos({ student: null });
     setIsEditing(false);
@@ -196,7 +196,7 @@ const HostelStudents: React.FC = () => {
   };
 
   const handleAddSubmit = async () => {
-    if (!formData.fullName || !formData.rollNumber || !formData.mobile || !formData.roomNumber) {
+    if (!formData.fullName || !formData.rollNumber || !formData.mobile || !formData.room_no) {
       alert('Please fill in all required fields');
       return;
     }
@@ -207,7 +207,7 @@ const HostelStudents: React.FC = () => {
         roll_no: formData.rollNumber,
         email: formData.email,
         phone: formData.mobile,
-        room_no: formData.roomNumber,
+        room_no: formData.room_no,
         department: formData.department,
         course: formData.course,
         current_year: formData.currentYear ? parseInt(formData.currentYear) : 1,
@@ -216,9 +216,9 @@ const HostelStudents: React.FC = () => {
         dob: formData.dob,
         address: formData.address,
         parent_name: formData.parentName,
-        parent_phone: formData.parentMobile,
+        parent_phone: formData.parent_phone,
         guardian_name: formData.guardianName,
-        guardian_phone: formData.guardianMobile,
+        guardian_phone: formData.guardian_phone,
         password: formData.password
       };
 
@@ -245,7 +245,7 @@ const HostelStudents: React.FC = () => {
         roll_no: formData.rollNumber,
         email: formData.email,
         phone: formData.mobile,
-        room_no: formData.roomNumber,
+        room_no: formData.room_no,
         department: formData.department,
         course: formData.course,
         current_year: formData.currentYear ? parseInt(formData.currentYear) : 1,
@@ -254,9 +254,9 @@ const HostelStudents: React.FC = () => {
         dob: formData.dob,
         address: formData.address,
         parent_name: formData.parentName,
-        parent_phone: formData.parentMobile,
+        parent_phone: formData.parent_phone,
         guardian_name: formData.guardianName,
-        guardian_phone: formData.guardianMobile,
+        guardian_phone: formData.guardian_phone,
       };
 
       const response = await apiClient.put(`/warden/students/${currentStudentId}`, payload);
@@ -299,9 +299,9 @@ const HostelStudents: React.FC = () => {
       course: '',
       currentYear: student.year,
       semester: student.semester,
-      roomNumber: student.roomNumber,
+      room_no: student.room_no || '',
       parentName: student.parentName || '',
-      parentMobile: student.parentMobile || '',
+      parent_phone: student.parent_phone || '',
       parentRelation: '',
       address: student.address || '',
       gender: student.gender || '',
@@ -309,7 +309,7 @@ const HostelStudents: React.FC = () => {
       bloodGroup: '',
       emergencyContact: '',
       guardianName: student.guardianName || '',
-      guardianMobile: student.guardianMobile || '',
+      guardian_phone: student.guardianMobile || '',
       password: ''
     });
     setPhotos({

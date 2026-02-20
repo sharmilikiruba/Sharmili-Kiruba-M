@@ -7,7 +7,7 @@ interface StudentFormProps {
     setFormData: (data: StudentFormData) => void;
     photos: StudentPhotos;
     onPhotoUpload: (type: keyof StudentPhotos, e: React.ChangeEvent<HTMLInputElement>) => void;
-   
+
     // departments, years, semesters props are no longer needed for select options
 }
 
@@ -16,7 +16,7 @@ export const StudentForm: React.FC<StudentFormProps> = ({
     setFormData,
     photos,
     onPhotoUpload,
-    
+
 }) => {
     const handleInputChange = (field: keyof StudentFormData, value: string) => {
         setFormData({ ...formData, [field]: value });
@@ -32,8 +32,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         alt={label}
                         className="w-full h-32 object-cover transition-all group-hover:scale-105"
                     />
-                   
-                       
+
+
                 </div>
             ) : (
                 <label className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-blue-600 cursor-pointer bg-gray-50/50">
@@ -231,8 +231,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         <input
                             type="text"
                             required
-                            value={formData.roomNumber}
-                            onChange={(e) => handleInputChange('roomNumber', e.target.value)}
+                            value={formData.room_no}
+                            onChange={(e) => handleInputChange('room_no', e.target.value)}
                             placeholder="e.g. A-101"
                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                         />
@@ -262,8 +262,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         <label className="text-sm font-semibold text-gray-700">Parent's Mobile</label>
                         <input
                             type="tel"
-                            value={formData.parentMobile}
-                            onChange={(e) => handleInputChange('parentMobile', e.target.value)}
+                            value={formData.parent_phone}
+                            onChange={(e) => handleInputChange('parent_phone', e.target.value)}
                             placeholder="+91 XXXXX XXXXX"
                             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                         />
@@ -284,8 +284,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         <label className="text-sm font-semibold text-gray-700">Guardian's Mobile</label>
                         <input
                             type="tel"
-                            value={formData.guardianMobile}
-                            onChange={(e) => handleInputChange('guardianMobile', e.target.value)}
+                            value={formData.guardian_phone}
+                            onChange={(e) => handleInputChange('guardian_phone', e.target.value)}
                             placeholder="+91 XXXXX XXXXX"
                             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                         />

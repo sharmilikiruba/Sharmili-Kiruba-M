@@ -46,15 +46,12 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                 <div className="max-w-[1600px] mx-auto px-8 py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Warden Portal</h1>
-                        <p className="text-sm font-medium text-gray-500 mt-1 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            Managing <span className="text-gray-900 font-semibold">Krishna Hostel</span> Residents
-                        </p>
+
                     </div>
 
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={onExportPDF}
+                            onClick={onExportPDF}   
                             className="flex items-center gap-2 px-5 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm active:scale-95"
                         >
                             <Download size={18} className="text-gray-400" />
@@ -184,14 +181,14 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                                                 <div className="bg-indigo-50 p-1.5 rounded-lg border border-indigo-100">
                                                     <Home className="w-4 h-4 text-indigo-600" />
                                                 </div>
-                                                <span className="text-sm font-semibold text-gray-900">{student.roomNumber}</span>
+                                                <span className="text-sm font-semibold text-gray-900">{student.room_no}</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="space-y-1.5">
                                                 <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
                                                     <Phone className="w-3.5 h-3.5 text-blue-500" />
-                                                    {student.mobile}
+                                                    {student.parent_phone}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
                                                     <Mail className="w-3.5 h-3.5 text-gray-300" />

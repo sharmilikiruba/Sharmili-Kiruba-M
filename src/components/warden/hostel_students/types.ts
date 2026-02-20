@@ -13,7 +13,8 @@ export interface Student {
     dob?: string;
     address?: string;
     parentName?: string;
-    parentMobile?: string;
+    parent_phone?: string;
+    room_no?: string;
     guardianName?: string;
     guardianMobile?: string;
     fatherPhoto?: string | null;
@@ -30,9 +31,9 @@ export interface StudentFormData {
     department: string;
     currentYear: string;
     semester: string;
-    roomNumber: string;
+    room_no: string;
     parentName: string;
-    parentMobile: string;
+    parent_phone: string;
     parentRelation: string;
     address: string;
     gender: string;
@@ -40,7 +41,7 @@ export interface StudentFormData {
     bloodGroup: string;
     emergencyContact: string;
     guardianName: string;
-    guardianMobile: string;
+    guardian_phone: string;
     password: string;
 }
 

@@ -6,7 +6,7 @@ import apiClient from '@/lib/api-client';
 import { useRouter } from 'next/navigation';
 
 // Define user types
-export type UserRole = 'student' | 'warden' | 'guard' | 'admin';
+export type UserRole = 'student' | 'warden' | 'guard' | 'admin' | 'super_admin';
 
 export interface User {
   id: string;
@@ -82,7 +82,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Login function
   const login = async (email: string, password: string, role: string) => {
     try {
-      setIsLoading(true);
+      // NOTE: We intentionally do NOT set the global isLoading here.
+      // The login page manages its own local loading state.
+      // Setting isLoading=true globally would cause DashboardLayout to show
+      // an infinite spinner when navigating to the admin dashboard.
       setError(null);
 
       // Backend often expects capitalized roles but lowercase emails
@@ -152,9 +155,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setError(errorMessage);
       throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
+    // No finally block needed: we don't manage global isLoading in login().
   };
 
   // Logout function
@@ -165,7 +167,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     setUser(null);
     setError(null);
-    router.push('/login');
+    router.push('/login/login_page');
   };
 
   // Update user information

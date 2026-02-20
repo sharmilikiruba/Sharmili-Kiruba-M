@@ -1,6 +1,7 @@
+'use client'
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, UserCheck, FileText, Activity, Shield, Home, BarChart3, Settings, Lock, FileText as AuditIcon, Layout, Loader2 } from 'lucide-react';
+import { Users, Activity, Shield, Home } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 interface DashboardStats {
@@ -23,34 +24,10 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        const [statsRes, activitiesRes] = await Promise.all([
-          apiClient.get('/admin/dashboard-stats'),
-          apiClient.get('/admin/recent-activities')
-        ]);
-
-        if (statsRes.data.success) {
-          setStats(statsRes.data.data);
-        }
-        if (activitiesRes.data.success) {
-          setActivities(activitiesRes.data.data);
-        }
-      } catch (err: any) {
-        console.error('Error fetching dashboard data:', err);
-        setError(err.response?.data?.message || 'Failed to fetch dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
+  // Data fetching removed per user request to resolve hang
 
   const statsDisplay = [
     { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users },
@@ -65,6 +42,22 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-8">
+      {/* Error Alert */}
+      {error && (
+        <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-sm font-semibold hover:underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
@@ -74,14 +67,14 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {loading ? (
-          Array(1).fill(0).map((_, i) => (
+          Array(4).fill(0).map((_, i) => (
             <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse">
               <div className="h-4 w-24 bg-gray-200 rounded mb-4"></div>
               <div className="h-8 w-16 bg-gray-200 rounded"></div>
             </div>
           ))
         ) : (
-          statsDisplay.map((stat, index) => (
+          userStatistics.map((stat, index) => (
             <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-gray-600 text-sm font-medium">{stat.label}</span>
@@ -95,16 +88,16 @@ export default function AdminDashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Statistics */}
+        {/* Overall Status */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">User Statistics</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">System Overview</h2>
           <div className="space-y-4">
             {loading ? (
-              Array(4).fill(0).map((_, i) => (
+              Array(1).fill(0).map((_, i) => (
                 <div key={i} className="h-16 bg-gray-50 rounded-lg animate-pulse"></div>
               ))
             ) : (
-              userStatistics.map((stat, index) => (
+              statsDisplay.map((stat, index) => (
                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
@@ -134,13 +127,13 @@ export default function AdminDashboard() {
                     <Activity className="w-5 h-5 text-gray-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 mb-1">{activity.description}</h3>
+                    <h3 className="font-semibold text-gray-900 mb-1 leading-tight">{activity.description}</h3>
                     <p className="text-sm text-gray-600">
                       {activity.user} • {activity.type}
                     </p>
                   </div>
                   <span className="text-sm text-gray-500 whitespace-nowrap">
-                    {new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {activity.timestamp ? new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---'}
                   </span>
                 </div>
               ))
