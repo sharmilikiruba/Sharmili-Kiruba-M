@@ -1,23 +1,32 @@
-export type UserType = 'Student' | 'Warden' | 'Guard';
-export type TabType = 'Students' | 'Wardens' | 'Guards';
+export type UserType = 'Student' | 'Warden' | 'Guard' | 'Admin';
+export type TabType = 'Students' | 'Wardens' | 'Guards' | 'Admins';
 
 export interface BaseUser {
     id: string;
-    name: string;
+    fullName: string;
     email: string;
-    contact?: string;
+    phone?: string;
     status: 'Active' | 'Inactive';
     empId?: string;
     dateOfJoining?: string;
     address?: string;
-    password?: string;
 }
 
 export interface Student extends BaseUser {
-    rollNo: string;
+    rollNumber: string;
     department: string;
     hostel: string;
-    room: string;
+    room_no: string;
+    phone: string;
+    gender?: string;
+    dob?: string;
+    course?: string;
+    currentYear?: string;
+    semester?: string;
+    parentName?: string;
+    parentPhone?: string;
+    guardianName?: string;
+    guardianContact?: string;
 }
 
 export interface Warden extends BaseUser {
@@ -25,10 +34,11 @@ export interface Warden extends BaseUser {
 }
 
 export interface Guard extends BaseUser {
-    gender: 'M' | 'F' | 'Other';
+    gender: 'Male' | 'Female' | 'Other';
     designation: string;
     dob: string;
     gate_id?: number;
+    gate?: string;
     assignedGate?: { gate_name: string };
     shift_type?: 'Day' | 'Night' | 'Rotating';
     shift_start_time?: string;
@@ -36,34 +46,45 @@ export interface Guard extends BaseUser {
     security_agency?: string;
 }
 
+export interface AdminUser extends BaseUser {
+    designation: string;
+    gender?: string;
+    dob?: string;
+}
+
 export interface StudentForm {
     fullName: string;
     email: string;
-    mobile: string;
+    phone: string;
+    gender: string;
+    dob: string;
     rollNumber: string;
     course: string;
     department: string;
     currentYear: string;
     semester: string;
     hostel: string;
-    room: string;
+    room_no: string;
+    parentName?: string;
+    parentPhone?: string;
+    guardianName?: string;
+    guardianContact?: string;
 }
 
 export interface WardenForm {
     fullName: string;
     email: string;
-    mobile: string;
+    phone: string;
     hostel: string;
     address: string;
     empId: string;
-    dateOfJoining: string;
-    password: string;
+    dateOfJoining?: string;
 }
 
 export interface GuardForm {
     fullName: string;
     email: string;
-    mobile: string;
+    phone: string;
     gender: 'M' | 'F' | 'Other';
     dob: string;
     designation: string;
@@ -73,6 +94,16 @@ export interface GuardForm {
     shift_end_time?: string;
     address: string;
     empId: string;
-    dateOfJoining: string;
-    password?: string;
+    dateOfJoining?: string;
+}
+
+export interface AdminForm {
+    fullName: string;
+    email: string;
+    phone: string;
+    gender: string;
+    dob: string;
+    designation: string;
+    address?: string;
+    empId?: string;
 }

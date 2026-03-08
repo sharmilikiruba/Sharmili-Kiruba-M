@@ -1,6 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, X, Save, Send, Trash2, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Camera, X, Save, Send, Trash2, Loader2, SwitchCamera } from 'lucide-react';
+import CameraCapture from '@/components/shared/CameraCapture';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/lib/api-client';
@@ -22,6 +23,7 @@ const NewVisitorRequestPage = () => {
   const [formData, setFormData] = useState({
     visitorName: '',
     mobileNumber: '',
+    visitorEmail: '',
     relation: '',
     gender: 'M',
     visitorPhoto: null,
@@ -36,6 +38,7 @@ const NewVisitorRequestPage = () => {
   });
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
   const [showDraftMessage, setShowDraftMessage] = useState(false);
 
   // Fetch student data on mount
@@ -74,16 +77,9 @@ const NewVisitorRequestPage = () => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handlePhotoUpload = (e: any) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-        setFormData({ ...formData, visitorPhoto: file.name });
-      };
-      reader.readAsDataURL(file);
-    }
+  const handlePhotoCapture = (blob: Blob, base64: string) => {
+    setPhotoPreview(base64);
+    setFormData({ ...formData, visitorPhoto: 'camera_capture' as any });
   };
 
   const handleRemovePhoto = () => {
@@ -108,7 +104,8 @@ const NewVisitorRequestPage = () => {
         visit_to_time: formData.visitEndTime,
         student_id: studentInfo.student_id,
         accompanying_persons: parseInt(formData.accompanyingPersons) || 0,
-        visitor_photo: photoPreview
+        visitor_photo: photoPreview,
+        email: formData.visitorEmail
       };
 
       const response = await apiClient.post('/visitors/draft', payload);
@@ -129,6 +126,7 @@ const NewVisitorRequestPage = () => {
       setFormData({
         visitorName: '',
         mobileNumber: '',
+        visitorEmail: '',
         relation: '',
         gender: 'M',
         visitorPhoto: null,
@@ -175,7 +173,8 @@ const NewVisitorRequestPage = () => {
         visit_to_time: formData.visitEndTime,
         student_id: studentInfo.student_id,
         accompanying_persons: parseInt(formData.accompanyingPersons) || 0,
-        visitor_photo: photoPreview
+        visitor_photo: photoPreview,
+        email: formData.visitorEmail
       };
 
       const response = await apiClient.post('/visitors/submit', payload);
@@ -198,34 +197,32 @@ const NewVisitorRequestPage = () => {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto pb-10">
       {showDraftMessage && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
           Draft saved successfully!
         </div>
       )}
 
       <div>
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex items-start sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">New Visitor Request</h2>
-            <p className="text-gray-600">Submit a request for visitor entry</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">New Visitor Request</h2>
+            <p className="text-gray-600 text-sm mt-0.5">Submit a request for visitor entry</p>
           </div>
           <button
             onClick={handleBackClick}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
+            className="p-2.5 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors border border-gray-200 shrink-0"
           >
-            <ArrowLeft size={20} />
-            <span className="font-medium">Back</span>
+            <ArrowLeft size={18} />
           </button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {/* Student Information */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Student Information</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Student Information</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Student Name</label>
                 <p className="text-base font-semibold text-gray-900">{studentInfo.name}</p>
@@ -249,10 +246,9 @@ const NewVisitorRequestPage = () => {
           </div>
 
           {/* Visitor Information */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Visitor Information</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Visitor Information</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Visitor Name <span className="text-red-500">*</span>
@@ -275,6 +271,19 @@ const NewVisitorRequestPage = () => {
                   value={formData.mobileNumber}
                   onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
                   placeholder="+91 XXXXX XXXXX"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={formData.visitorEmail}
+                  onChange={(e) => handleInputChange('visitorEmail', e.target.value)}
+                  placeholder="Enter visitor's email"
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -332,17 +341,21 @@ const NewVisitorRequestPage = () => {
                       <Trash2 size={16} />
                     </button>
                   </div>
+                ) : showCamera ? (
+                  <CameraCapture
+                    onCapture={handlePhotoCapture}
+                    onClose={() => setShowCamera(false)}
+                    title="Visitor Photo"
+                  />
                 ) : (
-                  <label className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-                    <Upload size={18} />
-                    <span>Upload Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowCamera(true)}
+                    className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+                  >
+                    <Camera size={18} />
+                    <span>Take Photo</span>
+                  </button>
                 )}
               </div>
 
@@ -387,10 +400,9 @@ const NewVisitorRequestPage = () => {
           </div>
 
           {/* Visit Details */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Visit Details</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Visit Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Purpose of Visit <span className="text-red-500">*</span>
@@ -458,19 +470,19 @@ const NewVisitorRequestPage = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-4 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
             <button
               onClick={handleCancel}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
+              className="w-full sm:w-auto px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               <X size={18} />
-              Cancel
+              Reset
             </button>
 
             <button
               onClick={handleSaveDraft}
               disabled={isLoading}
-              className="px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
+              className="w-full sm:w-auto px-6 py-3 border border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-colors font-semibold flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={18} />}
               Save Draft
@@ -479,7 +491,7 @@ const NewVisitorRequestPage = () => {
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
+              className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-blue-600/20 active:scale-[0.98]"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send size={18} />}
               Submit Request

@@ -74,17 +74,17 @@ export default function LoginPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex flex-col">
 
         {/* Header */}
-        <div className="text-center pt-16 pb-8">
-          <h1 className="text-5xl font-bold text-gray-900 mb-3">HVMS</h1>
-          <p className="text-gray-600 text-lg">
+        <div className="text-center pt-10 sm:pt-16 pb-6 sm:pb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-3">HVMS</h1>
+          <p className="text-gray-600 text-base sm:text-lg">
             Hostel Visitor Management System
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="flex-1 flex items-start justify-center px-4 pb-16">
-          <div className="bg-white rounded-2xl shadow-xl border w-full max-w-md p-8">
-            <h2 className="text-3xl font-bold mb-2">Login</h2>
+        <div className="flex-1 flex items-start justify-center px-4 pb-10 sm:pb-16">
+          <div className="bg-white rounded-2xl shadow-xl border w-full max-w-md p-6 sm:p-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">Login</h2>
             <p className="text-gray-600 mb-6">
               Enter your credentials to access your dashboard
             </p>
@@ -179,7 +179,7 @@ export default function LoginPage() {
               <button
                 onClick={handleLogin}
                 disabled={isLoading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20 active:scale-[0.98]"
               >
                 {isLoading ? (
                   <>

@@ -88,11 +88,11 @@ export default function ActiveVisitorsPage() {
   }, [user, searchTerm])
 
   return (
-    <main className="flex-1 p-8 bg-gray-50 min-h-screen">
+    <main className="flex-1 p-4 md:p-8 bg-gray-50 min-h-screen">
       {/* Page Title */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Active Visitors</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Active Visitors</h1>
+        <p className="text-gray-600 text-sm md:text-base">
           {activeVisitors.length} visitors currently inside the premises
         </p>
       </div>
@@ -100,20 +100,20 @@ export default function ActiveVisitorsPage() {
       {/* Card Container */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
             Currently Active
           </h2>
 
           {/* Search */}
-          <div className="relative">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
               placeholder="Search visitors..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function ActiveVisitorsPage() {
             <p className="text-lg font-medium text-gray-600">Tracking active visitors...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {activeVisitors.length > 0 ? (
               activeVisitors.map((visitor) => (
                 <div
@@ -175,13 +175,6 @@ export default function ActiveVisitorsPage() {
                       <Phone className="w-4 h-4 text-gray-400" />
                       <span className="font-medium text-gray-700">Phone:</span> {visitor.phone}
                     </div>
-
-                    <button
-                      onClick={() => handleViewDetails(visitor)}
-                      className="w-full mt-2 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium transition-colors border border-blue-100"
-                    >
-                      View Details
-                    </button>
                   </div>
                 </div>
               ))

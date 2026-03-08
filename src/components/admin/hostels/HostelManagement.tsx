@@ -57,17 +57,24 @@ export default function HostelManagement() {
 
                 const mappedHostels: Hostel[] = rawData.map((h: any) => {
                     try {
+                        let wardenNames = 'Unassigned';
+                        if (Array.isArray(h.wardens) && h.wardens.length > 0) {
+                            wardenNames = h.wardens
+                                .map((w: any) => w.name || w.user?.username || w.user?.name || 'Unknown')
+                                .join(', ');
+                        } else if (h.warden_name || h.warden) {
+                            wardenNames = h.warden_name || h.warden;
+                        }
+
                         return {
                             id: (h.hostel_id || h.id || Math.random().toString()).toString(),
                             hostel_id: h.hostel_id,
-                            name: h.hostel_name || h.name || 'Unknown',
-                            address: h.location || h.address || 'N/A',
-                            type: h.hostel_type || h.type || 'N/A',
-                            rooms: h.total_rooms || h.rooms || 0,
+                            name: h.hostel_name || 'Unknown',
+                            address: h.location || 'N/A',
+                            type: h.hostel_type || 'N/A',
+                            rooms: h.total_rooms || 0,
                             capacity: h.capacity || (h.total_rooms ? h.total_rooms * 2 : 0),
-                            warden: (Array.isArray(h.wardens) && h.wardens.length > 0)
-                                ? h.wardens.map((w: any) => w.name || w.fullName || w.user?.name || 'Unknown').join(', ')
-                                : (h.warden_name || h.warden || 'Unassigned'),
+                            warden: wardenNames,
                             status: h.status || 'Active'
                         };
                     } catch (e) {
@@ -98,6 +105,10 @@ export default function HostelManagement() {
                     hostel_id: g.hostel_id,
                     location: g.location,
                     type: 'Entry & Exit',
+                    guard: Array.isArray(g.guards) && g.guards.length > 0
+                        ? g.guards.map((guard: any) => guard.name || guard.user?.username || 'Unknown').join(', ')
+                        : 'Unassigned',
+                    guard_id: Array.isArray(g.guards) && g.guards.length > 0 ? g.guards[0].guard_id : undefined,
                     status: 'Active'
                 }));
                 setGates(mappedGates);

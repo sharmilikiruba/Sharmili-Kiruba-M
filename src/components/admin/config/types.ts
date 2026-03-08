@@ -1,4 +1,4 @@
-export type TabType = 'General' | 'Visitor Rules' | 'QR Settings' | 'SMS' | 'Notifications';
+export type TabType = 'General' | 'Visitor Rules' | 'Notifications';
 
 export interface GeneralConfig {
     instituteName: string;
@@ -22,32 +22,10 @@ export interface VisitorRules {
     allowWalkIn: boolean;
 }
 
-export interface QRSettings {
-    passValidity: string;
-    passFormat: string;
-    autoExpiry: boolean;
-    includePhoto: boolean;
-    requireSignature: boolean;
-}
-
-export interface SMSSettings {
-    provider: string;
-    apiKey: string;
-    senderId: string;
-    creditsBalance: string;
-}
-
-export interface SMSTemplate {
-    enabled: boolean;
-    template: string;
-}
-
-export type SMSTemplates = Record<string, SMSTemplate>;
 
 export interface NotificationSettings {
     emailNotifications: boolean;
     pushNotifications: boolean;
-    smsNotifications: boolean;
 }
 
 export interface NotificationTriggers {

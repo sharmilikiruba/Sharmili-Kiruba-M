@@ -101,27 +101,27 @@ const ApprovedVisitsPage = () => {
   }, [user, searchTerm])
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-auto p-8">
+        <main className="flex-1 overflow-auto p-4 md:p-8">
           <div>
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                 Approved Visits
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm md:text-base">
                 {approvedRequests.length} approved visitor requests
               </p>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900">
+              <div className="p-4 md:p-6 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold text-gray-900">
                     Approved Requests
                   </h2>
 
-                  <div className="relative">
+                  <div className="relative w-full sm:w-64">
                     <Search
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                       size={18}
@@ -131,7 +131,7 @@ const ApprovedVisitsPage = () => {
                       placeholder="Search by student or visitor..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-sm"
                     />
                   </div>
                 </div>

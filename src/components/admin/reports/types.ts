@@ -1,6 +1,5 @@
 export type ReportType =
     | 'visitor-statistics'
-    | 'student-wise'
     | 'hostel-wise';
 
 export interface VisitorStat {
@@ -14,14 +13,6 @@ export interface VisitorStat {
     status?: string;
 }
 
-export interface StudentStat {
-    studentId: string;
-    studentName: string;
-    totalVisitors: number;
-    uniqueVisitors: number;
-    frequency: string;
-    lastVisit: string;
-}
 
 export interface HostelStat {
     name: string;

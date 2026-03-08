@@ -3,8 +3,8 @@ export interface Student {
     fullName: string;
     rollNumber: string;
     email: string;
-    mobile: string;
-    roomNumber: string;
+    phone: string;
+    room_no: string;
     department: string;
     year: string;
     semester: string;
@@ -14,19 +14,16 @@ export interface Student {
     address?: string;
     parentName?: string;
     parent_phone?: string;
-    room_no?: string;
     guardianName?: string;
-    guardianMobile?: string;
-    fatherPhoto?: string | null;
-    motherPhoto?: string | null;
-    guardianPhoto?: string | null;
+    dateOfJoining?: string;
+    guardian_contact?: string;
 }
 
 export interface StudentFormData {
     fullName: string;
     rollNumber: string;
     email: string;
-    mobile: string;
+    phone: string;
     course: string;
     department: string;
     currentYear: string;
@@ -41,8 +38,7 @@ export interface StudentFormData {
     bloodGroup: string;
     emergencyContact: string;
     guardianName: string;
-    guardian_phone: string;
-    password: string;
+    guardian_contact: string;
 }
 
 export interface StudentPhotos {

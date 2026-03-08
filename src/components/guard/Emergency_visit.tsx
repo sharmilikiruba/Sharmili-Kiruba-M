@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   ArrowLeft,
   AlertTriangle,
@@ -8,38 +8,35 @@ import {
   Phone,
   Camera,
   FileText,
-  Clock
+  Clock,
+  Loader2,
+  SwitchCamera
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import CameraCapture from '@/components/shared/CameraCapture';
 
 interface FormData {
-  visitorName: string;
-  mobileNumber: string;
+  name: string;
+  phone: string;
   relation: string;
-  idProofType: string;
-  idProofNumber: string;
-  visitorPhoto: string | null;
-  hostel: string;
-  student: string;
-  emergencyReason: string;
+  id_proof_type: string;
+  id_proof_no: string;
+  visitor_photo: string | null;
+  roll_no: string;
+  visit_purpose: string;
+  email: string;
 }
+
+// No StudentSuggestion interface needed
 
 
 const idProofTypes = [
-  'Aadhar Card',
-  'PAN Card',
+  'Aadhar',
+  'PAN',
   'Driving License',
   'Voter ID',
   'Passport',
-  'Other Government ID'
-];
-
-const hostels = [
-  'Krishna Hostel',
-  'Saraswati Hostel',
-  'Vivekananda Hostel',
-  'Ramanujan Hostel',
-  'APJ Abdul Kalam Hostel'
+  'Other'
 ];
 
 const relations = [
@@ -53,128 +50,93 @@ const relations = [
 
 export default function EmergencyVisit() {
   const [formData, setFormData] = useState<FormData>({
-    visitorName: '',
-    mobileNumber: '',
+    name: '',
+    phone: '',
     relation: '',
-    idProofType: '',
-    idProofNumber: '',
-    visitorPhoto: null,
-    hostel: '',
-    student: '',
-    emergencyReason: ''
+    id_proof_type: '',
+    id_proof_no: '',
+    visitor_photo: null,
+    roll_no: '',
+    visit_purpose: '',
+    email: ''
   });
+
+  // Student Search State removed
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [showCamera, setShowCamera] = useState(false);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name: fieldName, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [fieldName]: value
     }));
+
     // Clear error when user starts typing
-    if (errors[name as keyof FormData]) {
+    if (errors[fieldName as keyof FormData]) {
       setErrors(prev => ({
         ...prev,
-        [name]: undefined
+        [fieldName]: undefined
       }));
     }
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          visitorPhoto: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
+  // searchStudents removed
+
+  // handleSelectStudent removed
+
+
+  const handlePhotoCapture = (blob: Blob, base64: string) => {
+    setFormData(prev => ({
+      ...prev,
+      visitor_photo: base64
+    }));
   };
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setShowCamera(true);
-      }
-    } catch (err) {
-      alert('Unable to access camera. Please upload a photo instead.');
-    }
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-        const photoData = canvas.toDataURL('image/jpeg');
-        setFormData(prev => ({
-          ...prev,
-          visitorPhoto: photoData
-        }));
-        stopCamera();
-      }
-    }
-  };
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
-      setShowCamera(false);
-    }
-  };
-
-  const validateForm = (): boolean => {
+  const validateForm = () => {
     const newErrors: Partial<FormData> = {};
 
-    if (!formData.visitorName.trim()) {
-      newErrors.visitorName = 'Visitor name is required';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Visitor name is required';
     }
 
-    if (!formData.mobileNumber.trim()) {
-      newErrors.mobileNumber = 'Mobile number is required';
-    } else if (!/^\+?[0-9]{10,15}$/.test(formData.mobileNumber.replace(/\s/g, ''))) {
-      newErrors.mobileNumber = 'Invalid mobile number';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Mobile number is required';
+    } else if (!/^\+?[0-9]{10,15}$/.test(formData.phone.replace(/\s/g, ''))) {
+      newErrors.phone = 'Invalid mobile number';
     }
 
     if (!formData.relation) {
       newErrors.relation = 'Relation is required';
     }
 
-    if (!formData.idProofType) {
-      newErrors.idProofType = 'ID proof type is required';
+    if (!formData.id_proof_type) {
+      newErrors.id_proof_type = 'ID proof type is required';
     }
 
-    if (!formData.idProofNumber.trim()) {
-      newErrors.idProofNumber = 'ID proof number is required';
+    if (!formData.id_proof_no.trim()) {
+      newErrors.id_proof_no = 'ID proof number is required';
     }
 
-    if (!formData.visitorPhoto) {
-      newErrors.visitorPhoto = 'Visitor photo is required';
+    if (!formData.visitor_photo) {
+      newErrors.visitor_photo = 'Visitor photo is required';
     }
 
-    if (!formData.hostel) {
-      newErrors.hostel = 'Hostel selection is required';
+    if (!formData.roll_no.trim()) {
+      newErrors.roll_no = 'Student Roll Number is required';
     }
 
-    if (!formData.emergencyReason.trim()) {
-      newErrors.emergencyReason = 'Emergency reason is required';
+    if (!formData.visit_purpose.trim()) {
+      newErrors.visit_purpose = 'Emergency reason is required';
+    }
+
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      // We'll add a generic error or handle it specifically
+      alert('Invalid email address');
+      return false;
     }
 
     setErrors(newErrors);
@@ -191,8 +153,21 @@ export default function EmergencyVisit() {
     setIsSubmitting(true);
 
     try {
+      const payload = {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        relation: formData.relation,
+        id_proof_type: formData.id_proof_type,
+        id_proof_no: formData.id_proof_no,
+        roll_no: formData.roll_no,
+        visit_purpose: formData.visit_purpose,
+        visitor_photo: formData.visitor_photo,
+        visit_date: new Date().toISOString().split('T')[0]
+      };
+
       const res = await apiClient.post('/guard/emergency', {
-        visitorData: formData
+        visitorData: payload
       });
 
       if (res.data.success) {
@@ -201,18 +176,16 @@ export default function EmergencyVisit() {
         setTimeout(() => {
           setShowSuccess(false);
           setFormData({
-            visitorName: '',
-            mobileNumber: '',
+            name: '',
+            phone: '',
+            email: '',
             relation: '',
-            idProofType: '',
-            idProofNumber: '',
-            visitorPhoto: null,
-            hostel: '',
-            student: '',
-            emergencyReason: ''
+            id_proof_type: '',
+            id_proof_no: '',
+            visitor_photo: null,
+            roll_no: '',
+            visit_purpose: ''
           });
-          // Optional: redirect to dashboard
-          // router.push('/Guard/guard_dashboard');
         }, 3000);
       }
     } catch (error: any) {
@@ -228,21 +201,22 @@ export default function EmergencyVisit() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-transparent p-4 sm:p-8 pb-10">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8 flex items-start gap-4">
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors bg-white shadow-sm border border-gray-100 shrink-0"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back</span>
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Emergency Visit Registration
-          </h1>
-          <p className="text-gray-600">Register unplanned emergency visitors</p>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+              Emergency Visit
+            </h1>
+            <p className="text-gray-500 text-sm sm:text-base mt-0.5">Register unplanned emergency visitors</p>
+          </div>
         </div>
 
         {/* Success Message */}
@@ -255,8 +229,8 @@ export default function EmergencyVisit() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-green-900">Emergency Visit Registered Successfully!</h3>
-                <p className="text-sm text-green-700">Warden and Admin have been notified. A temporary pass has been issued.</p>
+                <h3 className="font-semibold text-green-900">Emergency Visit Registered and Checked In!</h3>
+                <p className="text-sm text-green-700">Warden and Admin have been notified. A temporary pass has been issued for exit.</p>
               </div>
             </div>
           </div>
@@ -278,13 +252,15 @@ export default function EmergencyVisit() {
           </div>
 
           {/* Visitor Details Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <User className="w-5 h-5 text-gray-700" />
-              <h2 className="text-lg font-semibold text-gray-900">Visitor Details</h2>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Visitor Details</h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               {/* Visitor Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -292,15 +268,15 @@ export default function EmergencyVisit() {
                 </label>
                 <input
                   type="text"
-                  name="visitorName"
-                  value={formData.visitorName}
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter visitor name"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.visitorName ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
                 />
-                {errors.visitorName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.visitorName}</p>
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-1">{errors.name}</p>
                 )}
               </div>
 
@@ -313,16 +289,33 @@ export default function EmergencyVisit() {
                   <Phone className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="tel"
-                    name="mobileNumber"
-                    value={formData.mobileNumber}
+                    name="phone"
+                    value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="+91 XXXXX XXXXX"
-                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.mobileNumber ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.phone ? 'border-red-500' : 'border-gray-300'
                       }`}
                   />
                 </div>
-                {errors.mobileNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.mobileNumber}</p>
+
+                {/* Email Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="visitor@example.com"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
                 )}
               </div>
 
@@ -354,10 +347,10 @@ export default function EmergencyVisit() {
                   ID Proof Type <span className="text-red-500">*</span>
                 </label>
                 <select
-                  name="idProofType"
-                  value={formData.idProofType}
+                  name="id_proof_type"
+                  value={formData.id_proof_type}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idProofType ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.id_proof_type ? 'border-red-500' : 'border-gray-300'
                     }`}
                 >
                   <option value="">Select ID type</option>
@@ -365,159 +358,110 @@ export default function EmergencyVisit() {
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
-                {errors.idProofType && (
-                  <p className="text-red-500 text-xs mt-1">{errors.idProofType}</p>
+                {errors.id_proof_type && (
+                  <p className="text-red-500 text-xs mt-1">{errors.id_proof_type}</p>
                 )}
               </div>
 
               {/* ID Proof Number */}
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   ID Proof Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  name="idProofNumber"
-                  value={formData.idProofNumber}
+                  name="id_proof_no"
+                  value={formData.id_proof_no}
                   onChange={handleInputChange}
                   placeholder="Enter ID proof number"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.idProofNumber ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.id_proof_no ? 'border-red-500 bg-red-50/10' : 'border-gray-200 hover:border-gray-300'
                     }`}
                 />
-                {errors.idProofNumber && (
-                  <p className="text-red-500 text-xs mt-1">{errors.idProofNumber}</p>
+                {errors.id_proof_no && (
+                  <p className="text-red-500 text-xs mt-1 font-medium">{errors.id_proof_no}</p>
                 )}
               </div>
             </div>
           </div>
 
           {/* Visitor Photo Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <Camera className="w-5 h-5 text-gray-700" />
-              <h2 className="text-lg font-semibold text-gray-900">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Camera className="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">
                 Visitor Photo <span className="text-red-500">*</span>
               </h2>
             </div>
 
-            {formData.visitorPhoto ? (
+            {formData.visitor_photo ? (
               <div className="text-center">
                 <img
-                  src={formData.visitorPhoto}
+                  src={formData.visitor_photo}
                   alt="Visitor"
                   className="w-48 h-48 object-cover rounded-lg mx-auto mb-4 border-2 border-gray-200"
                 />
                 <button
                   type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, visitorPhoto: null }))}
+                  onClick={() => setFormData(prev => ({ ...prev, visitor_photo: null }))}
                   className="text-sm text-red-600 hover:text-red-700 font-medium"
                 >
                   Remove Photo
                 </button>
               </div>
             ) : showCamera ? (
-              <div className="text-center">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  className="w-full max-w-md mx-auto rounded-lg mb-4 border-2 border-gray-200"
-                />
-                <div className="flex gap-4 justify-center">
-                  <button
-                    type="button"
-                    onClick={capturePhoto}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                  >
-                    Capture Photo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={stopCamera}
-                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
+              <CameraCapture
+                onCapture={handlePhotoCapture}
+                onClose={() => setShowCamera(false)}
+                title="Visitor Photo"
+              />
             ) : (
               <div className="text-center">
                 <div className="w-48 h-48 bg-gray-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
                   <User className="w-20 h-20 text-gray-400" />
                 </div>
-                <div className="flex gap-4 justify-center">
-                  <button
-                    type="button"
-                    onClick={startCamera}
-                    className="flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
-                  >
-                    <Camera className="w-4 h-4" />
-                    Capture Photo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
-                  >
-                    Upload Photo
-                  </button>
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowCamera(true)}
+                  className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium mx-auto"
+                >
+                  <Camera className="w-4 h-4" />
+                  Take Photo
+                </button>
               </div>
             )}
-            {errors.visitorPhoto && (
-              <p className="text-red-500 text-xs mt-2 text-center">{errors.visitorPhoto}</p>
+            {errors.visitor_photo && (
+              <p className="text-red-500 text-xs mt-2 text-center">{errors.visitor_photo}</p>
             )}
           </div>
 
           {/* Visit Details Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <FileText className="w-5 h-5 text-gray-700" />
-              <h2 className="text-lg font-semibold text-gray-900">Visit Details</h2>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <FileText className="w-5 h-5 text-blue-600" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Visit Details</h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {/* Hostel */}
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Student Lookup */}
+              <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hostel <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="hostel"
-                  value={formData.hostel}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.hostel ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                >
-                  <option value="">Select hostel</option>
-                  {hostels.map(hostel => (
-                    <option key={hostel} value={hostel}>{hostel}</option>
-                  ))}
-                </select>
-                {errors.hostel && (
-                  <p className="text-red-500 text-xs mt-1">{errors.hostel}</p>
-                )}
-              </div>
-
-              {/* Student */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Student (if applicable)
+                  Student Roll Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  name="student"
-                  value={formData.student}
+                  name="roll_no"
+                  value={formData.roll_no}
                   onChange={handleInputChange}
-                  placeholder="Enter student name & room"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter student roll number"
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.roll_no ? 'border-red-500' : 'border-gray-300'}`}
                 />
+                {errors.roll_no && (
+                  <p className="text-red-500 text-xs mt-1">{errors.roll_no}</p>
+                )}
               </div>
 
               {/* Emergency Reason */}
@@ -526,16 +470,16 @@ export default function EmergencyVisit() {
                   Emergency Reason <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  name="emergencyReason"
-                  value={formData.emergencyReason}
+                  name="visit_purpose"
+                  value={formData.visit_purpose}
                   onChange={handleInputChange}
                   placeholder="Describe the emergency situation..."
                   rows={4}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.emergencyReason ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.visit_purpose ? 'border-red-500' : 'border-gray-300'
                     }`}
                 />
-                {errors.emergencyReason && (
-                  <p className="text-red-500 text-xs mt-1">{errors.emergencyReason}</p>
+                {errors.visit_purpose && (
+                  <p className="text-red-500 text-xs mt-1">{errors.visit_purpose}</p>
                 )}
               </div>
             </div>
@@ -561,20 +505,17 @@ export default function EmergencyVisit() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="w-full py-4 bg-red-600 text-white rounded-2xl font-bold text-lg hover:bg-red-700 shadow-lg shadow-red-600/20 active:scale-[0.98] disabled:bg-red-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Registering...
+                <Loader2 className="animate-spin h-6 w-6 text-white" />
+                Processing...
               </>
             ) : (
               <>
                 <AlertTriangle className="w-5 h-5" />
-                Register Emergency Visit
+                Initiate Emergency Check-in
               </>
             )}
           </button>

@@ -28,7 +28,11 @@ export const EmailStep: React.FC<EmailStepProps> = ({ email, setEmail, onNext })
             await apiClient.post('/auth/forgot-password', { email });
             onNext();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
+            const errorData = err.response?.data;
+            const errorMessage = typeof errorData?.message === 'string'
+                ? errorData.message
+                : errorData?.error?.message || 'Failed to send OTP. Please try again.';
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

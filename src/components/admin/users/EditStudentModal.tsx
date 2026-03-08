@@ -1,50 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { StudentForm } from './types';
+import { Student, StudentForm } from './types';
 import { InputField, SelectField } from './UserComponents';
 
-interface AddStudentModalProps {
+interface EditStudentModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (form: StudentForm) => void;
+    onSave: (id: string, form: StudentForm) => void;
+    student: Student | null;
     hostels: any[];
 }
 
-const initialForm: StudentForm = {
-    fullName: '',
-    email: '',
-    phone: '',
-    dob: '',
-    gender: '',
-    rollNumber: '',
-    course: '',
-    department: '',
-    currentYear: '',
-    semester: '',
-    hostel: '',
-    room_no: '',
-    parentName: '',
-    parentPhone: '',
-    guardianName: '',
-    guardianContact: '',
-};
+export const EditStudentModal: React.FC<EditStudentModalProps> = ({ isOpen, onClose, onSave, student, hostels }) => {
+    const [form, setForm] = useState<StudentForm>({
+        fullName: '',
+        email: '',
+        phone: '',
+        gender: '',
+        dob: '',
+        rollNumber: '',
+        course: '',
+        department: '',
+        currentYear: '',
+        semester: '',
+        hostel: '',
+        room_no: '',
+        parentName: '',
+        parentPhone: '',
+        guardianName: '',
+        guardianContact: '',
+    });
 
-export const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, onSave, hostels }) => {
-    const [form, setForm] = useState<StudentForm>(initialForm);
+    useEffect(() => {
+        if (student) {
+            setForm({
+                fullName: student.fullName || '',
+                email: student.email || '',
+                phone: student.phone || '',
+                gender: student.gender || '',
+                dob: student.dob || '',
+                rollNumber: student.rollNumber || '',
+                course: student.course || '',
+                department: student.department || '',
+                currentYear: student.currentYear || '',
+                semester: student.semester || '',
+                hostel: student.hostel || '',
+                room_no: student.room_no || '',
+                parentName: student.parentName || '',
+                parentPhone: student.parentPhone || '',
+                guardianName: student.guardianName || '',
+                guardianContact: student.guardianContact || '',
+            });
+        }
+    }, [student]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !student) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(form);
-        setForm(initialForm);
+        onSave(student.id, form);
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
             <div className="bg-white rounded-t-xl sm:rounded-xl max-w-lg w-full max-h-screen sm:max-h-[90vh] overflow-y-auto">
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
-                    <h2 className="text-xl font-bold text-gray-900">Add New Student</h2>
+                    <h2 className="text-xl font-bold text-gray-900">Edit Student</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                         <X className="w-6 h-6 text-gray-500" />
                     </button>
@@ -99,7 +120,7 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClos
                     </div>
 
                     <button type="submit" className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30">
-                        Create Student
+                        Save Changes
                     </button>
                 </form>
             </div>

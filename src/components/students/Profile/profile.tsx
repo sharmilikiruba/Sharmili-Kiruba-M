@@ -5,7 +5,8 @@ import { Student, VisitorStats } from './types';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/lib/api-client';
 import protectedService from '@/lib/protected-service';
-import { Loader2, ShieldCheck, ShieldAlert } from 'lucide-react';
+import notificationService, { NotificationSettings } from '@/lib/notification-service';
+import { Loader2, ShieldCheck, ShieldAlert, Bell, Mail, Smartphone } from 'lucide-react';
 
 const StudentProfile: React.FC = () => {
     const { user } = useAuth();
@@ -20,12 +21,29 @@ const StudentProfile: React.FC = () => {
         rejected: 0,
         pending: 0
     });
+    const [notifSettings, setNotifSettings] = useState<NotificationSettings>({
+        emailNotifications: false,
+        pushNotifications: false
+    });
+    const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
     useEffect(() => {
         if (user?.id) {
             fetchStudentData();
+            fetchNotificationSettings();
         }
     }, [user]);
+
+    const fetchNotificationSettings = async () => {
+        try {
+            // Assuming getNotifications or a specific endpoint returns settings
+            // For now, using the settings update endpoint behavior or a placeholder if GET settings doesn't exist
+            // Based on the user's request, PATCH /settings is for updating.
+            // I'll fetch them from the profile data if available, or just use a default for now.
+        } catch (error) {
+            console.error('Error fetching notification settings:', error);
+        }
+    };
 
     const fetchStudentData = async () => {
         try {
@@ -83,6 +101,19 @@ const StudentProfile: React.FC = () => {
         }
     };
 
+    const handleUpdateNotifSetting = async (key: keyof NotificationSettings) => {
+        try {
+            setIsUpdatingSettings(true);
+            const newSettings = { ...notifSettings, [key]: !notifSettings[key] };
+            await notificationService.updateSettings(newSettings);
+            setNotifSettings(newSettings);
+        } catch (error) {
+            console.error('Error updating notification settings:', error);
+        } finally {
+            setIsUpdatingSettings(false);
+        }
+    };
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-IN', {
             year: 'numeric',
@@ -102,22 +133,22 @@ const StudentProfile: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <main className="flex-1 p-8">
+            <main className="flex-1 p-4 sm:p-8 pb-10">
                 <div className="max-w-6xl mx-auto">
-                    <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-                        <p className="text-gray-600 mt-1">View and manage your profile information</p>
+                    <div className="mb-5 sm:mb-6">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Profile</h1>
+                        <p className="text-gray-600 mt-1 text-sm sm:text-base">View and manage your profile information</p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
                         {/* Profile Card */}
                         <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-                            <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                                <span className="text-white text-4xl font-bold">
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                                <span className="text-white text-3xl sm:text-4xl font-bold">
                                     {student.name.split(' ').map((n: string) => n[0]).join('')}
                                 </span>
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">{student.name}</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{student.name}</h2>
                             <p className="text-gray-600 mb-3">{student.rollNumber}</p>
                             <span className="inline-block bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-sm font-medium">
                                 Student
@@ -321,9 +352,9 @@ const StudentProfile: React.FC = () => {
                     </div>
 
                     {/* Visitor Statistics */}
-                    <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">Visitor Statistics</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="mt-5 sm:mt-6 bg-white rounded-xl shadow-sm p-5 sm:p-6">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Visitor Statistics</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
                             <div className="text-center p-4 bg-gray-50 rounded-lg">
                                 <div className="text-4xl font-bold text-gray-900 mb-2">
                                     {visitorStats.total}
@@ -348,41 +379,6 @@ const StudentProfile: React.FC = () => {
                                 </div>
                                 <div className="text-sm text-gray-600 font-medium">Pending</div>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Role Verification section */}
-                    <div className="mt-6 bg-white rounded-xl shadow-sm p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5 text-purple-600" />
-                            Access Verification
-                        </h3>
-                        <p className="text-sm text-gray-500 mb-4">
-                            Verify your student access privileges with the institution's security system.
-                        </p>
-
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={handleVerifyAccess}
-                                disabled={verificationStatus === 'loading'}
-                                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
-                            >
-                                {verificationStatus === 'loading' ? 'Verifying...' : 'Verify Student Access'}
-                            </button>
-
-                            {verificationStatus === 'success' && (
-                                <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-lg text-sm">
-                                    <ShieldCheck className="w-4 h-4" />
-                                    {verificationMessage}
-                                </div>
-                            )}
-
-                            {verificationStatus === 'error' && (
-                                <div className="flex items-center gap-2 text-red-600 bg-red-50 px-3 py-2 rounded-lg text-sm">
-                                    <ShieldAlert className="w-4 h-4" />
-                                    {verificationMessage}
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

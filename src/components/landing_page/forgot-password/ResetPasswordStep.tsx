@@ -36,7 +36,7 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ email, otp
             await apiClient.post('/auth/reset-password', {
                 email,
                 otp,
-                password
+                newPassword: password
             });
 
             setIsSuccess(true);
@@ -45,9 +45,10 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ email, otp
             }, 2000);
         } catch (err: any) {
             console.error('Reset password error:', err);
-            const errorMessage = err.response?.data?.message
-                || err.response?.data?.error
-                || 'Failed to reset password. Please try again.';
+            const errorData = err.response?.data;
+            const errorMessage = typeof errorData?.message === 'string'
+                ? errorData.message
+                : errorData?.error?.message || 'Failed to reset password. Please try again.';
             setError(errorMessage);
         } finally {
             setIsLoading(false);

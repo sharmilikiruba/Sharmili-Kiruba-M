@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Student, StudentFormData, StudentPhotos } from './types';
+import { Student, StudentFormData } from './types';
 import { StudentDirectoryView } from './StudentDirectoryView';
 import { AddStudentModal } from './AddStudentModal';
 import { EditStudentModal } from './EditStudentModal';
@@ -38,7 +38,7 @@ const HostelStudents: React.FC = () => {
     fullName: '',
     rollNumber: '',
     email: '',
-    mobile: '',
+    phone: '',
     department: '',
     course: '',
     currentYear: '',
@@ -53,12 +53,7 @@ const HostelStudents: React.FC = () => {
     bloodGroup: '',
     emergencyContact: '',
     guardianName: '',
-    guardian_phone: '',
-    password: ''
-  });
-
-  const [photos, setPhotos] = useState<StudentPhotos>({
-    student: null,
+    guardian_contact: ''
   });
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -76,22 +71,22 @@ const HostelStudents: React.FC = () => {
       if (response.data.success) {
         const formattedStudents = response.data.data.map((s: any) => ({
           id: s.student_id || s.id,
-          fullName: s.name || s.fullName || 'Unknown',
-          rollNumber: s.roll_no || s.rollNumber || 'N/A',
+          fullName: s.fullName || s.name || 'Unknown',
+          rollNumber: s.rollNumber || s.roll_no || 'N/A',
           email: s.user?.email || s.email || '',
-          mobile: s.phone || s.mobile || '',
-          room_no: s.room_no || 'N/A',
+          phone: s.user?.phone || s.phone || 'N/A',
+          room_no: s.room?.room_no || (typeof s.room_no === 'object' ? s.room_no?.room_no : (s.room_no || 'N/A')),
           department: s.department || 'N/A',
-          year: s.year || 'N/A',
-          semester: s.semester || 'N/A',
-          photo: s.photo || null,
+          year: s.current_year?.toString() || s.year || 'N/A',
+          semester: s.semester?.toString() || 'N/A',
           gender: s.gender,
           dob: s.dob,
           address: s.address,
           parentName: s.parent_name || s.parentName,
-          parentMobile: s.parent_phone || s.parentMobile,
+          parent_phone: s.parent_phone || s.parentMobile,
           guardianName: s.guardian_name || s.guardianName,
-          guardianMobile: s.guardian_phone || s.guardianMobile,
+          guardian_contact: s.guardian_contact || s.guardian_phone || s.guardianMobile,
+          dateOfJoining: s.user?.created_at || 'N/A',
         }));
         setStudents(formattedStudents);
       }
@@ -142,13 +137,13 @@ const HostelStudents: React.FC = () => {
         student.department || '',
         student.year || '',
         student.room_no || '',
-        student.mobile || '',
+        student.phone || '',
         student.email || ''
       ]);
 
       autoTable(doc, {
         startY: 42,
-        head: [['Name', 'Roll No', 'Department', 'Year', 'Room', 'Mobile', 'Email']],
+        head: [['Name', 'Roll No', 'Department', 'Year', 'Room', 'Phone', 'Email']],
         body: tableData,
         theme: 'grid',
         headStyles: {
@@ -169,44 +164,28 @@ const HostelStudents: React.FC = () => {
     }
   };
 
-  const handlePhotoUpload = (type: keyof StudentPhotos, e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotos(prev => ({ ...prev, [type]: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemovePhoto = (type: keyof StudentPhotos): void => {
-    setPhotos(prev => ({ ...prev, [type]: null }));
-  };
-
   const resetForm = (): void => {
     setFormData({
-      fullName: '', rollNumber: '', email: '', mobile: '', department: '', course: '', currentYear: '', semester: '', room_no: '',
+      fullName: '', rollNumber: '', email: '', phone: '', department: '', course: '', currentYear: '', semester: '', room_no: '',
       parentName: '', parent_phone: '', parentRelation: '', address: '', gender: '', dob: '', bloodGroup: '', emergencyContact: '',
-      guardianName: '', guardian_phone: '', password: ''
+      guardianName: '', guardian_contact: ''
     });
-    setPhotos({ student: null });
     setIsEditing(false);
     setCurrentStudentId(null);
   };
 
   const handleAddSubmit = async () => {
-    if (!formData.fullName || !formData.rollNumber || !formData.mobile || !formData.room_no) {
+    if (!formData.fullName || !formData.rollNumber || !formData.phone || !formData.room_no) {
       alert('Please fill in all required fields');
       return;
     }
 
     try {
       const payload = {
-        name: formData.fullName,
-        roll_no: formData.rollNumber,
+        fullName: formData.fullName,
+        rollNumber: formData.rollNumber,
         email: formData.email,
-        phone: formData.mobile,
+        phone: formData.phone,
         room_no: formData.room_no,
         department: formData.department,
         course: formData.course,
@@ -218,8 +197,7 @@ const HostelStudents: React.FC = () => {
         parent_name: formData.parentName,
         parent_phone: formData.parent_phone,
         guardian_name: formData.guardianName,
-        guardian_phone: formData.guardian_phone,
-        password: formData.password
+        guardian_contact: formData.guardian_contact
       };
 
       const response = await apiClient.post('/warden/students', payload);
@@ -241,10 +219,10 @@ const HostelStudents: React.FC = () => {
 
     try {
       const payload = {
-        name: formData.fullName,
-        roll_no: formData.rollNumber,
+        fullName: formData.fullName,
+        rollNumber: formData.rollNumber,
         email: formData.email,
-        phone: formData.mobile,
+        phone: formData.phone,
         room_no: formData.room_no,
         department: formData.department,
         course: formData.course,
@@ -256,7 +234,7 @@ const HostelStudents: React.FC = () => {
         parent_name: formData.parentName,
         parent_phone: formData.parent_phone,
         guardian_name: formData.guardianName,
-        guardian_phone: formData.guardian_phone,
+        guardian_contact: formData.guardian_contact,
       };
 
       const response = await apiClient.put(`/warden/students/${currentStudentId}`, payload);
@@ -294,7 +272,7 @@ const HostelStudents: React.FC = () => {
       fullName: student.fullName,
       rollNumber: student.rollNumber,
       email: student.email,
-      mobile: student.mobile,
+      phone: student.phone,
       department: student.department,
       course: '',
       currentYear: student.year,
@@ -309,11 +287,7 @@ const HostelStudents: React.FC = () => {
       bloodGroup: '',
       emergencyContact: '',
       guardianName: student.guardianName || '',
-      guardian_phone: student.guardianMobile || '',
-      password: ''
-    });
-    setPhotos({
-      student: student.photo,
+      guardian_contact: student.guardian_contact || ''
     });
     setShowEditModal(true);
   };
@@ -356,9 +330,6 @@ const HostelStudents: React.FC = () => {
         onSubmit={handleAddSubmit}
         formData={formData}
         setFormData={setFormData}
-        photos={photos}
-        onPhotoUpload={handlePhotoUpload}
-        onRemovePhoto={handleRemovePhoto}
       />
 
       <EditStudentModal
@@ -367,9 +338,6 @@ const HostelStudents: React.FC = () => {
         onSubmit={handleEditSubmit}
         formData={formData}
         setFormData={setFormData}
-        photos={photos}
-        onPhotoUpload={handlePhotoUpload}
-        onRemovePhoto={handleRemovePhoto}
       />
 
       {selectedStudent && (

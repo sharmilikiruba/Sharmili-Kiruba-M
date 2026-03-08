@@ -25,9 +25,6 @@ import { Loader2 } from 'lucide-react';
 import { ReportType, FilterState } from './types';
 import { ReportBtn } from './ReportComponents';
 import { DailyVisitorReport } from './DailyVisitorReport';
-import { WeeklySummaryReport } from './WeeklySummaryReport';
-import { MonthlyStatisticsReport } from './MonthlyStatisticsReport';
-import { StudentWiseHistoryReport } from './StudentWiseHistoryReport';
 import { EmergencyVisitLogReport } from './EmergencyVisitLogReport';
 import { RejectedRequestsReport } from './RejectedRequestsReport';
 
@@ -242,8 +239,8 @@ export default function WardenReports() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-[1600px] mx-auto">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8 w-full overflow-x-auto">
+      <div className="max-w-[1600px] min-w-[1024px] mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Reports</h1>
           <p className="text-gray-600">Visitor activity and operational reports</p>

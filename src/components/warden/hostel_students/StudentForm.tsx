@@ -66,8 +66,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
             </section>
 
             {/* Personal Information */}
-            <section className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
-                <div className="flex items-center gap-3 mb-6">
+            <section className="bg-gray-50/50 p-4 sm:p-6 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-3 mb-4 sm:mb-6">
                     <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
                     <h4 className="text-lg font-bold text-gray-900 tracking-tight">Personal Details</h4>
                 </div>
@@ -119,17 +119,6 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">Account Password <span className="text-red-500">*</span></label>
-                        <input
-                            type="password"
-                            required
-                            value={formData.password}
-                            onChange={(e) => handleInputChange('password', e.target.value)}
-                            placeholder="Set student password"
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
-                        />
-                    </div>
 
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">Gender <span className="text-red-500">*</span></label>
@@ -172,12 +161,12 @@ export const StudentForm: React.FC<StudentFormProps> = ({
             </section>
 
             {/* Academic Information */}
-            <section className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
+            <section className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-3 mb-4 sm:mb-6">
                     <div className="w-1.5 h-6 bg-indigo-600 rounded-full"></div>
                     <h4 className="text-lg font-bold text-gray-900 tracking-tight">Academic & Residence Info</h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">Course <span className="text-red-500">*</span></label>
                         <input
@@ -241,12 +230,12 @@ export const StudentForm: React.FC<StudentFormProps> = ({
             </section>
 
             {/* Parental/Guardian Information */}
-            <section className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 mb-6">
-                <div className="flex items-center gap-3 mb-6">
+            <section className="bg-gray-50/50 p-4 sm:p-6 rounded-2xl border border-gray-100 mb-6">
+                <div className="flex items-center gap-3 mb-4 sm:mb-6">
                     <div className="w-1.5 h-6 bg-amber-600 rounded-full"></div>
                     <h4 className="text-lg font-bold text-gray-900 tracking-tight">Guardian Contact Info</h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">Parent's Name</label>
                         <input

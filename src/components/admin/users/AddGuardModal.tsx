@@ -13,10 +13,10 @@ interface AddGuardModalProps {
 const initialForm: GuardForm = {
     fullName: '',
     email: '',
-    mobile: '',
+    phone: '',
     gender: 'M',
     dob: '',
-    designation: 'Security Guard',
+    designation: 'Security',
     gate_id: undefined,
     shift_type: 'Day',
     shift_start_time: '',
@@ -24,7 +24,6 @@ const initialForm: GuardForm = {
     address: '',
     empId: '',
     dateOfJoining: new Date().toISOString().split('T')[0],
-    password: ''
 };
 
 export const AddGuardModal: React.FC<AddGuardModalProps> = ({ isOpen, onClose, onSave }) => {
@@ -57,8 +56,8 @@ export const AddGuardModal: React.FC<AddGuardModalProps> = ({ isOpen, onClose, o
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+            <div className="bg-white rounded-t-xl sm:rounded-xl max-w-lg w-full max-h-[95vh] overflow-y-auto">
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
                     <h2 className="text-xl font-bold text-gray-900">Add New Guard</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -67,18 +66,17 @@ export const AddGuardModal: React.FC<AddGuardModalProps> = ({ isOpen, onClose, o
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    <InputField label="Joining Date" value={form.dateOfJoining} onChange={() => { }} type="date" disabled={true} />
+                    <InputField label="Joining Date" value={form.dateOfJoining || ''} onChange={() => { }} type="date" disabled={true} />
                     <InputField label="Full Name" value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })} />
                     <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                    <InputField label="Password" type="password" value={form.password || ''} onChange={(v) => setForm({ ...form, password: v })} />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <SelectField label="Gender" value={form.gender} onChange={(v) => setForm({ ...form, gender: v as any })} options={["M", "F", "Other"]} />
                         <InputField label="Date of Birth" type="date" value={form.dob || ''} onChange={(v) => setForm({ ...form, dob: v })} />
                     </div>
 
                     <InputField label="Designation" value={form.designation} onChange={(v) => setForm({ ...form, designation: v })} />
-                    <InputField label="Mobile" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
+                    <InputField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
                     <InputField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
 
                     <SelectField
@@ -88,11 +86,11 @@ export const AddGuardModal: React.FC<AddGuardModalProps> = ({ isOpen, onClose, o
                         options={gates.map(g => ({ label: g.gate_name, value: g.gate_id.toString() }))}
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <SelectField label="Shift Type" value={form.shift_type} onChange={(v) => setForm({ ...form, shift_type: v as any })} options={["Day", "Night", "Rotating"]} />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <InputField label="Shift Start" type="time" value={form.shift_start_time || ''} onChange={(v) => setForm({ ...form, shift_start_time: v })} />
                         <InputField label="Shift End" type="time" value={form.shift_end_time || ''} onChange={(v) => setForm({ ...form, shift_end_time: v })} />
                     </div>

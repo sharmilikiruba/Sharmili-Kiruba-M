@@ -43,23 +43,22 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
         <div className="min-h-screen bg-gray-50/50">
             {/* Header Section */}
             <div className="bg-white border-b border-gray-100">
-                <div className="max-w-[1600px] mx-auto px-8 py-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-6 sm:py-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Warden Portal</h1>
-
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Warden Portal</h1>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                         <button
-                            onClick={onExportPDF}   
-                            className="flex items-center gap-2 px-5 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm active:scale-95"
+                            onClick={onExportPDF}
+                            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm active:scale-95 text-sm sm:text-base"
                         >
                             <Download size={18} className="text-gray-400" />
                             Export Data
                         </button>
                         <button
                             onClick={onAddClick}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/20 active:scale-95"
+                            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/20 active:scale-95 text-sm sm:text-base"
                         >
                             <Plus size={20} />
                             Add Student
@@ -67,36 +66,36 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                     </div>
                 </div>
 
-                <div className="max-w-[1600px] mx-auto px-8 pb-6">
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center gap-4">
-                        <div className="bg-blue-600 p-2 rounded-lg">
-                            <ShieldIcon className="w-4 h-4 text-white" />
+                <div className="max-w-[1600px] mx-auto px-4 sm:px-8 pb-6">
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+                        <div className="bg-blue-600 p-1.5 sm:p-2 rounded-lg shrink-0">
+                            <ShieldIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                         </div>
-                        <p className="text-sm font-semibold text-blue-900">
+                        <p className="text-xs sm:text-sm font-semibold text-blue-900">
                             Session Status: <span className="font-normal text-blue-700 opacity-80">Authorized access to Krishna Hostel student records.</span>
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-[1600px] mx-auto px-8 py-8">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-6 sm:py-8">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-10">
                     <StatCard icon={Users} label="Total Residents" value={studentsCount} sub="Current active students" color="blue" />
                     <StatCard icon={Home} label="Room Load" value={studentsCount} sub="Occupied capacity" color="indigo" />
                 </div>
 
                 {/* Filters Section */}
-                <div className="bg-white rounded-[2rem] shadow-2xl border-gray-100 p-8 mb-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                        <div className="lg:col-span-5 relative">
+                <div className="bg-white rounded-2xl sm:rounded-[2rem] shadow-xl sm:shadow-2xl border-gray-100 p-4 sm:p-8 mb-8 sm:mb-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 items-center">
+                        <div className="md:col-span-2 lg:col-span-5 relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 placeholder="Search name, roll number, or room..."
-                                className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl outline-none transition-all font-medium text-gray-900"
+                                className="w-full pl-12 pr-4 py-3 sm:py-4 bg-gray-50 border-2 border-gray-200 rounded-xl sm:rounded-2xl outline-none transition-all font-medium text-gray-900 text-sm sm:text-base"
                             />
                         </div>
 
@@ -104,7 +103,7 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                             <select
                                 value={yearFilter}
                                 onChange={(e) => onYearFilterChange(e.target.value)}
-                                className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl outline-none transition-all font-medium text-gray-900"
+                                className="w-full px-4 py-3 sm:py-4 bg-gray-50 border-2 border-gray-200 rounded-xl sm:rounded-2xl outline-none transition-all font-medium text-gray-900 text-sm sm:text-base"
                             >
                                 <option>All Years</option>
                                 {years.map(year => <option key={year}>{year}</option>)}
@@ -115,17 +114,17 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                             <select
                                 value={departmentFilter}
                                 onChange={(e) => onDepartmentFilterChange(e.target.value)}
-                                className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl outline-none transition-all font-medium text-gray-900"
+                                className="w-full px-4 py-3 sm:py-4 bg-gray-50 border-2 border-gray-200 rounded-xl sm:rounded-2xl outline-none transition-all font-medium text-gray-900 text-sm sm:text-base"
                             >
                                 <option>All Departments</option>
                                 {departments.map(dept => <option key={dept}>{dept}</option>)}
                             </select>
                         </div>
 
-                        <div className="lg:col-span-2">
+                        <div className="md:col-span-2 lg:col-span-2">
                             <button
                                 onClick={onResetFilters}
-                                className="w-full px-4 py-4 text-gray-500 font-medium hover:text-gray-900"
+                                className="w-full px-4 py-2 sm:py-4 text-gray-500 font-medium hover:text-gray-900 text-sm sm:text-base"
                             >
                                 Clear Filters
                             </button>
@@ -134,12 +133,54 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                 </div>
 
                 {/* Table/Directory */}
-                <div className="bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-                    <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Active Student Directory</h3>
+                <div className="bg-white rounded-2xl sm:rounded-[2rem] shadow-xl sm:shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden text-sm sm:text-base">
+                    <div className="p-5 sm:p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                        <h3 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight text-center sm:text-left">Active Student Directory</h3>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    {/* Mobile card view (hidden on sm+) */}
+                    <div className="sm:hidden divide-y divide-gray-100">
+                        {filteredStudents.length === 0 ? (
+                            <div className="p-8 text-center">
+                                <Search className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                                <p className="text-sm font-medium text-gray-400">No Records Found</p>
+                            </div>
+                        ) : filteredStudents.map((student) => (
+                            <div key={student.id} className="p-4 hover:bg-blue-50/20 transition-colors">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <p className="font-bold text-gray-900 text-sm">{student.fullName}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">{student.department}</p>
+                                    </div>
+                                    <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-lg border border-gray-200">
+                                        {student.rollNumber}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 mb-3">
+                                    <div className="flex items-center gap-1.5">
+                                        <Home className="w-3 h-3 text-indigo-500" />
+                                        <span>Room {student.room_no}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <Phone className="w-3 h-3 text-blue-500" />
+                                        <span>{student.parent_phone}</span>
+                                    </div>
+                                    <div className="col-span-2 flex items-center gap-1.5">
+                                        <Mail className="w-3 h-3 text-gray-400" />
+                                        <span className="truncate">{student.email}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-end gap-2">
+                                    <ActionButton onClick={() => onViewClick(student)} icon={Eye} title="View Profile" color="blue" />
+                                    <ActionButton onClick={() => onEditClick(student)} icon={Edit} title="Edit Profile" color="gray" />
+                                    <ActionButton onClick={() => onDeleteClick(student.id)} icon={Trash2} title="Delete Record" color="red" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop table (hidden on mobile) */}
+                    <div className="hidden sm:block overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-gray-50/50 border-b border-gray-200">
@@ -155,16 +196,6 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                                     <tr key={student.id} className="group hover:bg-blue-50/30 transition-all">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="relative">
-                                                    <img
-                                                        src={student.photo || 'https://via.placeholder.com/150'}
-                                                        alt={student.fullName}
-                                                        className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md transition-all group-hover:scale-105"
-                                                    />
-                                                    <div className="absolute -bottom-1 -right-1 bg-white p-0.5 rounded-full border border-gray-100">
-                                                        <div className="bg-green-500 w-2.5 h-2.5 rounded-full"></div>
-                                                    </div>
-                                                </div>
                                                 <div>
                                                     <p className="text-base font-bold text-gray-900">{student.fullName}</p>
                                                     <p className="text-xs font-medium text-gray-500">{student.department}</p>
@@ -198,24 +229,9 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex items-center justify-center gap-3">
-                                                <ActionButton
-                                                    onClick={() => onViewClick(student)}
-                                                    icon={Eye}
-                                                    title="View Profile"
-                                                    color="blue"
-                                                />
-                                                <ActionButton
-                                                    onClick={() => onEditClick(student)}
-                                                    icon={Edit}
-                                                    title="Edit Profile"
-                                                    color="gray"
-                                                />
-                                                <ActionButton
-                                                    onClick={() => onDeleteClick(student.id)}
-                                                    icon={Trash2}
-                                                    title="Delete Record"
-                                                    color="red"
-                                                />
+                                                <ActionButton onClick={() => onViewClick(student)} icon={Eye} title="View Profile" color="blue" />
+                                                <ActionButton onClick={() => onEditClick(student)} icon={Edit} title="Edit Profile" color="gray" />
+                                                <ActionButton onClick={() => onDeleteClick(student.id)} icon={Trash2} title="Delete Record" color="red" />
                                             </div>
                                         </td>
                                     </tr>
@@ -240,15 +256,15 @@ export const StudentDirectoryView: React.FC<StudentDirectoryViewProps> = ({
 };
 
 const StatCard = ({ icon: Icon, label, value, sub, color, isPulse = false }: any) => (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 transition-all hover:shadow-md hover:-translate-y-1">
-        <div className="flex items-center justify-between mb-6">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</span>
-            <div className={`bg-${color}-50 p-2.5 rounded-xl`}>
-                <Icon className={`w-5 h-5 text-${color}-600 ${isPulse ? 'animate-pulse' : ''}`} />
+    <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8 transition-all hover:shadow-md hover:-translate-y-1">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</span>
+            <div className={`bg-${color}-50 p-2 sm:p-2.5 rounded-lg sm:rounded-xl`}>
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 text-${color}-600 ${isPulse ? 'animate-pulse' : ''}`} />
             </div>
         </div>
-        <p className="text-3xl font-bold text-gray-900 tracking-tight mb-1">{value}</p>
-        <p className="text-xs font-medium text-gray-500">{sub}</p>
+        <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-1">{value}</p>
+        <p className="text-[10px] sm:text-xs font-medium text-gray-500">{sub}</p>
     </div>
 );
 

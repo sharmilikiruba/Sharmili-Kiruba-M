@@ -16,22 +16,17 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 // Modular Imports
-import { ReportType, VisitorStat, StudentStat, HostelStat, ExportFormat } from './types';
+import { ReportType, VisitorStat, HostelStat, ExportFormat } from './types';
 import { ReportCard } from './ReportComponents';
 import { VisitorStatistics } from './VisitorStatistics';
-import { StudentWise } from './StudentWise';
 import { HostelWise } from './HostelWise';
 
 // --- API Client ---
 import apiClient from '@/lib/api-client';
 
-// --- Centralized Mock Data ---
-// Keep mock data for other reports for now, or until they are connected
 const REPORTS_DATA: {
-  studentStats: StudentStat[];
   hostelStats: HostelStat[];
 } = {
-  studentStats: [],
   hostelStats: []
 };
 
@@ -72,9 +67,7 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Data States
-  const [visitorStats, setVisitorStats] = useState<VisitorStat[]>([]);
-  // Placeholder states for other reports until connected
-  const [studentStats, setStudentStats] = useState<StudentStat[]>([]);
+  const [visitorStats, setVisitorStats] = useState<any>({});
   const [hostelStats, setHostelStats] = useState<HostelStat[]>([]);
 
   // Fetch Data
@@ -87,12 +80,16 @@ export default function ReportsPage() {
             params: { startDate: dateFrom, endDate: dateTo }
           });
           if (res.data.success) {
-            // Backend returns an object with statistics, not an array
-            // We need to pass the entire stats object to VisitorStatistics component
             setVisitorStats(res.data.data || {});
           }
+        } else if (selectedReport === 'hostel-wise') {
+          const res = await apiClient.get('/admin/reports/hostel-wise', {
+            params: { startDate: dateFrom, endDate: dateTo }
+          });
+          if (res.data.success) {
+            setHostelStats(res.data.data.summary || []);
+          }
         }
-        // Implement other report fetches here
       } catch (error) {
         console.error("Failed to fetch report data", error);
       } finally {
@@ -108,11 +105,6 @@ export default function ReportsPage() {
 
   // Filters - Legacy functions for other reports to not break UI immediately
   // For Visitor Stats, we use API data directly
-  const getFilteredStudentStats = () => {
-    let data = REPORTS_DATA.studentStats;
-    // ... filtering logic if kept client side for others
-    return data;
-  };
   const getFilteredHostelStats = () => REPORTS_DATA.hostelStats;
 
   const handleExport = (format: ExportFormat) => {
@@ -121,9 +113,6 @@ export default function ReportsPage() {
     switch (selectedReport) {
       case 'visitor-statistics':
         featureName = 'visitor-statistics';
-        break;
-      case 'student-wise':
-        featureName = 'student-wise';
         break;
       case 'hostel-wise':
         featureName = 'hostel-wise';
@@ -136,8 +125,8 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-[1600px] mx-auto p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 w-full overflow-x-auto">
+      <div className="max-w-[1600px] min-w-[1024px] mx-auto p-4 sm:p-8">
         <div className="flex gap-8">
           <aside className="w-80 flex-shrink-0">
             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
@@ -149,12 +138,6 @@ export default function ReportsPage() {
                     title="Visitor Statistics"
                     isActive={selectedReport === 'visitor-statistics'}
                     onClick={() => setSelectedReport('visitor-statistics')}
-                  />
-                  <ReportCard
-                    icon={<Users className="w-5 h-5" />}
-                    title="Student-wise"
-                    isActive={selectedReport === 'student-wise'}
-                    onClick={() => setSelectedReport('student-wise')}
                   />
                   <ReportCard
                     icon={<Building2 className="w-5 h-5" />}
@@ -218,7 +201,6 @@ export default function ReportsPage() {
               </div>
             )}
             {selectedReport === 'visitor-statistics' && <VisitorStatistics data={visitorStats} />}
-            {selectedReport === 'student-wise' && <StudentWise data={studentStats} />}
             {selectedReport === 'hostel-wise' && <HostelWise data={hostelStats} />}
           </main>
         </div>

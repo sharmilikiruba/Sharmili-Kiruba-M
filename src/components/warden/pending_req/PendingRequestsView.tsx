@@ -21,11 +21,11 @@ export function PendingRequestsView({
     onViewDetails,
 }: PendingRequestsViewProps) {
     return (
-        <div className="p-8">
+        <div className="p-4 sm:p-8">
             {/* Page Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Pending Requests</h1>
-                <p className="text-gray-500 mt-1">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Pending Requests</h1>
+                <p className="text-gray-500 text-sm sm:text-base mt-1">
                     {requestsCount} requests awaiting your decision
                 </p>
             </div>
@@ -33,12 +33,12 @@ export function PendingRequestsView({
             {/* Card */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
                 {/* Card Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b">
                     <h2 className="text-lg font-semibold text-gray-900">
                         Visitor Requests
                     </h2>
 
-                    <div className="relative w-64">
+                    <div className="relative w-full sm:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"

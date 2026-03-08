@@ -5,11 +5,11 @@ import { Users, Activity, Shield, Home } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 interface DashboardStats {
+  totalStudents: number;
+  totalWardens: number;
+  totalGuards: number;
+  totalHostels: number;
   totalUsers: number;
-  students: number;
-  wardens: number;
-  guards: number;
-  activeHostels: number;
 }
 
 interface ActivityItem {
@@ -24,24 +24,44 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Data fetching removed per user request to resolve hang
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.get('/admin/dashboard/stats');
+      if (response.data.success) {
+        setStats(response.data.data);
+      } else {
+        setError(response.data.message || 'Failed to fetch dashboard stats');
+      }
+    } catch (err: any) {
+      console.error('Error fetching dashboard stats:', err);
+      setError(err.response?.data?.message || 'Error connecting to the server');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const statsDisplay = [
     { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users },
   ];
 
   const userStatistics = [
-    { label: 'Total Students', value: stats?.students || 0, icon: Users },
-    { label: 'Total Wardens', value: stats?.wardens || 0, icon: Shield },
-    { label: 'Total Guards', value: stats?.guards || 0, icon: Shield },
-    { label: 'Active Hostels', value: stats?.activeHostels || 0, icon: Home },
+    { label: 'Total Students', value: stats?.totalStudents || 0, icon: Users },
+    { label: 'Total Wardens', value: stats?.totalWardens || 0, icon: Shield },
+    { label: 'Total Guards', value: stats?.totalGuards || 0, icon: Shield },
+    { label: 'Active Hostels', value: stats?.totalHostels || 0, icon: Home },
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Error Alert */}
       {error && (
         <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center justify-between">
@@ -60,7 +80,7 @@ export default function AdminDashboard() {
 
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Welcome</h1>
         <p className="text-gray-600 mt-1">Hostel Visitor Management System Administration</p>
       </div>
 
@@ -108,37 +128,6 @@ export default function AdminDashboard() {
                   <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
                 </div>
               ))
-            )}
-          </div>
-        </div>
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activities</h2>
-          <div className="space-y-4">
-            {loading ? (
-              Array(3).fill(0).map((_, i) => (
-                <div key={i} className="h-20 bg-gray-50 rounded-lg animate-pulse"></div>
-              ))
-            ) : activities.length > 0 ? (
-              activities.map((activity, index) => (
-                <div key={index} className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                  <div className="p-2 bg-gray-100 rounded-lg mt-1">
-                    <Activity className="w-5 h-5 text-gray-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 mb-1 leading-tight">{activity.description}</h3>
-                    <p className="text-sm text-gray-600">
-                      {activity.user} • {activity.type}
-                    </p>
-                  </div>
-                  <span className="text-sm text-gray-500 whitespace-nowrap">
-                    {activity.timestamp ? new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '---'}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">No recent activities</div>
             )}
           </div>
         </div>

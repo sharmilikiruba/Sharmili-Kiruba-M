@@ -71,22 +71,30 @@ export const HostelViewModal: React.FC<HostelViewModalProps> = ({ isOpen, onClos
                             <ViewField label="Type" value={displayData.hostel_type || displayData.type} />
                             <div className="grid grid-cols-2 gap-4">
                                 <ViewField label="Total Rooms" value={(displayData.total_rooms || displayData.rooms || 0).toString()} />
-                                <ViewField label="Capacity" value={(displayData.capacity || 0).toString()} />
+                                <ViewField label="Capacity" value={(displayData.capacity || hostel?.capacity || (displayData.total_rooms ? displayData.total_rooms * 2 : 0) || 0).toString()} />
                             </div>
                             <ViewField label="Status" value={displayData.status || 'Active'} />
                         </section>
 
                         <section className="space-y-4">
                             <h3 className="text-lg font-semibold text-blue-600 border-b pb-2">Warden Information</h3>
-                            <ViewField label="Warden Name" value={displayData.warden?.name || displayData.warden || 'Unassigned'} />
-                            {(wardenDetails || displayData.warden) && (
-                                <>
-                                    <ViewField label="Employee ID" value={wardenDetails?.empId || displayData.warden?.emp_id || 'N/A'} />
-                                    <ViewField label="Email" value={wardenDetails?.email || displayData.warden?.email || 'N/A'} />
-                                    <ViewField label="Contact" value={wardenDetails?.contact || displayData.warden?.phone || 'N/A'} />
-                                    <ViewField label="Address" value={wardenDetails?.address || displayData.warden?.address || 'N/A'} />
-                                    <ViewField label="Joining Date" value={wardenDetails?.dateOfJoining || displayData.warden?.date_of_joining || 'N/A'} />
-                                </>
+                            {Array.isArray(displayData.wardens) && displayData.wardens.length > 0 ? (
+                                <div className="space-y-6">
+                                    {displayData.wardens.map((w: any, index: number) => (
+                                        <div key={w.warden_id || index} className={`${index > 0 ? 'pt-4 border-t border-gray-100' : ''}`}>
+                                            <h4 className="text-sm font-medium text-gray-500 mb-2">Warden {displayData.wardens.length > 1 ? index + 1 : ''}</h4>
+                                            <ViewField label="Warden Name" value={w.name || w.user?.username || 'Unknown'} />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <ViewField label="Employee ID" value={w.emp_id || 'N/A'} />
+                                                <ViewField label="Contact" value={w.phone || w.user?.phone || 'N/A'} />
+                                            </div>
+                                            <ViewField label="Email" value={w.user?.email || 'N/A'} />
+                                            <ViewField label="Joining Date" value={w.joining_date || 'N/A'} />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <ViewField label="Warden Name" value={displayData.warden_name || displayData.warden || 'Unassigned'} />
                             )}
                         </section>
                     </div>

@@ -50,9 +50,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check localStorage for saved user data
-        const savedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('auth_token');
+        // Check sessionStorage for saved user data
+        const savedUser = sessionStorage.getItem('user');
+        const token = sessionStorage.getItem('auth_token');
 
         if (savedUser && savedUser !== 'undefined' && token) {
           // Parse and validate saved user
@@ -68,8 +68,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('Auth check failed:', error);
         // Clear invalid data
-        localStorage.removeItem('user');
-        localStorage.removeItem('auth_token');
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('auth_token');
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -122,9 +122,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         avatar: userData.avatar
       };
 
-      // Save to localStorage
-      localStorage.setItem('auth_token', authToken);
-      localStorage.setItem('user', JSON.stringify(normalizedUser));
+      // Save to sessionStorage
+      sessionStorage.setItem('auth_token', authToken);
+      sessionStorage.setItem('user', JSON.stringify(normalizedUser));
 
       setUser(normalizedUser);
       return normalizedUser;
@@ -132,11 +132,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Login failed:', error);
 
       let errorMessage = 'Login failed. Please try again.';
-
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
+      const errorData = error.response?.data;
+      if (typeof errorData?.message === 'string') {
+        errorMessage = errorData.message;
+      } else if (errorData?.error?.message) {
+        errorMessage = errorData.error.message;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -161,9 +161,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Logout function
   const logout = () => {
-    // Clear localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('auth_token');
+    // Clear sessionStorage
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('auth_token');
 
     setUser(null);
     setError(null);
@@ -181,7 +181,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
     }
   };
 

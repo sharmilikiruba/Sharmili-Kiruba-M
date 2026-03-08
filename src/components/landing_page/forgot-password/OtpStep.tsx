@@ -81,7 +81,11 @@ export const OtpStep: React.FC<OtpStepProps> = ({ email, setOtp, onNext, onBack 
             setOtp(otpString);
             onNext();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Invalid OTP. Please try again.');
+            const errorData = err.response?.data;
+            const errorMessage = typeof errorData?.message === 'string'
+                ? errorData.message
+                : errorData?.error?.message || 'Invalid OTP. Please try again.';
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }

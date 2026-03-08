@@ -15,25 +15,21 @@ export const EditWardenModal: React.FC<EditWardenModalProps> = ({ isOpen, onClos
     const [form, setForm] = useState<WardenForm>({
         fullName: '',
         email: '',
-        mobile: '',
+        phone: '',
         hostel: '',
         address: '',
-        empId: '',
-        dateOfJoining: '',
-        password: ''
+        empId: ''
     });
 
     useEffect(() => {
         if (warden) {
             setForm({
-                fullName: warden.name,
+                fullName: warden.fullName,
                 email: warden.email,
-                mobile: warden.contact || '',
+                phone: warden.phone || '',
                 hostel: warden.hostel,
                 address: warden.address || '',
-                empId: warden.empId || '',
-                dateOfJoining: warden.dateOfJoining || '',
-                password: ''
+                empId: warden.empId || ''
             });
         }
     }, [warden]);
@@ -46,8 +42,8 @@ export const EditWardenModal: React.FC<EditWardenModalProps> = ({ isOpen, onClos
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+            <div className="bg-white rounded-t-xl sm:rounded-xl max-w-lg w-full max-h-[95vh] overflow-y-auto">
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
                     <h2 className="text-xl font-bold text-gray-900">Edit Warden</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -58,11 +54,10 @@ export const EditWardenModal: React.FC<EditWardenModalProps> = ({ isOpen, onClos
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <InputField label="Employee ID" value={form.empId} onChange={() => { }} disabled={true} />
-                        <InputField label="Joining Date" value={form.dateOfJoining} onChange={() => { }} type="date" disabled={true} />
                     </div>
                     <InputField label="Full Name" value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })} />
                     <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                    <InputField label="Mobile" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
+                    <InputField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
                     <InputField label="Address" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
                     <SelectField label="Hostel" value={form.hostel} onChange={(v) => setForm({ ...form, hostel: v })} options={hostels.map(h => ({ value: h.hostel_name, label: h.hostel_name }))} />
 

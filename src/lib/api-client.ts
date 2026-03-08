@@ -12,7 +12,7 @@ const apiClient = axios.create({
 // Request interceptor for adding auth token
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('auth_token');
+        const token = sessionStorage.getItem('auth_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -35,8 +35,8 @@ apiClient.interceptors.response.use(
             if (typeof window !== 'undefined') {
                 const isOnLoginPage = window.location.pathname.startsWith('/login');
                 if (!isOnLoginPage) {
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('user');
+                    sessionStorage.removeItem('auth_token');
+                    sessionStorage.removeItem('user');
                     window.location.href = '/login/login_page';
                 }
             }

@@ -27,8 +27,8 @@ export const ActionRemarksModal: React.FC<ActionRemarksModalProps> = ({ isOpen, 
     const isApprove = type === 'Approve';
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-[60] p-0 sm:p-4">
+            <div className="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:zoom-in duration-300 sm:duration-200">
                 <div className={`px-6 py-4 flex items-center justify-between border-b ${isApprove ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
                     <h3 className={`text-lg font-bold ${isApprove ? 'text-green-800' : 'text-red-800'}`}>
                         {isApprove ? 'Approve Request' : 'Reject Request'}
@@ -88,17 +88,17 @@ export const ActionRemarksModal: React.FC<ActionRemarksModalProps> = ({ isOpen, 
                         />
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                            className="px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors order-2 sm:order-1"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className={`flex-1 px-4 py-2.5 text-white rounded-lg font-medium transition-all shadow-sm hover:shadow-md ${isApprove ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+                            className={`px-4 py-2.5 text-white rounded-lg font-medium transition-all shadow-sm hover:shadow-md order-1 sm:order-2 ${isApprove ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                         >
                             Confirm {type}
                         </button>

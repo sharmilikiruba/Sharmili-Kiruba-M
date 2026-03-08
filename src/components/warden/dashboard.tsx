@@ -161,11 +161,11 @@ export default function WardenDashboard() {
   );
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       {/* Welcome Section */}
-      <div className="mb-8 flex justify-between items-end">
+      <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6 sm:gap-0">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
             Welcome Back!
           </h2>
           {isLoading ? (
@@ -181,19 +181,19 @@ export default function WardenDashboard() {
               </p>
               <p className="text-gray-700 font-semibold flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-blue-500" />
-                Assigned to<span className="text-blue-600">{dashboardData?.hostelName || 'N/A'}</span>
+                Assigned to <span className="text-blue-600">{dashboardData?.hostelName || 'N/A'}</span>
               </p>
             </div>
           )}
           <p className="text-gray-500 text-sm font-medium">Manage your daily activities and visitor requests</p>
         </div>
-        <div className="text-right hidden md:block">
+        <div className="text-left sm:text-right">
           <p className="text-sm text-gray-500 font-medium">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
         {isLoading ? (
           <>
             <SkeletonCard />

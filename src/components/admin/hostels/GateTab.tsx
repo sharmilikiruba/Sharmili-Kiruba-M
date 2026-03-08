@@ -19,6 +19,7 @@ export const GateTab: React.FC<GateTabProps> = ({ gates, onEdit, onDelete }) => 
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Code</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Hostel</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Assigned Guard</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
@@ -30,6 +31,7 @@ export const GateTab: React.FC<GateTabProps> = ({ gates, onEdit, onDelete }) => 
                             <td className="px-6 py-4 text-gray-900">{gate.code}</td>
                             <td className="px-6 py-4 text-gray-900">{gate.hostel}</td>
                             <td className="px-6 py-4 text-gray-900">{gate.type}</td>
+                            <td className="px-6 py-4 text-gray-900">{gate.guard || 'Unassigned'}</td>
                             <td className="px-6 py-4">
                                 <StatusBadge status={gate.status} />
                             </td>

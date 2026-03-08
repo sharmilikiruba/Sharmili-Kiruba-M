@@ -1,45 +1,28 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Building, AlertCircle, MessageSquare, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 // Modular Imports
 import {
     TabType,
-    QRSettings,
-    SMSTemplates,
     NotificationSettings,
     NotificationTriggers
 } from './types'
-import { QRSettingsTab } from './QRSettingsTab';
-import { SMSTab } from './SMSTab';
+
+
 import { NotificationsTab } from './NotificationsTab';
 
 export default function SystemConfiguration() {
-    const [activeTab, setActiveTab] = useState<TabType>('QR Settings');
+    const [activeTab, setActiveTab] = useState<TabType>('Notifications');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
 
-    const [qrSettings, setQrSettings] = useState<QRSettings>({
-        passValidity: '',
-        passFormat: 'Standard (Compact)',
-        autoExpiry: false,
-        includePhoto: false,
-        requireSignature: false,
-    });
-
-    // SMS Templates State
-    const [smsTemplates, setSmsTemplates] = useState<SMSTemplates>({
-        approvalSms: { enabled: false, template: "" },
-        rejectionSms: { enabled: false, template: "" },
-        entryConfirmation: { enabled: false, template: "" },
-        exitConfirmation: { enabled: false, template: "" },
-        reminderSms: { enabled: false, template: "" },
-    });
 
     // Notification Channels State
     const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
         emailNotifications: false,
-        pushNotifications: false,
-        smsNotifications: false,
+        pushNotifications: false
     });
 
     // Notification Triggers State
@@ -60,101 +43,69 @@ export default function SystemConfiguration() {
 
     const fetchSettings = async () => {
         try {
-            // Check if we are in a browser environment to avoid hydration issues with localStorage fallback if needed
             if (typeof window === 'undefined') return;
+            setLoading(true);
 
-            const response = await apiClient.get('/admin/config');
-            if (response.data.success) {
-                const settingsGrouped = response.data.data;
+            const notifRes = await apiClient.get('/admin/notification-settings');
 
-                // Map API response to state
-                if (settingsGrouped['QR Settings']) {
-                    const qr = settingsGrouped['QR Settings'].reduce((acc: any, curr: any) => {
-                        acc[curr.key] = curr.value === 'true' ? true : curr.value === 'false' ? false : curr.value;
-                        return acc;
-                    }, {});
-                    setQrSettings(prev => ({ ...prev, ...qr }));
-                }
-
-                if (settingsGrouped['SMS']) {
-                    // This might need adjustment based on how SMS templates are stored. 
-                    // Assuming they are stored with keys like "approvalSms.enabled", "approvalSms.template"
-                    const sms: any = {};
-                    settingsGrouped['SMS'].forEach((s: any) => {
-                        const [key, field] = s.key.split('.');
-                        if (key && field) {
-                            if (!sms[key]) sms[key] = {};
-                            sms[key][field] = s.value === 'true' ? true : s.value === 'false' ? false : s.value;
-                        }
-                    });
-                    setSmsTemplates(prev => ({ ...prev, ...sms }));
-                }
-
-                if (settingsGrouped['Notifications']) {
-                    const notif = settingsGrouped['Notifications'].reduce((acc: any, curr: any) => {
-                        // Triggers might be stored here too, or separate group
-                        if (curr.key in notificationSettings) {
-                            acc[curr.key] = curr.value === 'true' ? true : curr.value === 'false' ? false : curr.value;
-                        }
-                        return acc;
-                    }, {});
-                    setNotificationSettings(prev => ({ ...prev, ...notif }));
-
-                    const triggers = settingsGrouped['Notifications'].reduce((acc: any, curr: any) => {
-                        if (curr.key in notificationTriggers) {
-                            acc[curr.key] = curr.value === 'true' ? true : curr.value === 'false' ? false : curr.value;
-                        }
-                        return acc;
-                    }, {});
-                    setNotificationTriggers(prev => ({ ...prev, ...triggers }));
-                }
+            // Populate notification settings & triggers
+            if (notifRes.data.success && notifRes.data.data) {
+                const d = notifRes.data.data;
+                setNotificationSettings(prev => ({
+                    emailNotifications: d.emailNotifications ?? prev.emailNotifications,
+                    pushNotifications: d.pushNotifications ?? prev.pushNotifications,
+                }));
+                setNotificationTriggers(prev => ({
+                    requestSubmitted: d.requestSubmitted ?? prev.requestSubmitted,
+                    requestApproved: d.requestApproved ?? prev.requestApproved,
+                    requestRejected: d.requestRejected ?? prev.requestRejected,
+                    visitorEntered: d.visitorEntered ?? prev.visitorEntered,
+                    visitorExited: d.visitorExited ?? prev.visitorExited,
+                    overstayAlert: d.overstayAlert ?? prev.overstayAlert,
+                    emergencyRequest: d.emergencyRequest ?? prev.emergencyRequest,
+                }));
             }
         } catch (error) {
             console.error("Failed to fetch settings", error);
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleSaveConfiguration = async () => {
         try {
-            const settingsToSave = [
-                // QR Settings
-                ...Object.entries(qrSettings).map(([key, value]) => ({
-                    key,
-                    value: String(value),
-                    group: 'QR Settings'
-                })),
-                // Notification Settings
-                ...Object.entries(notificationSettings).map(([key, value]) => ({
-                    key,
-                    value: String(value),
-                    group: 'Notifications'
-                })),
-                // Notification Triggers
-                ...Object.entries(notificationTriggers).map(([key, value]) => ({
-                    key,
-                    value: String(value),
-                    group: 'Notifications'
-                })),
-                // SMS Templates
-                ...Object.entries(smsTemplates).flatMap(([key, value]) => [
-                    { key: `${key}.enabled`, value: String(value.enabled), group: 'SMS' },
-                    { key: `${key}.template`, value: value.template, group: 'SMS' }
-                ])
-            ];
+            setSaving(true);
 
-            const response = await apiClient.put('/admin/config', { settings: settingsToSave });
+            const [notifRes] = await Promise.all([
+                apiClient.put('/admin/notification-settings', {
+                    ...notificationSettings,
+                    ...notificationTriggers,
+                }),
 
-            if (response.data.success) {
+            ]);
+
+            if (notifRes.data.success) {
                 alert('Configuration saved successfully!');
-                // Dispatch event to notify other components (like Header) if they listen to updated settings
-                // You might need a more robust state management or context for global settings updates
                 window.dispatchEvent(new Event('storage'));
             }
         } catch (error: any) {
             console.error("Error saving configuration:", error);
             alert(error.response?.data?.message || 'Failed to save configuration');
+        } finally {
+            setSaving(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="p-8 w-full bg-gray-50 min-h-screen flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-gray-500 font-medium">Loading settings...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-8 w-full bg-gray-50 min-h-screen">
@@ -165,23 +116,6 @@ export default function SystemConfiguration() {
 
             {/* Tabs Navigation */}
             <div className="flex border-b border-gray-200 mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
-
-                <TabButton
-                    active={activeTab === 'QR Settings'}
-                    onClick={() => setActiveTab('QR Settings')}
-                    icon={() => (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                        </svg>
-                    )}
-                    label="QR Settings"
-                />
-                <TabButton
-                    active={activeTab === 'SMS'}
-                    onClick={() => setActiveTab('SMS')}
-                    icon={MessageSquare}
-                    label="SMS"
-                />
                 <TabButton
                     active={activeTab === 'Notifications'}
                     onClick={() => setActiveTab('Notifications')}
@@ -192,12 +126,6 @@ export default function SystemConfiguration() {
 
             {/* Tab Content */}
             <div className="transition-all duration-300">
-                {activeTab === 'QR Settings' && (
-                    <QRSettingsTab settings={qrSettings} onChange={setQrSettings} />
-                )}
-                {activeTab === 'SMS' && (
-                    <SMSTab templates={smsTemplates} onChange={setSmsTemplates} />
-                )}
                 {activeTab === 'Notifications' && (
                     <NotificationsTab
                         settings={notificationSettings}
@@ -212,9 +140,10 @@ export default function SystemConfiguration() {
             <div className="flex justify-end mt-8 sticky bottom-8">
                 <button
                     onClick={handleSaveConfiguration}
-                    className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/30 hover:scale-[1.02] active:scale-[0.98]"
+                    disabled={saving}
+                    className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                    Save Configuration
+                    {saving ? 'Saving...' : 'Save Configuration'}
                 </button>
             </div>
         </div>
