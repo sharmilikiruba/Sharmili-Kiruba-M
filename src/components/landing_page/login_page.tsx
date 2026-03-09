@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { Eye, EyeOff, ArrowLeft, LogIn } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import ForgotPasswordModal from './forgot-password-modal'
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
 
   const [showPassword, setShowPassword] = useState(false)
   const [selectedRole, setSelectedRole] = useState('Student')
@@ -14,33 +15,53 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
-  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const roles = ['Student', 'Warden', 'Admin', 'Guard']
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       setError('Please enter email and password')
       return
     }
 
     setError('')
+    setIsLoading(true)
 
-    switch (selectedRole) {
-      case 'Admin':
-        router.push('/Admin/Admin_dashboard')
-        break
-      case 'Warden':
-        router.push('/Warden/WardenDashboard')
-        break
-      case 'Guard':
-        router.push('/Guard/guard_dashboard')
-        break
-      case 'Student':
-        router.push('/student/student_dashboard')
-        break
-      default:
-        router.push('/login')
+    try {
+      // ✅ Pass role to backend
+      const loggedInUser = await login(email, password, selectedRole)
+
+      // ✅ Validate backend response
+      if (!loggedInUser || typeof loggedInUser !== 'object') {
+        throw new Error('Invalid response from server')
+      }
+
+      // ✅ Safe role handling
+      const role = String(loggedInUser.role || selectedRole).toLowerCase()
+
+      switch (role) {
+        case 'admin':
+        case 'super_admin':
+          router.push('/Admin/Admin_dashboard')
+          break
+        case 'warden':
+          router.push('/Warden/WardenDashboard')
+          break
+        case 'guard':
+          router.push('/Guard/guard_dashboard')
+          break
+        case 'student':
+          router.push('/student/student_dashboard')
+          break
+        default:
+          throw new Error('Unknown user role')
+      }
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err?.message || 'Login failed. Please check your credentials.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -53,17 +74,17 @@ export default function LoginPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex flex-col">
 
         {/* Header */}
-        <div className="text-center pt-16 pb-8">
-          <h1 className="text-5xl font-bold text-gray-900 mb-3">HVMS</h1>
-          <p className="text-gray-600 text-lg">
+        <div className="text-center pt-10 sm:pt-16 pb-6 sm:pb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-3">HVMS</h1>
+          <p className="text-gray-600 text-base sm:text-lg">
             Hostel Visitor Management System
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="flex-1 flex items-start justify-center px-4 pb-16">
-          <div className="bg-white rounded-2xl shadow-xl border w-full max-w-md p-8">
-            <h2 className="text-3xl font-bold mb-2">Login</h2>
+        <div className="flex-1 flex items-start justify-center px-4 pb-10 sm:pb-16">
+          <div className="bg-white rounded-2xl shadow-xl border w-full max-w-md p-6 sm:p-8">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">Login</h2>
             <p className="text-gray-600 mb-6">
               Enter your credentials to access your dashboard
             </p>
@@ -92,7 +113,7 @@ export default function LoginPage() {
                   Email or Mobile
                 </label>
                 <input
-                  type="email" 
+                  type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -109,7 +130,7 @@ export default function LoginPage() {
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'} 
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -147,7 +168,7 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => setShowForgotPasswordModal(true)}
+                  onClick={() => router.push('/login/forgot-password')}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Forgot password?
@@ -157,10 +178,28 @@ export default function LoginPage() {
               {/* Login */}
               <button
                 onClick={handleLogin}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20 active:scale-[0.98]"
               >
-                <LogIn size={18} />
-                Login
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Logging in...
+                  </>
+                ) : (
+                  <>
+                    <LogIn size={18} />
+                    Login
+                  </>
+                )}
+              </button>
+
+              {/* Register */}
+              <button
+                onClick={() => router.push('/login/registration')}
+                className="w-full bg-white text-blue-600 border-2 border-blue-600 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+              >
+                Register Admin
               </button>
             </div>
           </div>
@@ -177,12 +216,6 @@ export default function LoginPage() {
           </button>
         </div>
       </div>
-
-      {/* Forgot Password Modal */}
-      <ForgotPasswordModal 
-        isOpen={showForgotPasswordModal}
-        onClose={() => setShowForgotPasswordModal(false)}
-      />
     </>
   )
 }

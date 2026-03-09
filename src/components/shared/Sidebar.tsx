@@ -8,6 +8,7 @@ import {
   FileText, Settings, Shield, ScrollText, Building2, UserCog,
   ChevronDown, ChevronRight, LogIn, LogOut
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface SidebarItem {
   id: string;
@@ -26,12 +27,13 @@ interface SubItem {
 
 interface SidebarProps {
   isOpen: boolean;
-  userRole: 'student' | 'warden' | 'guard' | 'admin';
   activeItem?: string;
   onItemClick: (label: string, href: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onItemClick }) => {
+  const { user } = useAuth();
+  const userRole = user?.role || 'student';
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const pathname = usePathname();
   const router = useRouter();
@@ -47,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
         href: '/student/myrequest',
       },
 
-      { id: 'visitor-history', label: 'Visitor History', icon: History, href: '/student/visitor_history' } ,
+      { id: 'visitor-history', label: 'Visitor History', icon: History, href: '/student/visitor_history' },
       {
         id: 'profile',
         label: 'Profile',
@@ -61,8 +63,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
       { id: 'pending-requests', label: 'Pending Requests', icon: Clock, href: '/Warden/Pending_Request' },
       { id: 'approved-visits', label: 'Approved Visits', icon: CheckCircle, href: '/Warden/Approved_visit' },
       { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Warden/Active_Visitors' },
-      { id: 'blocklist', label: 'Blocklist', icon: CheckCircle, href: '/Warden/Blacklist' }, // Mapping to dashboard as placeholder if no specific page found
-      { id: 'reports',label: 'Reports', icon: FileText,href: '/Warden/reports',
+      {
+        id: 'reports', label: 'Reports', icon: FileText, href: '/Warden/reports',
       },
     ],
     guard: [
@@ -76,21 +78,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
       { id: 'Scan-Visitors', label: 'Scan Visitors', icon: LogIn, href: '/Guard/Scan-Entry' },
       { id: 'walkin-registration', label: 'Walk-in Registration', icon: UserCog, href: '/Guard/WalkIn-Registration' },
       { id: 'active-visitors', label: 'Active Visitors', icon: Users, href: '/Guard/Active_Visitors' },
-       { id: 'Emergency-visit', label: 'Emergency Visit', icon: Users, href: '/Guard/Emergency_visit' }
+      { id: 'Emergency-visit', label: 'Emergency Visit', icon: Users, href: '/Guard/Emergency_visit' }
     ],
 
     admin: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Admin/Admin_dashboard' },
-       { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
+      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
       { id: 'user-management', label: 'User Management', icon: Users, href: '/Admin/User_mgt' },
       { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/Admin/Hostel_mgt' },
       { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/Admin/system_config' },
-      { id: 'security-management', label: 'Security Management', icon: Shield, href: '/Admin/Security' },
-      { id: 'audit-logs', label: 'Audit Logs', icon: ScrollText, href: '/Admin/Audit_logs' }
+    ],
+    super_admin: [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Admin/Admin_dashboard' },
+      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
+      { id: 'user-management', label: 'User Management', icon: Users, href: '/Admin/User_mgt' },
+      { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/Admin/Hostel_mgt' },
+      { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/Admin/system_config' },
     ]
   };
 
-  const currentSidebar = sidebarConfig[userRole];
+  const currentSidebar = sidebarConfig[userRole] || [];
 
   const toggleExpanded = (itemId: string) => {
     setExpandedItems(prev =>
@@ -174,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, userRole, onItemClick }) => {
       </nav>
 
       {/* Footer */}
-      
+
     </aside>
   );
 };

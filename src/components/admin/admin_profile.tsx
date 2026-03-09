@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -8,74 +8,108 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   User,
   Shield,
   Lock,
   Pencil,
+  Loader2,
+  Calendar,
+  Briefcase,
 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
+import EditProfile from './edit_profile';
+import ChangePassword from './change_password';
+
+export interface AdminProfile {
+  name: string;
+  email: string;
+  mobile: string;
+  gender: string;
+  address: string;
+  role: string;
+  designation: string;
+  dob: string;
+  created_at?: string;
+}
 
 export default function AdminProfile() {
   /** ---------------- STATE ---------------- */
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [profile, setProfile] = useState({
-    name: 'Prof. Rajesh Gupta',
-    gender: 'Male',
-    mobile: '+91 98765 00000',
-    altMobile: '+91 98765 00001',
-    email: 'admin@university.edu',
-    address: 'Admin Block, University Campus, City - 560001',
+  const [profile, setProfile] = useState<AdminProfile>({
+    name: '',
+    email: '',
+    mobile: '',
+    gender: '',
+    address: '',
+    role: 'admin',
+    designation: '',
+    dob: '',
   });
 
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: '',
-  });
+  /** ---------------- FETCH PROFILE ON MOUNT ---------------- */
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
-  /** ---------------- HANDLERS ---------------- */
-  const handleProfileSave = () => {
-    console.log('Updated profile:', profile);
-    setEditOpen(false);
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiClient.get('/admin/profile');
+      if (response.data.success) {
+        const data = response.data.data;
+        const mapped: AdminProfile = {
+          name: data.name || data.fullName || (data.user && data.user.name) || '',
+          email: data.email || (data.user && data.user.email) || '',
+          mobile: data.mobile || data.phone || (data.user && data.user.phone) || '',
+          gender: data.gender || '',
+          address: data.address || '',
+          role: data.role || (data.user && data.user.role) || 'admin',
+          designation: data.designation || '',
+          dob: data.dob || '',
+          created_at: data.created_at || (data.user && data.user.created_at),
+        };
+        setProfile(mapped);
+      }
+    } catch (error) {
+      console.error('Error fetching admin profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handlePasswordChange = () => {
-    if (passwords.new !== passwords.confirm) {
-      alert('Passwords do not match');
-      return;
-    }
-    console.log('Password changed');
-    setPasswordOpen(false);
+  /** ---------------- HANDLERS ---------------- */
+  const handleEditOpen = () => {
+    setEditOpen(true);
   };
 
   /** ---------------- UI ---------------- */
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Loading profile...</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* HEADER CARD */}
       <Card>
-        <CardContent className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+        <CardContent className="flex flex-col md:flex-row items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg gap-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center shrink-0">
               <User className="w-8 h-8" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">{profile.name}</h2>
-              <p className="text-sm opacity-90">
-                Chief Warden & System Administrator
-              </p>
-              <div className="flex gap-2 mt-1">
+              <h2 className="text-xl md:text-2xl font-bold">{profile.name || 'Administrator'}</h2>
+              <p className="text-sm opacity-90">{profile.designation || 'System Administrator'}</p>
+              <div className="flex justify-center md:justify-start gap-2 mt-2">
                 <Badge variant="secondary">Admin</Badge>
                 <Badge className="bg-green-500">Active</Badge>
               </div>
@@ -84,7 +118,10 @@ export default function AdminProfile() {
 
           <Button
             variant="secondary"
-            onClick={() => setPasswordOpen(true)}
+            className="w-full md:w-auto"
+            onClick={() => {
+              setPasswordOpen(true);
+            }}
           >
             <Lock className="w-4 h-4 mr-2" />
             Change Password
@@ -97,25 +134,27 @@ export default function AdminProfile() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
-            Personal & Contact Information
+            Personal &amp; Contact Information
           </CardTitle>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setEditOpen(true)}
-          >
+          <Button size="sm" variant="outline" onClick={handleEditOpen}>
             <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
         </CardHeader>
 
-        <CardContent className="grid grid-cols-2 gap-6 text-sm">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 text-sm">
           <Info label="Full Name" value={profile.name} />
-          <Info label="Gender" value={profile.gender} />
+          <Info label="Gender" value={profile.gender === 'M' ? 'Male' : profile.gender === 'F' ? 'Female' : profile.gender || '—'} />
+          <Info label="Date of Birth" value={profile.dob ? new Date(profile.dob).toLocaleDateString() : '—'} />
           <Info label="Mobile Number" value={profile.mobile} />
-          <Info label="Alternate Mobile" value={profile.altMobile} />
           <Info label="Email Address" value={profile.email} />
           <Info label="Address" value={profile.address} />
+          {profile.created_at && (
+            <Info
+              label="Account Created"
+              value={new Date(profile.created_at).toLocaleDateString()}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -124,110 +163,32 @@ export default function AdminProfile() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
-            Administrative & System Access
+            Administrative &amp; System Access
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="grid grid-cols-2 gap-6 text-sm">
-          <Info label="Admin ID" value="ADM001" />
-          <Info
-            label="Designation"
-            value="Chief Warden & System Administrator"
-          />
-          <Info label="Department" value="Hostel Administration" />
-          <Info label="Date of Assignment" value="15 Jan 2020" />
-          <Info label="Institution" value="University of Technology" />
-          <Info label="Office Location" value="Admin Block, Room 101" />
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+          <Info label="Role" value={profile.role} />
+          <Info label="Designation" value={profile.designation || 'System Administrator'} />
         </CardContent>
       </Card>
 
-      {/* ---------------- EDIT PROFILE DIALOG ---------------- */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-          </DialogHeader>
+      <EditProfile
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialProfile={profile}
+        onSuccess={(updatedProfile) => {
+          setProfile(updatedProfile);
+          setEditOpen(false);
+          fetchProfile(); // Re-fetch to confirm sync
+        }}
+      />
 
-          <div className="space-y-4">
-            <Field
-              label="Full Name"
-              value={profile.name}
-              onChange={(v) => setProfile({ ...profile, name: v })}
-            />
-            <Field
-              label="Mobile"
-              value={profile.mobile}
-              onChange={(v) => setProfile({ ...profile, mobile: v })}
-            />
-            <Field
-              label="Alternate Mobile"
-              value={profile.altMobile}
-              onChange={(v) =>
-                setProfile({ ...profile, altMobile: v })
-              }
-            />
-            <Field
-              label="Address"
-              value={profile.address}
-              onChange={(v) =>
-                setProfile({ ...profile, address: v })
-              }
-            />
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleProfileSave}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ---------------- CHANGE PASSWORD DIALOG ---------------- */}
-      <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <PasswordField
-              label="Current Password"
-              value={passwords.current}
-              onChange={(v) =>
-                setPasswords({ ...passwords, current: v })
-              }
-            />
-            <PasswordField
-              label="New Password"
-              value={passwords.new}
-              onChange={(v) =>
-                setPasswords({ ...passwords, new: v })
-              }
-            />
-            <PasswordField
-              label="Confirm Password"
-              value={passwords.confirm}
-              onChange={(v) =>
-                setPasswords({ ...passwords, confirm: v })
-              }
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setPasswordOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handlePasswordChange}>
-              Update Password
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ChangePassword
+        open={passwordOpen}
+        onOpenChange={setPasswordOpen}
+        onSuccess={() => setPasswordOpen(false)}
+      />
     </div>
   );
 }
@@ -238,45 +199,7 @@ function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-gray-500">{label}</p>
-      <p className="font-semibold text-gray-900">{value}</p>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      <Input value={value} onChange={(e) => onChange(e.target.value)} />
-    </div>
-  );
-}
-
-function PasswordField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      <Input
-        type="password"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <p className="font-semibold text-gray-900">{value || '—'}</p>
     </div>
   );
 }

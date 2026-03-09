@@ -1,91 +1,94 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, X, Save, Send, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Camera, X, Save, Send, Trash2, Loader2, SwitchCamera, Upload } from 'lucide-react';
+import CameraCapture from '@/components/shared/CameraCapture';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
 
 const NewVisitorRequestPage = () => {
   const router = useRouter();
-  const studentInfo = {
-    name: 'Rahul Sharma',
-    rollNumber: '21CS101',
-    hostelName: 'Krishna Hostel',
-    roomNumber: 'A-204',
-    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop'
-  };
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchingStudent, setFetchingStudent] = useState(true);
+  const [studentInfo, setStudentInfo] = useState({
+    name: '',
+    rollNumber: '',
+    hostelName: '',
+    roomNumber: '',
+    profileImage: '',
+    student_id: 0
+  });
 
   const [formData, setFormData] = useState({
     visitorName: '',
     mobileNumber: '',
+    visitorEmail: '',
     relation: '',
+    gender: 'M',
     visitorPhoto: null,
-    idProofType: '',
+    idProofType: 'Aadhar',
     idProofNumber: '',
-    purpose: '',
+    visitorAddress: '',
+    purpose: 'Family Visit',
     visitDate: '',
-    visitTime: '',
-    duration: '',
-    location: '',
+    visitStartTime: '',
+    visitEndTime: '',
     accompanyingPersons: '0'
   });
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
   const [showDraftMessage, setShowDraftMessage] = useState(false);
 
-  // Load draft from memory on component mount
+  // Fetch student data on mount
   useEffect(() => {
-    const savedDraft = getDraft();
-    if (savedDraft) {
-      setFormData(savedDraft.formData);
-      if (savedDraft.photoPreview) {
-        setPhotoPreview(savedDraft.photoPreview);
+    const fetchStudent = async () => {
+      try {
+        setFetchingStudent(true);
+        const response = await apiClient.get(`/students/profile/${user?.id}`);
+        if (response.data.success) {
+          const data = response.data.data.student;
+          setStudentInfo({
+            name: data.fullName,
+            rollNumber: data.rollNumber,
+            hostelName: data.hostel?.hostel_name || 'N/A',
+            roomNumber: data.room?.room_no || 'N/A',
+            profileImage: '', // No profile image in student entity yet
+            student_id: data.student_id
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching student info:', error);
+      } finally {
+        setFetchingStudent(false);
       }
-    }
-  }, []);
-
-  // Helper functions for draft management (using in-memory storage)
-  const drafts: any = {};
-  const requests: any[] = [];
-
-  const saveDraft = (data: any) => {
-    drafts['visitorRequestDraft'] = {
-      formData: data,
-      photoPreview: photoPreview,
-      savedAt: new Date().toISOString()
     };
-  };
 
-  const getDraft = () => {
-    return drafts['visitorRequestDraft'] || null;
-  };
-
-  const clearDraft = () => {
-    delete drafts['visitorRequestDraft'];
-  };
-
-  const saveRequests = (requestsData: any) => {
-    if (typeof window !== 'undefined') {
-      (window as any).visitorRequests = requestsData;
+    if (user?.id) {
+      fetchStudent();
     }
-  };
+  }, [user]);
 
-  const getRequests = () => {
-    if (typeof window !== 'undefined' && (window as any).visitorRequests) {
-      return (window as any).visitorRequests;
-    }
-    return [];
-  };
+  // Handle persistence in local storage during form filling
+  const DRAFT_KEY = `visitor_draft_local_${user?.id}`;
 
   const handleInputChange = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handlePhotoUpload = (e: any) => {
-    const file = e.target.files[0];
+  const handlePhotoCapture = (blob: Blob, base64: string) => {
+    setPhotoPreview(base64);
+    setFormData({ ...formData, visitorPhoto: 'camera_capture' as any });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoPreview(reader.result as string);
-        setFormData({ ...formData, visitorPhoto: file.name });
+        setFormData({ ...formData, visitorPhoto: 'upload' as any });
       };
       reader.readAsDataURL(file);
     }
@@ -96,36 +99,64 @@ const NewVisitorRequestPage = () => {
     setFormData({ ...formData, visitorPhoto: null });
   };
 
-  const handleSaveDraft = () => {
-    saveDraft(formData);
-    setShowDraftMessage(true);
-    setTimeout(() => setShowDraftMessage(false), 3000);
-    alert('Draft saved successfully! You can continue editing later.');
+  const handleSaveDraft = async () => {
+    try {
+      setIsLoading(true);
+      const payload = {
+        name: formData.visitorName,
+        phone: formData.mobileNumber,
+        relation: formData.relation,
+        gender: formData.gender,
+        id_proof_type: formData.idProofType,
+        id_proof_no: formData.idProofNumber,
+        address: formData.visitorAddress,
+        visit_purpose: formData.purpose,
+        visit_date: formData.visitDate,
+        visit_from_time: formData.visitStartTime,
+        visit_to_time: formData.visitEndTime,
+        student_id: studentInfo.student_id,
+        accompanying_persons: parseInt(formData.accompanyingPersons) || 0,
+        visitor_photo: photoPreview,
+        email: formData.visitorEmail
+      };
+
+      const response = await apiClient.post('/visitors/draft', payload);
+      if (response.data.success) {
+        setShowDraftMessage(true);
+        setTimeout(() => setShowDraftMessage(false), 3000);
+        alert('Draft saved to cloud successfully!');
+      }
+    } catch (error: any) {
+      alert('Failed to save draft: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
     if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-      clearDraft();
       setFormData({
         visitorName: '',
         mobileNumber: '',
+        visitorEmail: '',
         relation: '',
+        gender: 'M',
         visitorPhoto: null,
-        idProofType: '',
+        idProofType: 'Aadhar',
         idProofNumber: '',
-        purpose: '',
+        visitorAddress: '',
+        purpose: 'Family Visit',
         visitDate: '',
-        visitTime: '',
-        duration: '',
-        location: '',
+        visitStartTime: '',
+        visitEndTime: '',
         accompanyingPersons: '0'
       });
       setPhotoPreview(null);
-      alert('Form cancelled and draft cleared.');
+      alert('Form reset successfully.');
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate required fields
     if (!formData.visitorName || !formData.mobileNumber || !formData.relation ||
       !formData.purpose || !formData.visitDate) {
@@ -133,99 +164,77 @@ const NewVisitorRequestPage = () => {
       return;
     }
 
-    // Create new request object with structure matching MyRequests page
-    const newRequest = {
-      id: Date.now().toString(),
-      requestId: `REQ${Date.now().toString().slice(-6)}`,
-      visitorName: formData.visitorName,
-      relation: formData.relation,
-      visitDate: new Date(formData.visitDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-      purpose: formData.purpose,
-      status: 'Pending',
-      visitorDetails: {
+    if (!studentInfo.student_id) {
+      alert('Student identification not loaded yet. Please wait a moment.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const payload = {
+        name: formData.visitorName,
         phone: formData.mobileNumber,
-        email: '', // Not collected in form
-        address: '', // Not collected in form
-        idProof: `${formData.idProofType} - ${formData.idProofNumber}`,
-      },
-      visitDetails: {
-        entryTime: formData.visitTime || '-',
-        exitTime: '-',
-        reason: formData.purpose
-      },
-      qrCode: ''
-    };
+        relation: formData.relation,
+        gender: formData.gender,
+        id_proof_type: formData.idProofType,
+        id_proof_no: formData.idProofNumber,
+        address: formData.visitorAddress,
+        visit_purpose: formData.purpose,
+        visit_date: formData.visitDate,
+        visit_from_time: formData.visitStartTime,
+        visit_to_time: formData.visitEndTime,
+        student_id: studentInfo.student_id,
+        accompanying_persons: parseInt(formData.accompanyingPersons) || 0,
+        visitor_photo: photoPreview,
+        email: formData.visitorEmail
+      };
 
-    // Save to requests storage (using window for temporary persistence across pages)
-    // In a real app, this would be an API call
-    const existingRequests = getRequests();
-    // Add new request to the beginning of the list
-    const updatedRequests = [newRequest, ...existingRequests];
-    saveRequests(updatedRequests);
-
-    console.log('Submitting form:', newRequest);
-
-    // Clear draft after successful submission
-    clearDraft();
-
-    // Reset form
-    setFormData({
-      visitorName: '',
-      mobileNumber: '',
-      relation: '',
-      visitorPhoto: null,
-      idProofType: '',
-      idProofNumber: '',
-      purpose: '',
-      visitDate: '',
-      visitTime: '',
-      duration: '',
-      location: '',
-      accompanyingPersons: '0'
-    });
-    setPhotoPreview(null);
-
-    // Redirect to My Requests page
-    router.push('/student/myrequest');
+      const response = await apiClient.post('/visitors/submit', payload);
+      if (response.data.success) {
+        alert('Visitor request submitted successfully!');
+        router.push('/student/myrequest');
+      }
+    } catch (error: any) {
+      alert('Submission failed: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackClick = () => {
     if (confirm('Do you want to save your progress as a draft before going back?')) {
       handleSaveDraft();
     }
-    // In a real app, you would use router.back() here
-    alert('Going back...');
+    router.back();
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto pb-10">
       {showDraftMessage && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
           Draft saved successfully!
         </div>
       )}
 
       <div>
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex items-start sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">New Visitor Request</h2>
-            <p className="text-gray-600">Submit a request for visitor entry</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">New Visitor Request</h2>
+            <p className="text-gray-600 text-sm mt-0.5">Submit a request for visitor entry</p>
           </div>
           <button
             onClick={handleBackClick}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
+            className="p-2.5 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors border border-gray-200 shrink-0"
           >
-            <ArrowLeft size={20} />
-            <span className="font-medium">Back</span>
+            <ArrowLeft size={18} />
           </button>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {/* Student Information */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Student Information</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Student Information</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Student Name</label>
                 <p className="text-base font-semibold text-gray-900">{studentInfo.name}</p>
@@ -249,10 +258,9 @@ const NewVisitorRequestPage = () => {
           </div>
 
           {/* Visitor Information */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Visitor Information</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Visitor Information</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Visitor Name <span className="text-red-500">*</span>
@@ -281,6 +289,19 @@ const NewVisitorRequestPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={formData.visitorEmail}
+                  onChange={(e) => handleInputChange('visitorEmail', e.target.value)}
+                  placeholder="Enter visitor's email"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Relation <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -293,6 +314,27 @@ const NewVisitorRequestPage = () => {
                   <option value="Father">Father</option>
                   <option value="Guardian">Guardian</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gender <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-4 mt-2">
+                  {['M', 'F', 'Other'].map((g) => (
+                    <label key={g} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value={g}
+                        checked={formData.gender === g}
+                        onChange={(e) => handleInputChange('gender', e.target.value)}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{g === 'M' ? 'Male' : g === 'F' ? 'Female' : 'Other'}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -311,17 +353,33 @@ const NewVisitorRequestPage = () => {
                       <Trash2 size={16} />
                     </button>
                   </div>
+                ) : showCamera ? (
+                  <CameraCapture
+                    onCapture={handlePhotoCapture}
+                    onClose={() => setShowCamera(false)}
+                    title="Visitor Photo"
+                  />
                 ) : (
-                  <label className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600 cursor-pointer">
-                    <Upload size={18} />
-                    <span>Upload Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                  </label>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowCamera(true)}
+                      className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+                    >
+                      <Camera size={18} />
+                      <span>Take Photo</span>
+                    </button>
+                    <label className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 cursor-pointer">
+                      <Upload size={18} />
+                      <span>Upload Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                  </div>
                 )}
               </div>
 
@@ -332,12 +390,12 @@ const NewVisitorRequestPage = () => {
                   onChange={(e) => handleInputChange('idProofType', e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
-                  <option value="">Select ID type</option>
-                  <option value="Aadhaar">Aadhaar Card</option>
+                  <option value="Aadhar">Aadhar Card</option>
                   <option value="PAN">PAN Card</option>
-                  <option value="DL">Driving License</option>
-                  <option value="Voter">Voter ID</option>
+                  <option value="Driving License">Driving License</option>
+                  <option value="Voter ID">Voter ID</option>
                   <option value="Passport">Passport</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
 
@@ -351,14 +409,24 @@ const NewVisitorRequestPage = () => {
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visitor Address</label>
+                <textarea
+                  value={formData.visitorAddress}
+                  onChange={(e) => handleInputChange('visitorAddress', e.target.value)}
+                  placeholder="Enter visitor's permanent address"
+                  rows={2}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                ></textarea>
+              </div>
             </div>
           </div>
 
           {/* Visit Details */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Visit Details</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Visit Details</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Purpose of Visit <span className="text-red-500">*</span>
@@ -390,48 +458,27 @@ const NewVisitorRequestPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Visit Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visit From Time</label>
                 <input
                   type="time"
-                  value={formData.visitTime}
-                  onChange={(e) => handleInputChange('visitTime', e.target.value)}
+                  value={formData.visitStartTime}
+                  onChange={(e) => handleInputChange('visitStartTime', e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visit To Time</label>
+                <input
+                  type="time"
+                  value={formData.visitEndTime}
+                  onChange={(e) => handleInputChange('visitEndTime', e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Expected Duration</label>
-                <select
-                  value={formData.duration}
-                  onChange={(e) => handleInputChange('duration', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select duration</option>
-                  <option value="1-2 hours">1-2 hours</option>
-                  <option value="2-4 hours">2-4 hours</option>
-                  <option value="Half day">Half day</option>
-                  <option value="Full day">Full day</option>
-                  <option value="Multiple days">Multiple days</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Meeting Location</label>
-                <select
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select location</option>
-                  <option value="Hostel Room">Hostel Room</option>
-                  <option value="Visitor's Lounge">Visitor's Lounge</option>
-                  <option value="Campus Garden">Campus Garden</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Accompanying Persons</label>
                 <input
@@ -447,34 +494,36 @@ const NewVisitorRequestPage = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-4 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
             <button
               onClick={handleCancel}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
+              className="w-full sm:w-auto px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold flex items-center justify-center gap-2 active:scale-[0.98]"
             >
               <X size={18} />
-              Cancel
+              Reset
             </button>
 
             <button
               onClick={handleSaveDraft}
-              className="px-6 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium flex items-center gap-2"
+              disabled={isLoading}
+              className="w-full sm:w-auto px-6 py-3 border border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-colors font-semibold flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
             >
-              <Save size={18} />
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={18} />}
               Save Draft
             </button>
 
             <button
               onClick={handleSubmit}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+              disabled={isLoading}
+              className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-blue-600/20 active:scale-[0.98]"
             >
-              <Send size={18} />
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send size={18} />}
               Submit Request
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
