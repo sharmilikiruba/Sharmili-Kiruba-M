@@ -1,6 +1,6 @@
 'use client'
 
-import { Camera, Users, UserPlus, X, Loader2, CheckCircle2, AlertCircle, SwitchCamera } from 'lucide-react'
+import { Camera, Users, UserPlus, X, Loader2, CheckCircle2, AlertCircle, SwitchCamera, Upload } from 'lucide-react'
 import { useState } from 'react'
 import apiClient from '@/lib/api-client'
 import CameraCapture from '@/components/shared/CameraCapture'
@@ -44,6 +44,20 @@ export default function WalkInRegistration() {
       ...prev,
       visitor_photo: base64
     }));
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          visitor_photo: reader.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const validateForm = () => {
@@ -196,14 +210,26 @@ export default function WalkInRegistration() {
                   <div className="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                     <Camera className="h-12 w-12 text-gray-400" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowCamera(true)}
-                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                  >
-                    <Camera className="w-4 h-4" />
-                    Take Photo
-                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowCamera(true)}
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                    >
+                      <Camera className="w-4 h-4" />
+                      Take Photo
+                    </button>
+                    <label className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium cursor-pointer">
+                      <Upload className="w-4 h-4" />
+                      Upload Photo
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                  </div>
                 </div>
               )}
 

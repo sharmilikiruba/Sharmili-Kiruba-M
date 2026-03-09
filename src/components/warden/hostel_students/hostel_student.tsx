@@ -58,6 +58,7 @@ const HostelStudents: React.FC = () => {
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [currentStudentId, setCurrentStudentId] = useState<number | null>(null);
+  const [modalError, setModalError] = useState<string>('');
 
   React.useEffect(() => {
     fetchStudents(debouncedSearchTerm);
@@ -172,13 +173,15 @@ const HostelStudents: React.FC = () => {
     });
     setIsEditing(false);
     setCurrentStudentId(null);
+    setModalError('');
   };
 
   const handleAddSubmit = async () => {
     if (!formData.fullName || !formData.rollNumber || !formData.phone || !formData.room_no) {
-      alert('Please fill in all required fields');
+      setModalError('Please fill in all required fields');
       return;
     }
+    setModalError('');
 
     try {
       const payload = {
@@ -210,7 +213,7 @@ const HostelStudents: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Error adding student:', error);
-      alert(error.response?.data?.message || 'Failed to add student');
+      setModalError(error.response?.data?.message || 'Failed to add student');
     }
   };
 
@@ -330,6 +333,7 @@ const HostelStudents: React.FC = () => {
         onSubmit={handleAddSubmit}
         formData={formData}
         setFormData={setFormData}
+        error={modalError}
       />
 
       <EditStudentModal

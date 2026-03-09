@@ -32,12 +32,27 @@ const initialForm: StudentForm = {
 export const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, onSave, hostels }) => {
     const [form, setForm] = useState<StudentForm>(initialForm);
 
+    const [error, setError] = useState<string>('');
+
+    // Reset when modal opens
+    React.useEffect(() => {
+        if (isOpen) {
+            setForm(initialForm);
+            setError('');
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(form);
-        setForm(initialForm);
+        setError('');
+        const res: any = await onSave(form);
+        if (res && res.success === false) {
+            setError(res.message);
+        } else {
+            setForm(initialForm);
+        }
     };
 
     return (
@@ -51,6 +66,11 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClos
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {error && (
+                        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-md">
+                            <p className="text-sm text-red-700 font-medium">{error}</p>
+                        </div>
+                    )}
                     <InputField label="Full Name" value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })} />
                     <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
                     <InputField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />

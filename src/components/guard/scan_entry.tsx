@@ -41,6 +41,7 @@ export default function ScanEntry() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoUploadInputRef = useRef<HTMLInputElement>(null);
   const isProcessingScan = useRef(false);
   const durationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -152,13 +153,19 @@ export default function ScanEntry() {
     setIsLoading(true);
     setError('');
     try {
-      const region = document.getElementById("qr-reader-region-hidden");
+      const regionId = "qr-reader-region-hidden";
+      const region = document.getElementById(regionId);
       if (!region) throw new Error("QR reader region not found.");
-      const html5QrCode = new Html5Qrcode("qr-reader-region-hidden");
+
+      const html5QrCode = new Html5Qrcode(regionId);
+      // scanFile returns decoded text if successful
       const decodedText = await html5QrCode.scanFile(file, true);
       await handleScanSuccess(decodedText);
+      // Clean up after success
+      await html5QrCode.clear();
     } catch (err: any) {
-      setError("Could not find a valid QR code in this image.");
+      console.error("QR File scan error:", err);
+      setError("Could not find a valid QR code in this image. Ensure the code is clear and well-lit.");
     } finally {
       setIsLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -489,9 +496,22 @@ export default function ScanEntry() {
             <h3 className="font-bold text-gray-900 flex items-center gap-2">
               <Camera className="w-5 h-5 text-blue-600" /> Visitor Identity Verification
             </h3>
-            <button onClick={() => photoInputRef.current?.click()} className="text-sm text-blue-600 font-medium hover:underline">
-              {visitorPhoto ? 'Retake Photo' : 'Capture Photo'}
-            </button>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                className="text-sm text-blue-600 font-medium hover:underline"
+              >
+                {visitorPhoto ? 'Retake Photo' : 'Capture Photo'}
+              </button>
+              <button
+                type="button"
+                onClick={() => photoUploadInputRef.current?.click()}
+                className="text-sm text-gray-600 font-medium hover:underline"
+              >
+                Upload Photo
+              </button>
+            </div>
           </div>
           <div className="flex gap-6 items-center">
             <div className="w-32 h-40 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center overflow-hidden relative">
@@ -501,6 +521,7 @@ export default function ScanEntry() {
             <div className="flex-1 space-y-2">
               <p className="text-sm text-gray-600 leading-relaxed">Take a live photo of the visitor to verify against the pass. This photo will be stored for security records.</p>
               <input type="file" ref={photoInputRef} className="hidden" accept="image/*" capture="user" onChange={handleVisitorPhotoUpload} />
+              <input type="file" ref={photoUploadInputRef} className="hidden" accept="image/*" onChange={handleVisitorPhotoUpload} />
               {visitorPhoto && !isUploading && (
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
                   <CheckCircle className="w-3 h-3" /> PHOTO UPLOADED
@@ -558,7 +579,7 @@ export default function ScanEntry() {
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle className="w-5 h-5" /> Confirm Entry</>}
             </button>
           </div>
-    
+
         </div>
         {error && (
           <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center font-medium border border-red-100">{error}</div>

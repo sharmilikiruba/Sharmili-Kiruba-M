@@ -31,6 +31,8 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({ isOpen, onCl
         guardianContact: '',
     });
 
+    const [error, setError] = useState<string>('');
+
     useEffect(() => {
         if (student) {
             setForm({
@@ -51,14 +53,19 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({ isOpen, onCl
                 guardianName: student.guardianName || '',
                 guardianContact: student.guardianContact || '',
             });
+            setError('');
         }
-    }, [student]);
+    }, [student, isOpen]);
 
     if (!isOpen || !student) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(student.id, form);
+        setError('');
+        const res: any = await onSave(student.id, form);
+        if (res && res.success === false) {
+            setError(res.message);
+        }
     };
 
     return (
@@ -72,6 +79,11 @@ export const EditStudentModal: React.FC<EditStudentModalProps> = ({ isOpen, onCl
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {error && (
+                        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-md">
+                            <p className="text-sm text-red-700 font-medium">{error}</p>
+                        </div>
+                    )}
                     <InputField label="Full Name" value={form.fullName} onChange={(v) => setForm({ ...form, fullName: v })} />
                     <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
                     <InputField label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />

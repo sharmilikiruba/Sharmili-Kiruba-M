@@ -63,13 +63,21 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanFailure, isA
             scannerRef.current = html5QrCode;
 
             const config = {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+                fps: 20, // Higher FPS for smoother scanning
+                qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    const qrboxSize = Math.floor(minEdge * 0.7);
+                    return {
+                        width: qrboxSize,
+                        height: qrboxSize
+                    };
+                },
+                formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+                aspectRatio: 1.0
             };
 
             await html5QrCode.start(
-                { facingMode: "user" }, // Use front camera for laptop
+                { facingMode: "environment" }, // Prefer back camera (environment) 
                 config,
                 (decodedText) => {
                     onScanSuccess(decodedText);

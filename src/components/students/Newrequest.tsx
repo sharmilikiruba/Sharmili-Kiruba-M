@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Camera, X, Save, Send, Trash2, Loader2, SwitchCamera } from 'lucide-react';
+import { ArrowLeft, Camera, X, Save, Send, Trash2, Loader2, SwitchCamera, Upload } from 'lucide-react';
 import CameraCapture from '@/components/shared/CameraCapture';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -80,6 +80,18 @@ const NewVisitorRequestPage = () => {
   const handlePhotoCapture = (blob: Blob, base64: string) => {
     setPhotoPreview(base64);
     setFormData({ ...formData, visitorPhoto: 'camera_capture' as any });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+        setFormData({ ...formData, visitorPhoto: 'upload' as any });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleRemovePhoto = () => {
@@ -348,14 +360,26 @@ const NewVisitorRequestPage = () => {
                     title="Visitor Photo"
                   />
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowCamera(true)}
-                    className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
-                  >
-                    <Camera size={18} />
-                    <span>Take Photo</span>
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowCamera(true)}
+                      className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+                    >
+                      <Camera size={18} />
+                      <span>Take Photo</span>
+                    </button>
+                    <label className="w-full px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-500 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 cursor-pointer">
+                      <Upload size={18} />
+                      <span>Upload Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                  </div>
                 )}
               </div>
 

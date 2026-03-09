@@ -9,6 +9,7 @@ interface AddStudentModalProps {
     onSubmit: () => void;
     formData: StudentFormData;
     setFormData: (data: StudentFormData) => void;
+    error?: string;
 }
 
 export const AddStudentModal: React.FC<AddStudentModalProps> = ({
@@ -17,7 +18,7 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
     onSubmit,
     formData,
     setFormData,
-   
+    error
 }) => {
     if (!isOpen) return null;
 
@@ -41,6 +42,14 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
                         <X className="w-6 h-6" />
                     </button>
                 </div>
+
+                {error && (
+                    <div className="px-4 sm:px-8 mt-4">
+                        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                            <p className="text-sm text-red-700 font-medium">{error}</p>
+                        </div>
+                    </div>
+                )}
 
                 <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-4 sm:px-8 py-4 sm:py-5 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-b-2xl">
                     <button

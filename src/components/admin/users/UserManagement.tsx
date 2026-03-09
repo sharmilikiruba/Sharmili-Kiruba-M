@@ -510,11 +510,12 @@ export default function UserManagement() {
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 fetchStudents(); // Refresh list
-                alert(`Student ${id ? 'updated' : 'created'} successfully`);
+                return { success: true };
             }
+            return { success: false, message: 'Failed to save student' };
         } catch (error: any) {
             console.error('Error saving student:', error);
-            alert(error.response?.data?.message || 'Failed to save student');
+            return { success: false, message: error.response?.data?.message || 'Failed to save student' };
         }
     };
 

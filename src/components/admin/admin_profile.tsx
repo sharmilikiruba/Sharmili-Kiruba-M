@@ -8,23 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   User,
   Shield,
@@ -35,8 +19,10 @@ import {
   Briefcase,
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import EditProfile from './edit_profile';
+import ChangePassword from './change_password';
 
-interface AdminProfile {
+export interface AdminProfile {
   name: string;
   email: string;
   mobile: string;
@@ -53,8 +39,6 @@ export default function AdminProfile() {
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   const [profile, setProfile] = useState<AdminProfile>({
     name: '',
@@ -65,14 +49,6 @@ export default function AdminProfile() {
     role: 'admin',
     designation: '',
     dob: '',
-  });
-
-  const [editProfile, setEditProfile] = useState<AdminProfile>({ ...profile });
-
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: '',
   });
 
   /** ---------------- FETCH PROFILE ON MOUNT ---------------- */
@@ -98,7 +74,6 @@ export default function AdminProfile() {
           created_at: data.created_at || (data.user && data.user.created_at),
         };
         setProfile(mapped);
-        setEditProfile(mapped);
       }
     } catch (error) {
       console.error('Error fetching admin profile:', error);
@@ -109,62 +84,7 @@ export default function AdminProfile() {
 
   /** ---------------- HANDLERS ---------------- */
   const handleEditOpen = () => {
-    setEditProfile({ ...profile });
     setEditOpen(true);
-  };
-
-  const handleProfileSave = async () => {
-    try {
-      setIsSavingProfile(true);
-      const response = await apiClient.put('/admin/profile', {
-        name: editProfile.name,
-        email: editProfile.email,
-        mobile: editProfile.mobile,
-        gender: editProfile.gender,
-        address: editProfile.address,
-        dob: editProfile.dob,
-        designation: editProfile.designation,
-      });
-      if (response.data.success) {
-        setProfile(editProfile);
-        setEditOpen(false);
-        fetchProfile(); // Re-fetch to confirm sync
-      }
-    } catch (error: any) {
-      console.error('Error updating admin profile:', error);
-      alert(error.response?.data?.message || 'Failed to update profile');
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
-
-  const handlePasswordChange = async () => {
-    if (passwords.new !== passwords.confirm) {
-      alert('New passwords do not match');
-      return;
-    }
-    if (!passwords.new || passwords.new.length < 6) {
-      alert('New password must be at least 6 characters');
-      return;
-    }
-
-    try {
-      setIsSavingPassword(true);
-      const response = await apiClient.put('/admin/change-password', {
-        currentPassword: passwords.current,
-        newPassword: passwords.new,
-      });
-      if (response.data.success) {
-        setPasswordOpen(false);
-        setPasswords({ current: '', new: '', confirm: '' });
-        alert('Password changed successfully!');
-      }
-    } catch (error: any) {
-      console.error('Error changing password:', error);
-      alert(error.response?.data?.message || 'Failed to change password');
-    } finally {
-      setIsSavingPassword(false);
-    }
   };
 
   /** ---------------- UI ---------------- */
@@ -200,7 +120,6 @@ export default function AdminProfile() {
             variant="secondary"
             className="w-full md:w-auto"
             onClick={() => {
-              setPasswords({ current: '', new: '', confirm: '' });
               setPasswordOpen(true);
             }}
           >
@@ -254,124 +173,22 @@ export default function AdminProfile() {
         </CardContent>
       </Card>
 
-      {/* ---------------- EDIT PROFILE DIALOG ---------------- */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-          </DialogHeader>
+      <EditProfile
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialProfile={profile}
+        onSuccess={(updatedProfile) => {
+          setProfile(updatedProfile);
+          setEditOpen(false);
+          fetchProfile(); // Re-fetch to confirm sync
+        }}
+      />
 
-          <div className="space-y-4">
-            <Field
-              label="Full Name"
-              value={editProfile.name}
-              onChange={(v) => setEditProfile({ ...editProfile, name: v })}
-            />
-            <Field
-              label="Email Address"
-              type="email"
-              value={editProfile.email}
-              onChange={(v) => setEditProfile({ ...editProfile, email: v })}
-            />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label>Gender</Label>
-                <Select
-                  value={editProfile.gender}
-                  onValueChange={(v) => setEditProfile({ ...editProfile, gender: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="M">Male</SelectItem>
-                    <SelectItem value="F">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Field
-                label="Date of Birth"
-                type="date"
-                value={editProfile.dob ? editProfile.dob.split('T')[0] : ''}
-                onChange={(v) => setEditProfile({ ...editProfile, dob: v })}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field
-                label="Mobile"
-                value={editProfile.mobile}
-                onChange={(v) => setEditProfile({ ...editProfile, mobile: v })}
-              />
-              <Field
-                label="Designation"
-                value={editProfile.designation}
-                onChange={(v) => setEditProfile({ ...editProfile, designation: v })}
-              />
-            </div>
-            <Field
-              label="Address"
-              value={editProfile.address}
-              onChange={(v) => setEditProfile({ ...editProfile, address: v })}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleProfileSave} disabled={isSavingProfile}>
-              {isSavingProfile && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ---------------- CHANGE PASSWORD DIALOG ---------------- */}
-      <Dialog open={passwordOpen} onOpenChange={setPasswordOpen}>
-        <DialogContent className="sm:max-w-[400px] w-[95vw] rounded-xl">
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <PasswordField
-              label="Current Password"
-              value={passwords.current}
-              onChange={(v) => setPasswords({ ...passwords, current: v })}
-            />
-            <PasswordField
-              label="New Password"
-              value={passwords.new}
-              onChange={(v) => setPasswords({ ...passwords, new: v })}
-            />
-            <PasswordField
-              label="Confirm New Password"
-              value={passwords.confirm}
-              onChange={(v) => setPasswords({ ...passwords, confirm: v })}
-            />
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              className="flex-1 sm:flex-none"
-              onClick={() => setPasswordOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700"
-              onClick={handlePasswordChange}
-              disabled={isSavingPassword}
-            >
-              {isSavingPassword && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Update Password
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ChangePassword
+        open={passwordOpen}
+        onOpenChange={setPasswordOpen}
+        onSuccess={() => setPasswordOpen(false)}
+      />
     </div>
   );
 }
@@ -383,46 +200,6 @@ function Info({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-gray-500">{label}</p>
       <p className="font-semibold text-gray-900">{value || '—'}</p>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  type = "text",
-  onChange,
-}: {
-  label: string;
-  value: string;
-  type?: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      <Input type={type} value={value} onChange={(e) => onChange(e.target.value)} />
-    </div>
-  );
-}
-
-function PasswordField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      <Input
-        type="password"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
     </div>
   );
 }

@@ -6,13 +6,15 @@ import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/lib/api-client';
 import protectedService from '@/lib/protected-service';
 import notificationService, { NotificationSettings } from '@/lib/notification-service';
-import { Loader2, ShieldCheck, ShieldAlert, Bell, Mail, Smartphone } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldAlert, Bell, Mail, Smartphone, KeyRound } from 'lucide-react';
+import { ChangePasswordModal } from './ChangePasswordModal';
 
 const StudentProfile: React.FC = () => {
     const { user } = useAuth();
     const [student, setStudent] = useState<Student | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [verificationMessage, setVerificationMessage] = useState('');
     const [visitorStats, setVisitorStats] = useState<VisitorStats>({
@@ -135,9 +137,19 @@ const StudentProfile: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
             <main className="flex-1 p-4 sm:p-8 pb-10">
                 <div className="max-w-6xl mx-auto">
-                    <div className="mb-5 sm:mb-6">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Profile</h1>
-                        <p className="text-gray-600 mt-1 text-sm sm:text-base">View and manage your profile information</p>
+                    <div className="mb-5 sm:mb-6 flex justify-between items-center text-center md:text-left">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Profile</h1>
+                            <p className="text-gray-600 mt-1 text-sm sm:text-base">View and manage your profile information</p>
+                        </div>
+                        <button
+                            onClick={() => setIsPasswordModalOpen(true)}
+                            className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-medium transition-colors shadow-sm text-sm sm:text-base"
+                        >
+                            <KeyRound className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                            <span className="hidden sm:inline">Change Password</span>
+                            <span className="inline sm:hidden">Password</span>
+                        </button>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
@@ -384,6 +396,10 @@ const StudentProfile: React.FC = () => {
                 </div>
             </main>
 
+            <ChangePasswordModal
+                isOpen={isPasswordModalOpen}
+                onClose={() => setIsPasswordModalOpen(false)}
+            />
         </div>
     );
 };

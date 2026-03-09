@@ -92,7 +92,7 @@ export const ViewStudentModal: React.FC<ViewStudentModalProps> = ({
                 <div className="p-4 sm:p-8 pt-20 sm:pt-24 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                     <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <DetailItem icon={Mail} label="University Email" value={student.email} />
-                        <DetailItem icon={Phone} label="Primary Contact" value={student.mobile} />
+                        <DetailItem icon={Phone} label="Primary Contact" value={student.phone} />
                         <DetailItem icon={Phone} label="Parent Contact" value={student.parent_phone} />
                         <DetailItem icon={GraduationCap} label="Department" value={student.department} />
                         <DetailItem icon={Calendar} label="Education Year" value={student.year} />

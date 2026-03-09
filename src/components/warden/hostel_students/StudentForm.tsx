@@ -112,8 +112,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         <input
                             type="tel"
                             required
-                            value={formData.mobile}
-                            onChange={(e) => handleInputChange('mobile', e.target.value)}
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange('phone', e.target.value)}
                             placeholder="+91 XXXXX XXXXX"
                             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                         />
@@ -273,8 +273,8 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                         <label className="text-sm font-semibold text-gray-700">Guardian's Mobile</label>
                         <input
                             type="tel"
-                            value={formData.guardian_phone}
-                            onChange={(e) => handleInputChange('guardian_phone', e.target.value)}
+                            value={formData.guardian_contact}
+                            onChange={(e) => handleInputChange('guardian_contact', e.target.value)}
                             placeholder="+91 XXXXX XXXXX"
                             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                         />
