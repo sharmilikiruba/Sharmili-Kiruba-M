@@ -137,46 +137,51 @@ const StudentProfile: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
             <main className="flex-1 p-4 sm:p-8 pb-10">
                 <div className="max-w-6xl mx-auto">
-                    <div className="mb-5 sm:mb-6 flex justify-between items-center text-center md:text-left">
+                    <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Profile</h1>
                             <p className="text-gray-600 mt-1 text-sm sm:text-base">View and manage your profile information</p>
                         </div>
                         <button
                             onClick={() => setIsPasswordModalOpen(true)}
-                            className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-medium transition-colors shadow-sm text-sm sm:text-base"
+                            className="w-full sm:w-auto bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm text-sm sm:text-base"
                         >
                             <KeyRound className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-                            <span className="hidden sm:inline">Change Password</span>
-                            <span className="inline sm:hidden">Password</span>
+                            <span>Change Password</span>
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Profile Card */}
-                        <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                        <div className="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto mb-4 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-inner">
                                 <span className="text-white text-3xl sm:text-4xl font-bold">
                                     {student.name.split(' ').map((n: string) => n[0]).join('')}
                                 </span>
                             </div>
                             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{student.name}</h2>
-                            <p className="text-gray-600 mb-3">{student.rollNumber}</p>
-                            <span className="inline-block bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-sm font-medium">
-                                Student
+                            <p className="text-gray-500 text-sm mb-3 font-medium uppercase tracking-wider">{student.rollNumber}</p>
+                            <span className="inline-block bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-xs font-bold">
+                                STUDENT
                             </span>
-                            <div className="mt-6 space-y-3 text-left">
+                            <div className="mt-8 space-y-4 text-left border-t border-gray-50 pt-6">
                                 <div className="flex items-start text-gray-600">
-                                    <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    <span className="text-sm break-all">{student.email}</span>
+                                    <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                        <Mail className="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Email Address</p>
+                                        <p className="text-sm font-semibold truncate text-gray-900">{student.email}</p>
+                                    </div>
                                 </div>
                                 <div className="flex items-center text-gray-600">
-                                    <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                    </svg>
-                                    <span className="text-sm">{student.phone}</span>
+                                    <div className="p-2 bg-blue-50 rounded-lg mr-3">
+                                        <Smartphone className="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase">Phone Number</p>
+                                        <p className="text-sm font-semibold text-gray-900">{student.phone}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -364,32 +369,32 @@ const StudentProfile: React.FC = () => {
                     </div>
 
                     {/* Visitor Statistics */}
-                    <div className="mt-5 sm:mt-6 bg-white rounded-xl shadow-sm p-5 sm:p-6">
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Visitor Statistics</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-                            <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <div className="text-4xl font-bold text-gray-900 mb-2">
+                    <div className="mt-6 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">Visitor Statistics</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                            <div className="text-center p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                <div className="text-3xl font-black text-blue-600 mb-1">
                                     {visitorStats.total}
                                 </div>
-                                <div className="text-sm text-gray-600 font-medium">Total Requests</div>
+                                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</div>
                             </div>
-                            <div className="text-center p-4 bg-green-50 rounded-lg">
-                                <div className="text-4xl font-bold text-green-600 mb-2">
+                            <div className="text-center p-4 bg-green-50/50 rounded-2xl border border-green-100">
+                                <div className="text-3xl font-black text-green-600 mb-1">
                                     {visitorStats.approved}
                                 </div>
-                                <div className="text-sm text-gray-600 font-medium">Approved</div>
+                                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Approved</div>
                             </div>
-                            <div className="text-center p-4 bg-red-50 rounded-lg">
-                                <div className="text-4xl font-bold text-red-600 mb-2">
+                            <div className="text-center p-4 bg-red-50/50 rounded-2xl border border-red-100">
+                                <div className="text-3xl font-black text-red-600 mb-1">
                                     {visitorStats.rejected}
                                 </div>
-                                <div className="text-sm text-gray-600 font-medium">Rejected</div>
+                                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Rejected</div>
                             </div>
-                            <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                                <div className="text-4xl font-bold text-yellow-600 mb-2">
+                            <div className="text-center p-4 bg-yellow-50/50 rounded-2xl border border-yellow-100">
+                                <div className="text-3xl font-black text-yellow-600 mb-1">
                                     {visitorStats.pending}
                                 </div>
-                                <div className="text-sm text-gray-600 font-medium">Pending</div>
+                                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Pending</div>
                             </div>
                         </div>
                     </div>

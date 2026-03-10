@@ -61,14 +61,25 @@ const HostelStudents: React.FC = () => {
   const [modalError, setModalError] = useState<string>('');
 
   React.useEffect(() => {
-    fetchStudents(debouncedSearchTerm);
-  }, [debouncedSearchTerm]);
+    fetchStudents(debouncedSearchTerm, yearFilter, departmentFilter);
+  }, [debouncedSearchTerm, yearFilter, departmentFilter]);
 
-  const fetchStudents = async (search: string = '') => {
+  const fetchStudents = async (search: string = '', year: string = 'All Years', department: string = 'All Departments') => {
     try {
-      const response = await apiClient.get('/warden/students', {
-        params: { search }
-      });
+      const params: any = { query: search };
+
+      if (year !== 'All Years') {
+        const yearNumber = parseInt(year);
+        if (!isNaN(yearNumber)) {
+          params.year = yearNumber;
+        }
+      }
+
+      if (department !== 'All Departments') {
+        params.department = department;
+      }
+
+      const response = await apiClient.get('/warden/students', { params });
       if (response.data.success) {
         const formattedStudents = response.data.data.map((s: any) => ({
           id: s.student_id || s.id,
@@ -109,8 +120,11 @@ const HostelStudents: React.FC = () => {
         roll.includes(search) ||
         room.includes(search);
 
-      const matchesDepartment = departmentFilter === 'All Departments' || student.department === departmentFilter;
-      const matchesYear = yearFilter === 'All Years' || student.year === yearFilter;
+      const matchesDepartment = departmentFilter === 'All Departments' ||
+        student.department.toLowerCase() === departmentFilter.toLowerCase();
+
+      const matchesYear = yearFilter === 'All Years' ||
+        student.year.includes(yearFilter.split(' ')[0]);
 
       return matchesSearch && matchesDepartment && matchesYear;
     });

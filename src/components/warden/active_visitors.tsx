@@ -152,7 +152,7 @@ export default function ActiveVisitorsPage() {
                         <p className="text-sm text-gray-600 font-medium">
                           Visiting {visitor.studentName}
                         </p>
-                        <p className="text-xs text-gray-500">Room: {visitor.room}</p>
+                        <p className="text-xs text-gray-500">Room: {visitor.room_no}</p>
                       </div>
                     </div>
 

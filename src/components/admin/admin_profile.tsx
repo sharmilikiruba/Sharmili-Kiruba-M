@@ -101,8 +101,8 @@ export default function AdminProfile() {
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* HEADER CARD */}
       <Card>
-        <CardContent className="flex flex-col md:flex-row items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg gap-6 text-center md:text-left">
-          <div className="flex flex-col md:flex-row items-center gap-4">
+        <CardContent className="flex flex-col md:flex-row items-center justify-between p-4 sm:p-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg gap-4 sm:gap-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center gap-3 sm:gap-4">
             <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center shrink-0">
               <User className="w-8 h-8" />
             </div>
@@ -118,7 +118,7 @@ export default function AdminProfile() {
 
           <Button
             variant="secondary"
-            className="w-full md:w-auto"
+            className="w-full md:w-auto mt-2 md:mt-0"
             onClick={() => {
               setPasswordOpen(true);
             }}
@@ -131,18 +131,18 @@ export default function AdminProfile() {
 
       {/* PERSONAL INFO */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Personal &amp; Contact Information
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 sm:p-6 pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <User className="w-5 h-5 text-blue-600" />
+            Personal Info
           </CardTitle>
-          <Button size="sm" variant="outline" onClick={handleEditOpen}>
-            <Pencil className="w-4 h-4 mr-2" />
+          <Button size="sm" variant="outline" onClick={handleEditOpen} className="h-8 px-3">
+            <Pencil className="w-3.5 h-3.5 mr-2" />
             Edit
           </Button>
         </CardHeader>
 
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 text-sm">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 sm:gap-y-6 p-4 sm:p-6 pt-2 text-sm">
           <Info label="Full Name" value={profile.name} />
           <Info label="Gender" value={profile.gender === 'M' ? 'Male' : profile.gender === 'F' ? 'Female' : profile.gender || '—'} />
           <Info label="Date of Birth" value={profile.dob ? new Date(profile.dob).toLocaleDateString() : '—'} />
@@ -160,14 +160,14 @@ export default function AdminProfile() {
 
       {/* SYSTEM ACCESS */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
-            Administrative &amp; System Access
+        <CardHeader className="p-4 sm:p-6 pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Shield className="w-5 h-5 text-blue-600" />
+            Administrative Info
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6 pt-2 text-sm">
           <Info label="Role" value={profile.role} />
           <Info label="Designation" value={profile.designation || 'System Administrator'} />
         </CardContent>

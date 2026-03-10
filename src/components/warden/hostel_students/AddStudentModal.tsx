@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Plus } from 'lucide-react';
 import { StudentForm } from './StudentForm';
-import { StudentFormData, StudentPhotos } from './types';
+import { StudentFormData } from './types';
 
 interface AddStudentModalProps {
     isOpen: boolean;
@@ -50,6 +50,13 @@ export const AddStudentModal: React.FC<AddStudentModalProps> = ({
                         </div>
                     </div>
                 )}
+
+                <div className="px-4 sm:px-8 py-6 sm:py-8">
+                    <StudentForm
+                        formData={formData}
+                        setFormData={setFormData}
+                    />
+                </div>
 
                 <div className="sticky bottom-0 bg-white/95 backdrop-blur-md px-4 sm:px-8 py-4 sm:py-5 border-t border-gray-100 flex flex-col sm:flex-row gap-3 sm:gap-4 rounded-b-2xl">
                     <button

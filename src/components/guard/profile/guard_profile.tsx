@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Shield, MapPin, Phone, Mail, Calendar, Edit2, Key, HelpCircle, LogOut, CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, Camera, Lock, LogIn, Clipboard, AlertTriangle } from 'lucide-react';
+import { Shield, MapPin, Phone, Mail, Calendar, Edit2, Key, HelpCircle, LogOut, CheckCircle, Clock, ShieldCheck, ShieldAlert, Loader2, Camera, Lock, LogIn, Clipboard, AlertTriangle, User } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import { ProfileData, PasswordForm } from './types';
@@ -166,28 +166,28 @@ export default function GuardProfile() {
     };
 
     return (
-        <div className="p-8">
+        <div className="p-4 sm:p-8">
             {/* Profile Header */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-t-xl px-8 py-12 relative">
-                <div className="flex items-end gap-6">
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-t-xl px-4 sm:px-8 py-8 sm:py-12 relative">
+                <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 text-center sm:text-left">
                     <div className="relative">
-                        <div className="w-32 h-32 bg-white rounded-full overflow-hidden border-4 border-white shadow-lg flex items-center justify-center">
-                            <Shield className="w-16 h-16 text-gray-200" />
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full overflow-hidden border-4 border-white shadow-lg flex items-center justify-center">
+                            <Shield className="w-12 h-12 sm:w-16 sm:h-16 text-gray-200" />
                         </div>
                     </div>
-                    <div className="flex-1 text-white pb-4">
-                        <h1 className="text-3xl font-bold">{profileData.fullName || 'Guard Profile'}</h1>
-                        <p className="text-green-100 text-sm mt-2 flex items-center gap-2">
+                    <div className="flex-1 text-white">
+                        <h1 className="text-2xl sm:text-3xl font-bold">{profileData.fullName || 'Guard Profile'}</h1>
+                        <p className="text-green-100 text-xs sm:text-sm mt-1 sm:mt-2 flex items-center justify-center sm:justify-start gap-2">
                             <Clock className="w-4 h-4" />
                             {profileData.employeeId}
                         </p>
                     </div>
                     <button
                         onClick={() => setIsPasswordModalOpen(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-colors mb-4"
+                        className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-colors w-full sm:w-auto"
                     >
-                        <Lock className="w-5 h-5" />
-                        Change Password
+                        <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span>Change Password</span>
                     </button>
                 </div>
             </div>
@@ -200,142 +200,120 @@ export default function GuardProfile() {
             )}
 
             {/* Personal & Contact Information */}
-            <div className="bg-white rounded-b-xl shadow-sm border border-gray-200 border-t-0 p-6 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        Personal & Contact Information
+            <div className="bg-white rounded-b-xl shadow-sm border border-gray-200 border-t-0 p-4 sm:p-6 mb-6">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <User className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                        Personal Info
                     </h2>
                     <button
                         onClick={() => setIsEditModalOpen(true)}
-                        className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2"
+                        className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 text-sm sm:text-base"
                     >
                         <Edit2 className="w-4 h-4" />
                         Edit
                     </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                        <p className="text-sm text-gray-600 mb-1">Full Name</p>
-                        <p className="font-semibold text-gray-900">{profileData.fullName}</p>
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-600 mb-1">Employee ID</p>
-                        <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Full Name</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base">{profileData.fullName}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-600 mb-1">Gender</p>
-                        <p className="font-semibold text-gray-900">{profileData.gender}</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Employee ID</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base">{profileData.employeeId}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-600 mb-1">Date of Birth</p>
-                        <p className="font-semibold text-gray-900">{profileData.dateOfBirth}</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Gender</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base">{profileData.gender}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-600 mb-1">Mobile Number</p>
-                        <p className="font-semibold text-gray-900">
-                            {profileData.mobileNumber}</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Date of Birth</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base">{profileData.dateOfBirth}</p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-600 mb-1">Alternate Mobile</p>
-                        <p className="font-semibold text-gray-900">{profileData.alternateMobile}</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Mobile Number</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base">{profileData.mobileNumber}</p>
                     </div>
-                    <div className="col-span-2">
-                        <p className="text-sm text-gray-600 mb-1">Email Address</p>
-                        <p className="font-semibold text-gray-900">{profileData.email}</p>
+                    <div>
+                        <p className="text-xs text-gray-500 mb-0.5">Alternate Mobile</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base">{profileData.alternateMobile}</p>
                     </div>
-                    <div className="col-span-2">
-                        <p className="text-sm text-gray-600 mb-1">Address</p>
-                        <p className="font-semibold text-gray-900">{profileData.address}</p>
+                    <div className="sm:col-span-2">
+                        <p className="text-xs text-gray-500 mb-0.5">Email Address</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base break-all">{profileData.email}</p>
+                    </div>
+                    <div className="sm:col-span-2">
+                        <p className="text-xs text-gray-500 mb-0.5">Address</p>
+                        <p className="font-semibold text-gray-900 text-sm sm:text-base">{profileData.address || '—'}</p>
                     </div>
                 </div>
             </div>
 
             {/* Guard Assignment & Activity */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <Shield className="w-6 h-6 text-blue-600" />
-                    Guard Assignment & Activity
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                    Assignment & Activity
                 </h2>
 
-                {/* Employment Information */}
-                <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Employment Information</h3>
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Employee ID</p>
-                            <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Date of Joining</p>
-                            <p className="font-semibold text-gray-900">{profileData.dateOfJoining}</p>
+                <div className="space-y-8">
+                    {/* Employment Info */}
+                    <div>
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Employment</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs text-gray-500 mb-0.5">Employee ID</p>
+                                <p className="font-semibold text-gray-900">{profileData.employeeId}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500 mb-0.5">Joining Date</p>
+                                <p className="font-semibold text-gray-900">{profileData.dateOfJoining}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Gate & Shift Assignment */}
-                <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Gate & Shift Assignment</h3>
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                <MapPin className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600 mb-1">Assigned Gate(s)</p>
-                                <p className="font-semibold text-gray-900">{profileData.assignedGate}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-6 mt-4">
-                        <div>
-                            <p className="text-sm text-gray-600 mb-1">Shift Type</p>
-                            <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
-                                {profileData.shiftType}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-5 h-5 text-gray-500" />
-                            <div>
-                                <p className="text-sm text-gray-600 mb-1">Shift Start Time</p>
-                                <p className="font-semibold text-gray-900">{profileData.shiftStart}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-5 h-5 text-gray-500" />
-                            <div>
-                                <p className="text-sm text-gray-600 mb-1">Shift End Time</p>
-                                <p className="font-semibold text-gray-900">{profileData.shiftEnd}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Activity Metrics */}
-                <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Activity Metrics (Today)</h3>
-                    <div className="grid grid-cols-4 gap-4">
-                        {activityMetrics.map((metric, index) => (
-                            <div key={index} className={`${metric.color} rounded-xl p-6`}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <p className="text-sm font-medium text-gray-700">{metric.label}</p>
-                                    <div className={`p-2 ${metric.color} rounded-lg`}>
-                                        <metric.icon className={`w-6 h-6 ${metric.iconColor}`} />
-                                    </div>
+                    {/* Duty Details */}
+                    <div>
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Duty Details</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                                <MapPin className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-xs text-gray-500">Assigned Gate</p>
+                                    <p className="font-bold text-gray-900">{profileData.assignedGate}</p>
                                 </div>
-                                <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
                             </div>
-                        ))}
+                            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                                <Clock className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-xs text-gray-500">Shift Hours</p>
+                                    <p className="font-bold text-gray-900">{profileData.shiftStart} - {profileData.shiftEnd}</p>
+                                    <span className="inline-block px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-[10px] font-bold mt-1 uppercase">
+                                        {profileData.shiftType}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Metrics */}
+                    <div>
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Activity (Today)</h3>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                            {activityMetrics.map((metric, index) => (
+                                <div key={index} className={`${metric.color} rounded-xl p-4 sm:p-5 border border-black/5`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className={`p-1.5 ${metric.color} rounded-lg`}>
+                                            <metric.icon className={`w-4 h-4 ${metric.iconColor}`} />
+                                        </div>
+                                    </div>
+                                    <p className="text-2xl font-black text-gray-900">{metric.value}</p>
+                                    <p className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase mt-1">{metric.label}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
