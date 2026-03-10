@@ -70,9 +70,6 @@ export function DailyVisitorReport({ data, stats }: DailyVisitorReportProps) {
                                 Time
                             </th>
                             <th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">
-                                Duration
-                            </th>
-                            <th className="text-left py-3 px-6 text-xs font-medium text-gray-600 uppercase">
                                 Status
                             </th>
                         </tr>
@@ -84,7 +81,6 @@ export function DailyVisitorReport({ data, stats }: DailyVisitorReportProps) {
                                 <td className="py-4 px-6 text-sm">{item.student}</td>
                                 <td className="py-4 px-6 text-sm">{item.purpose}</td>
                                 <td className="py-4 px-6 text-sm">{item.time}</td>
-                                <td className="py-4 px-6 text-sm">{item.duration}</td>
                                 <td className="py-4 px-6">
                                     <span
                                         className={`px-3 py-1 text-white text-xs font-semibold rounded-full ${item.status === 'Approved' ? 'bg-green-600' : 'bg-yellow-500'

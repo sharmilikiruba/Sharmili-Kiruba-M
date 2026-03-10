@@ -16,7 +16,6 @@ export interface DailyVisitorData {
     student: string;
     purpose: string;
     time: string;
-    duration: string;
     status: string;
     date: string;
 }
@@ -40,27 +39,4 @@ export interface RejectedRequestData {
     status: string;
 }
 
-export interface MonthlyStatisticsData {
-    week: string;
-    total: number;
-    approved: number;
-    rejected: number;
-    emergency: number;
-}
 
-export interface StudentWiseData {
-    studentName: string;
-    total: number;
-    unique: number;
-    frequency: number;
-    lastVisit: string;
-}
-
-export interface WeeklySummaryData {
-    day: string;
-    date: string;
-    total: number;
-    approved: number;
-    rejected: number;
-    pending: number;
-}

@@ -1,70 +1,22 @@
 import React from 'react';
-import { Upload, Trash2 } from 'lucide-react';
-import { StudentFormData, StudentPhotos } from './types';
+import { StudentFormData } from './types';
 
 interface StudentFormProps {
     formData: StudentFormData;
     setFormData: (data: StudentFormData) => void;
-    photos: StudentPhotos;
-    onPhotoUpload: (type: keyof StudentPhotos, e: React.ChangeEvent<HTMLInputElement>) => void;
-
     // departments, years, semesters props are no longer needed for select options
 }
 
 export const StudentForm: React.FC<StudentFormProps> = ({
     formData,
     setFormData,
-    photos,
-    onPhotoUpload,
-
 }) => {
     const handleInputChange = (field: keyof StudentFormData, value: string) => {
         setFormData({ ...formData, [field]: value });
     };
 
-    const PhotoUploadBox: React.FC<{ type: keyof StudentPhotos; label: string; photo: string | null }> = ({ type, label, photo }) => (
-        <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">{label}</label>
-            {photo ? (
-                <div className="relative group rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                    <img
-                        src={photo}
-                        alt={label}
-                        className="w-full h-32 object-cover transition-all group-hover:scale-105"
-                    />
-
-
-                </div>
-            ) : (
-                <label className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-blue-600 cursor-pointer bg-gray-50/50">
-                    <div className="bg-white p-2.5 rounded-xl shadow-sm border border-gray-100">
-                        <Upload size={20} />
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-wider">Upload Photo</span>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => onPhotoUpload(type, e)}
-                        className="hidden"
-                    />
-                </label>
-            )}
-        </div>
-    );
-
     return (
         <div className="space-y-8">
-            {/* Photo Uploads */}
-            <section>
-                <div className="flex items-center gap-2 mb-4">
-                    <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-                    <h4 className="text-lg font-bold text-gray-900">Identification Photos</h4>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <PhotoUploadBox type="student" label="Student Photo *" photo={photos.student} />
-                </div>
-            </section>
-
             {/* Personal Information */}
             <section className="bg-gray-50/50 p-4 sm:p-6 rounded-2xl border border-gray-100">
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
@@ -118,7 +70,6 @@ export const StudentForm: React.FC<StudentFormProps> = ({
                             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                         />
                     </div>
-
 
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">Gender <span className="text-red-500">*</span></label>
