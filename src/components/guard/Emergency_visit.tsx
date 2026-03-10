@@ -10,8 +10,7 @@ import {
   FileText,
   Clock,
   Loader2,
-  SwitchCamera,
-  Upload
+  SwitchCamera
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import CameraCapture from '@/components/shared/CameraCapture';
@@ -90,26 +89,13 @@ export default function EmergencyVisit() {
   // handleSelectStudent removed
 
 
-  const handlePhotoCapture = (blob: Blob, base64: string) => {
+  const handlePhotoCapture = (url: string, blob: Blob) => {
     setFormData(prev => ({
       ...prev,
-      visitor_photo: base64
+      visitor_photo: url
     }));
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          visitor_photo: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const validateForm = () => {
     const newErrors: Partial<FormData> = {};
@@ -445,16 +431,6 @@ export default function EmergencyVisit() {
                     <Camera className="w-4 h-4" />
                     Take Photo
                   </button>
-                  <label className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium cursor-pointer">
-                    <Upload className="w-4 h-4" />
-                    Upload Photo
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                  </label>
                 </div>
               </div>
             )}

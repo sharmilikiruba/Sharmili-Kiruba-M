@@ -45,4 +45,27 @@ apiClient.interceptors.response.use(
     }
 );
 
+export const uploadPhoto = async (blob: Blob): Promise<string> => {
+    const formData = new FormData();
+    formData.append('photo', blob, 'capture.jpg');
+
+    const response = await apiClient.post('/upload/photo', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+
+    if (response.data.success) {
+        // Handle different potential keys for the URL
+        const photoUrl = response.data.url || response.data.photoUrl || response.data.imageUrl || response.data.data?.url;
+        if (!photoUrl) {
+            console.error('Upload succeeded but no URL found in response:', response.data);
+            throw new Error('Invalid response from server: Missing image URL');
+        }
+        return photoUrl;
+    } else {
+        throw new Error(response.data.message || `Photo upload failed with status ${response.status}`);
+    }
+};
+
 export default apiClient;

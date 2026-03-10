@@ -1,6 +1,6 @@
 'use client'
 
-import { Camera, Users, UserPlus, X, Loader2, CheckCircle2, AlertCircle, SwitchCamera, Upload } from 'lucide-react'
+import { Camera, Users, UserPlus, X, Loader2, CheckCircle2, AlertCircle, SwitchCamera } from 'lucide-react'
 import { useState } from 'react'
 import apiClient from '@/lib/api-client'
 import CameraCapture from '@/components/shared/CameraCapture'
@@ -39,26 +39,13 @@ export default function WalkInRegistration() {
   }
 
 
-  const handlePhotoCapture = (blob: Blob, base64: string) => {
+  const handlePhotoCapture = (url: string, blob: Blob) => {
     setFormData(prev => ({
       ...prev,
-      visitor_photo: base64
+      visitor_photo: url
     }));
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          visitor_photo: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const validateForm = () => {
     if (!formData.name.trim()) return 'Visitor name is required';
@@ -102,6 +89,7 @@ export default function WalkInRegistration() {
         id_proof_no: formData.id_proof_no,
         visit_purpose: formData.visit_purpose,
         remarks: formData.remarks,
+        visitor_photo: formData.visitor_photo,
         visit_date: new Date().toISOString().split('T')[0]
       }
 
@@ -111,21 +99,8 @@ export default function WalkInRegistration() {
       if (registrationResponse.data.success) {
         const visitorId = registrationResponse.data.data.visitor_id;
 
-        // Step 2: Upload photo if available
-        if (formData.visitor_photo) {
-          try {
-            console.log('Uploading photo for visitor:', visitorId);
-            await apiClient.post('/guard/visitor/walk-in/upload-photo', {
-              visitorId: visitorId,
-              image: formData.visitor_photo // Sending base64 string
-            });
-          } catch (photoError: any) {
-            console.error('Error uploading photo:', photoError);
-            // We don't block the whole process if only photo upload fails, 
-            // but we might want to inform the user.
-            setError('Visitor registered successfully, but photo upload failed.');
-          }
-        }
+        // Step 2: Photo is already uploaded via CameraCapture or handleFileUpload
+        // So we just confirm success.
 
         setSuccess('Walk-in registered and Checked In successfully! QR code sent to visitor for exit.')
         handleCancel()
@@ -219,16 +194,6 @@ export default function WalkInRegistration() {
                       <Camera className="w-4 h-4" />
                       Take Photo
                     </button>
-                    <label className="flex items-center gap-2 px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium cursor-pointer">
-                      <Upload className="w-4 h-4" />
-                      Upload Photo
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileUpload}
-                      />
-                    </label>
                   </div>
                 </div>
               )}

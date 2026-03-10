@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Camera, CameraOff, RefreshCw, SwitchCamera, X, Check } from 'lucide-react';
+import { Camera, CameraOff, RefreshCw, SwitchCamera, X, Check, Loader2 } from 'lucide-react';
+import { uploadPhoto } from '@/lib/api-client';
 
 interface CameraCaptureProps {
-    onCapture: (blob: Blob, base64: string) => void;
+    onCapture: (url: string, blob: Blob) => void;
     onClose: () => void;
     title?: string;
 }
@@ -15,6 +16,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, title
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
     const stopStream = useCallback(() => {
@@ -100,15 +102,25 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, title
         }
     };
 
-    const confirmCapture = () => {
+    const confirmCapture = async () => {
         if (capturedImage) {
-            // Convert base64 to blob for the callback
-            fetch(capturedImage)
-                .then(res => res.blob())
-                .then(blob => {
-                    onCapture(blob, capturedImage);
-                    onClose();
-                });
+            setIsUploading(true);
+            try {
+                // Convert base64 to blob
+                const res = await fetch(capturedImage);
+                const blob = await res.blob();
+
+                // Upload to backend
+                const url = await uploadPhoto(blob);
+
+                onCapture(url, blob);
+                onClose();
+            } catch (err: any) {
+                console.error("Upload error detail:", err);
+                const errorMessage = err.response?.data?.message || err.message || "Failed to upload photo";
+                setError(`${errorMessage}. Please try again.`);
+                setIsUploading(false);
+            }
         }
     };
 
@@ -196,9 +208,18 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, title
                             </button>
                             <button
                                 onClick={confirmCapture}
-                                className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                                disabled={isUploading}
+                                className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:bg-blue-400"
                             >
-                                <Check className="w-5 h-5" /> Use Photo
+                                {isUploading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" /> Uploading...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="w-5 h-5" /> Use Photo
+                                    </>
+                                )}
                             </button>
                         </div>
                     )}

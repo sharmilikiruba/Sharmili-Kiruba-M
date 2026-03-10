@@ -82,17 +82,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onItemClick }) => {
     ],
 
     admin: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Admin/Admin_dashboard' },
-      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Admin/Admin_dashboard' },    
       { id: 'user-management', label: 'User Management', icon: Users, href: '/Admin/User_mgt' },
       { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/Admin/Hostel_mgt' },
+      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
       { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/Admin/system_config' },
     ],
     super_admin: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/Admin/Admin_dashboard' },
-      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
       { id: 'user-management', label: 'User Management', icon: Users, href: '/Admin/User_mgt' },
       { id: 'hostel-management', label: 'Hostel Management', icon: Building2, href: '/Admin/Hostel_mgt' },
+      { id: 'reports-analytics', label: 'Reports & Analytics', icon: FileText, href: '/Admin/Admin_reports' },
       { id: 'system-config', label: 'System Configuration', icon: Settings, href: '/Admin/system_config' },
     ]
   };

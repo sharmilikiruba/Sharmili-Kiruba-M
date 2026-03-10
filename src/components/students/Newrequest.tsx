@@ -4,7 +4,7 @@ import { ArrowLeft, Camera, X, Save, Send, Trash2, Loader2, SwitchCamera, Upload
 import CameraCapture from '@/components/shared/CameraCapture';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import apiClient from '@/lib/api-client';
+import apiClient, { uploadPhoto } from '@/lib/api-client';
 
 const NewVisitorRequestPage = () => {
   const router = useRouter();
@@ -77,20 +77,24 @@ const NewVisitorRequestPage = () => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handlePhotoCapture = (blob: Blob, base64: string) => {
-    setPhotoPreview(base64);
-    setFormData({ ...formData, visitorPhoto: 'camera_capture' as any });
+  const handlePhotoCapture = (url: string, blob: Blob) => {
+    setPhotoPreview(url);
+    setFormData({ ...formData, visitorPhoto: url as any });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
-        setFormData({ ...formData, visitorPhoto: 'upload' as any });
-      };
-      reader.readAsDataURL(file);
+      try {
+        setIsLoading(true);
+        const url = await uploadPhoto(file);
+        setPhotoPreview(url);
+        setFormData({ ...formData, visitorPhoto: url as any });
+      } catch (error: any) {
+        alert('Failed to upload photo: ' + error.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
